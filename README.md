@@ -1,4 +1,4 @@
-# XREPORT by XQA — Playwright HTML Reporter & Test Analytics
+# XREPORT by XQA — All-in-One HTML Test Reporter for Playwright, WebdriverIO, Jasmine, Cypress, Jest, Vitest & Mocha
 
 [![npm version](https://img.shields.io/npm/v/@xqa.io/xreport.svg)](https://www.npmjs.com/package/@xqa.io/xreport)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
@@ -7,7 +7,7 @@
 [![GitHub](https://img.shields.io/badge/GitHub-ak3ilb%2Fxqa--xreport-181717?logo=github)](https://github.com/ak3ilb/xqa-xreport)
 [![XQA](https://img.shields.io/badge/XQA-xqa.io-0071E3)](https://xqa.io)
 
-**XREPORT** by [**XQA**](https://xqa.io) — local HTML reporter and test analytics for CI. Flaky detection, run history, error grouping, traces, screenshots, and a dense triage explorer. Works with **Playwright, Cypress, Jest, Vitest, Mocha, Jasmine, and WebdriverIO**. Pure Node.js. No upload token.
+**XREPORT** by [**XQA**](https://xqa.io) — one local HTML reporter for every major JS test stack. **Playwright HTML reporter**, **WebdriverIO (WDIO) reporter**, **Jasmine reporter**, **Cypress reporter**, **Jest reporter**, **Vitest reporter**, and **Mocha reporter** — same triage UI, flaky detection, run history, error grouping, traces, and local-first AI. Pure Node.js. No upload token.
 
 > Practice automation at [**xqa.io/practice**](https://xqa.io/practice)
 

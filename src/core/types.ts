@@ -313,7 +313,7 @@ export interface HistoryRecord {
   tests?: Array<{ historyId: string; title: string; status: TestStatus; duration: number }>;
 }
 
-export const XREPORT_VERSION = '0.5.0';
+export const XREPORT_VERSION = '0.5.1';
 export const XQA_WEBSITE = 'https://xqa.io';
 export const DEFAULT_BRANDING: XReportBranding = {
   projectName: 'XREPORT',
