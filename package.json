@@ -1,6 +1,6 @@
 {
   "name": "@xqa.io/xreport",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "XREPORT by XQA — all-in-one HTML test reporter for Playwright, WebdriverIO (WDIO), Jasmine, Cypress, Jest, Vitest & Mocha. Local CI analytics, flaky detection, run history, traces, local-first AI + MCP. Zero Java. From xqa.io.",
   "keywords": [
     "xreport",
@@ -154,7 +154,7 @@
     "dist",
     "bin",
     "viewer-dist",
-    "docs/images",
+    "docs",
     "README.md",
     "LICENSE"
   ],
@@ -165,7 +165,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "sample": "npm run build && node scripts/generate-sample.js",
     "smoke:reporters": "npm run build && node scripts/smoke-reporters.js",
-    "test:unit": "npm run build && node --test dist/core/*.test.js"
+    "test:unit": "npm run build && node --test dist/core/*.test.js",
+    "test": "npm run typecheck && npm run test:unit && npm run smoke:reporters"
   },
   "dependencies": {
     "open": "^8.4.2"

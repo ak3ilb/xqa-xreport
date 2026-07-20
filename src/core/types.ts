@@ -129,6 +129,11 @@ export interface XReportTest {
   defectKind?: DefectKind;
   defectConfidence?: number;
   likelyFixFile?: string;
+  /** Matched known-issues.json rule id */
+  knownIssueId?: string;
+  knownIssueReason?: string;
+  /** Muted for quality gates when known issue says mute */
+  muted?: boolean;
   stabilityPct?: number;
   testHistory?: XReportTestHistoryPoint[];
 }
@@ -204,6 +209,10 @@ export interface XReportOptions {
   inlineAssets?: boolean;
   /** Local-first optional AI (OpenAI-compatible). Never required. */
   ai?: XReportAiOptions;
+  /** Path to known-issues.json (mute expected failures) */
+  knownIssuesPath?: string;
+  /** Quality gate evaluated after generate when set; does not fail generate itself */
+  qualityGate?: import('./quality-gate').QualityGateRules;
 }
 
 export interface XReportAnalytics {
@@ -313,7 +322,7 @@ export interface HistoryRecord {
   tests?: Array<{ historyId: string; title: string; status: TestStatus; duration: number }>;
 }
 
-export const XREPORT_VERSION = '0.5.1';
+export const XREPORT_VERSION = '0.5.2';
 export const XQA_WEBSITE = 'https://xqa.io';
 export const DEFAULT_BRANDING: XReportBranding = {
   projectName: 'XREPORT',

@@ -145,7 +145,7 @@ class XReportMochaReporter {
         suites: root.suites.length ? root.suites : [root],
         options: opts,
       });
-      void generateReport(run, opts);
+      return generateReport(run, opts);
     });
   }
 }

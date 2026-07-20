@@ -9,6 +9,7 @@ import * as readline from 'readline';
 import { buildAiContextPack } from '../core/ai-context';
 import { loadHistory, resolveHistoryPath } from '../core/history';
 import type { XReportRun } from '../core/types';
+import { XREPORT_VERSION } from '../core/types';
 import { collectTests } from '../core/utils';
 
 type Json = Record<string, unknown>;
@@ -240,7 +241,7 @@ async function handle(msg: Json): Promise<Json> {
     return ok(id, {
       protocolVersion: '2024-11-05',
       capabilities: { tools: {} },
-      serverInfo: { name: 'xreport-mcp', version: '0.5.0' },
+      serverInfo: { name: 'xreport-mcp', version: XREPORT_VERSION },
     });
   }
   if (method === 'notifications/initialized' || method === 'initialized') {

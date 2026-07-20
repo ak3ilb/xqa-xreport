@@ -11,6 +11,7 @@ import {
   lastHistoryRecord,
   recentHistoryRecords,
 } from '../core/history';
+import { applyKnownIssues } from '../core/known-issues';
 import { copyTraceViewerAssets, writeFailedRerunArtifact } from '../core/trace';
 import type { XReportOptions, XReportRun, XReportTest } from '../core/types';
 import {
@@ -55,25 +56,26 @@ export async function generateReport(
     trend,
     historyRecords,
   );
+  const withKnown = applyKnownIssues(enriched, opts.knownIssuesPath);
 
   if (opts.enableHistory) {
-    appendHistory(enriched, opts.historyOptions);
+    appendHistory(withKnown, opts.historyOptions);
   }
 
   const status =
-    enriched.summary.failed + enriched.summary.timedOut > 0
+    withKnown.summary.failed + withKnown.summary.timedOut > 0
       ? 'failed'
-      : enriched.summary.flaky > 0
+      : withKnown.summary.flaky > 0
         ? 'flaky'
         : 'passed';
   const base = resolveFilename(opts.reportFilename.replace(/\.html?$/i, ''), status);
 
   const result: GenerateResult = { reportDir };
 
-  const failedPath = writeFailedRerunArtifact(reportDir, enriched.analytics?.failedRerun);
+  const failedPath = writeFailedRerunArtifact(reportDir, withKnown.analytics?.failedRerun);
   if (failedPath) result.failedRerunPath = failedPath;
 
-  const hasTrace = collectHasTrace(enriched);
+  const hasTrace = collectHasTrace(withKnown);
   if (hasTrace) {
     const viewer = copyTraceViewerAssets(reportDir);
     if (viewer) result.traceViewerPath = path.join(reportDir, viewer);
@@ -81,12 +83,12 @@ export async function generateReport(
 
   // Optional local-first LLM analysis (cluster cache in report dir)
   const aiOpts = (opts as XReportOptions).ai || run.options?.ai;
-  let withAi = enriched;
+  let withAi = withKnown;
   if (aiOpts?.enabled && isAiConfigured(aiOpts)) {
     try {
-      const insights = await analyzeRunWithAi(enriched, reportDir, aiOpts);
+      const insights = await analyzeRunWithAi(withKnown, reportDir, aiOpts);
       if (insights.length) {
-        withAi = { ...enriched, aiInsights: insights };
+        withAi = { ...withKnown, aiInsights: insights };
       }
     } catch (err) {
       if (!opts.quiet) {

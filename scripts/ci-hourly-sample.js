@@ -269,30 +269,29 @@ describe('XQA practice · ' + PAGE_NAME, () => {
 }
 
 function scaffoldVitest(meta) {
-  scaffoldBase(['@xqa.io/xreport@latest', 'vitest', 'typescript', 'playwright']);
+  scaffoldBase(['@xqa.io/xreport@latest', 'vitest@2.1.9', 'playwright']);
   installChromium();
   write(path.join(workdir, 'practice-lib.js'), playwrightLibraryTestSource(meta));
   write(
-    path.join(workdir, 'vitest.config.ts'),
-    `import { defineConfig } from 'vitest/config';
-
-export default defineConfig({
+    path.join(workdir, 'vitest.config.js'),
+    `module.exports = {
   test: {
     testTimeout: 90000,
-    include: ['practice.one.test.ts'],
+    include: ['practice.one.test.js'],
+    pool: 'forks',
+    fileParallelism: false,
     reporters: [
       'default',
       ['@xqa.io/xreport/vitest', ${JSON.stringify(reporterOptions(meta), null, 8)}],
     ],
   },
-});
+};
 `
   );
   write(
-    path.join(workdir, 'practice.one.test.ts'),
-    `import { describe, it, expect } from 'vitest';
-import { attach } from '@xqa.io/xreport/context';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+    path.join(workdir, 'practice.one.test.js'),
+    `const { describe, it, expect } = require('vitest');
+const { attach } = require('@xqa.io/xreport/context');
 const { openPracticePage, EXPECT_FAIL, PAGE_NAME, PAGE_ID, SEED } = require('./practice-lib');
 
 describe('XQA practice · ' + PAGE_NAME, () => {

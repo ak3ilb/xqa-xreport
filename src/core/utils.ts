@@ -136,6 +136,8 @@ export function mergeOptions(options: XReportOptions = {}): Required<
   reportPageTitle?: string;
   historyOptions: NonNullable<XReportOptions['historyOptions']>;
   ai?: XReportOptions['ai'];
+  knownIssuesPath?: string;
+  qualityGate?: XReportOptions['qualityGate'];
 } {
   const truthy = (v: unknown, fallback: boolean) => {
     if (v === undefined || v === null || v === '') return fallback;
@@ -184,6 +186,11 @@ export function mergeOptions(options: XReportOptions = {}): Required<
     ai:
       typeof o.ai === 'object' && o.ai
         ? (o.ai as XReportOptions['ai'])
+        : undefined,
+    knownIssuesPath: (o.knownIssuesPath as string) || undefined,
+    qualityGate:
+      typeof o.qualityGate === 'object' && o.qualityGate
+        ? (o.qualityGate as XReportOptions['qualityGate'])
         : undefined,
   };
 }

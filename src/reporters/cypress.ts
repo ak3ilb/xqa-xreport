@@ -129,7 +129,7 @@ class XReportCypressMochaReporter {
         suites: root.suites.length ? root.suites : [root],
         options: opts,
       });
-      void generateReport(run, opts).finally(() => clearKeyedContext());
+      return generateReport(run, opts).then(() => clearKeyedContext());
     });
   }
 }

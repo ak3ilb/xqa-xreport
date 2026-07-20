@@ -137,7 +137,7 @@ export default class XReportWebdriverIOReporter extends WDIOReporter {
     this.finishTest('skipped', 0);
   }
 
-  onRunnerEnd(): void {
+  onRunnerEnd(): void | Promise<void> {
     const finishedAt = Date.now();
     const cid = (this as any).cid || process.env.WDIO_WORKER_ID || String(process.pid);
     const partialPath = path.join(this.partialsDir, `worker-${cid}.json`);
@@ -151,7 +151,6 @@ export default class XReportWebdriverIOReporter extends WDIOReporter {
     });
     writeJson(partialPath, run);
 
-    // Attempt merge of all partials
     try {
       const files = fs
         .readdirSync(this.partialsDir)
@@ -160,7 +159,7 @@ export default class XReportWebdriverIOReporter extends WDIOReporter {
       if (!files.length) return;
       const runs = files.map((f) => readJson<XReportRun>(f));
       const merged = mergeRuns(runs);
-      void generateReport(merged, this.xoptions);
+      return generateReport(merged, this.xoptions).then(() => undefined);
     } catch (err) {
       if (!this.xoptions.quiet) {
         console.warn('[xreport] WDIO merge warning', err);

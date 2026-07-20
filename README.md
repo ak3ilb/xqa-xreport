@@ -497,7 +497,11 @@ npx xreport history import backup.json
 npx xreport ai context ./xreport
 npx xreport ai analyze ./xreport   # needs XREPORT_AI_BASE_URL / optional API key
 npx xreport mcp                    # or: npx xreport-mcp
+npx xreport gate ./xreport --max-failed=0 --max-new=0
+npx xreport quarantine export ./xreport
 ```
+
+CI recipes (CTRF → GitHub summary / PR / Slack), sharding merge, known-issues, and Cursor MCP: see [`docs/ci/README.md`](docs/ci/README.md), [`docs/sharding.md`](docs/sharding.md), [`docs/agents-mcp.md`](docs/agents-mcp.md).
 
 ---
 
@@ -588,6 +592,8 @@ Heuristic triage (clusters, defect kind: product / automation / environment / fl
     model: 'gpt-4.1-mini',
     budget: { maxFailures: 15, maxTokens: 8000 },
   },
+  knownIssuesPath: './.xreport/known-issues.json', // mute expected failures
+  qualityGate: { maxFailed: 0, maxNewFailures: 0 }, // use with: xreport gate
   branding: {
     projectName: 'XREPORT',
     companyName: 'XQA',

@@ -159,7 +159,17 @@ export default class XReportVitestReporter {
     this.startedAt = Date.now();
   }
 
-  onFinished(files: VitestFile[] = []): void {
+  onFinished(files: VitestFile[] = []): void | Promise<void> {
+    return this.writeReport(files);
+  }
+
+  /** Vitest 3+ alternate hook — keep report generation awaited so CI does not race. */
+  onTestRunEnd(files?: VitestFile[]): void | Promise<void> {
+    if (!files) return;
+    return this.writeReport(files);
+  }
+
+  private writeReport(files: VitestFile[] = []): Promise<void> {
     const finishedAt = Date.now();
     const media = createMediaStore(path.resolve(this.options.reportDir));
     const root: XReportSuite = {
@@ -184,7 +194,7 @@ export default class XReportVitestReporter {
       suites: root.suites.length ? root.suites : [root],
       options: this.options,
     });
-    void generateReport(run, this.options).finally(() => clearKeyedContext());
+    return generateReport(run, this.options).then(() => clearKeyedContext()).then(() => undefined);
   }
 }
 

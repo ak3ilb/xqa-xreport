@@ -112,7 +112,7 @@ export default class XReportJasmineReporter {
     else parent.tests.push(payload);
   }
 
-  jasmineDone(): void {
+  jasmineDone(): void | Promise<void> {
     const finishedAt = Date.now();
     const run = buildRun({
       title: this.options.reportTitle,
@@ -122,7 +122,7 @@ export default class XReportJasmineReporter {
       suites: this.root.suites.length ? this.root.suites : [this.root],
       options: this.options,
     });
-    void generateReport(run, this.options);
+    return generateReport(run, this.options).then(() => undefined);
   }
 }
 

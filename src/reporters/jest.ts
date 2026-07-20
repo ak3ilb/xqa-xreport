@@ -83,7 +83,7 @@ export default class XReportJestReporter {
     this.startedAt = Date.now();
   }
 
-  onRunComplete(_contexts: unknown, results: JestAggregatedResult): void {
+  onRunComplete(_contexts: unknown, results: JestAggregatedResult): void | Promise<void> {
     const finishedAt = Date.now();
     const media = createMediaStore(path.resolve(this.options.reportDir));
     const root: XReportSuite = {
@@ -172,7 +172,7 @@ export default class XReportJestReporter {
       suites: root.suites.length ? root.suites : [root],
       options: this.options,
     });
-    void generateReport(run, this.options).finally(() => clearKeyedContext());
+    return generateReport(run, this.options).then(() => clearKeyedContext());
   }
 }
 

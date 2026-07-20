@@ -6,6 +6,8 @@ export * from './core/media';
 export * from './core/analytics';
 export * from './core/history';
 export * from './core/ai';
+export * from './core/known-issues';
+export * from './core/quality-gate';
 export { generateReport, mergeRuns } from './generator';
 export { renderHtml } from './generator/html';
 export { runMcpServer } from './mcp/server';

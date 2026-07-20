@@ -137,7 +137,7 @@ function mapPwStep(s: NonNullable<TestResult['steps']>[number]): XReportStep {
   };
 }
 
-export default class XReportPlaywrightReporter implements Reporter {
+export class XReportPlaywrightReporter implements Reporter {
   private options: ReturnType<typeof mergeOptions>;
   private startedAt = Date.now();
   private rootSuite: Suite | undefined;
@@ -342,3 +342,6 @@ export default class XReportPlaywrightReporter implements Reporter {
     };
   }
 }
+
+module.exports = XReportPlaywrightReporter;
+export default XReportPlaywrightReporter;

@@ -55,6 +55,9 @@ function prepareTests(tests: XReportTest[]) {
     defectKind: t.defectKind || '',
     defectConfidence: typeof t.defectConfidence === 'number' ? t.defectConfidence : null,
     likelyFixFile: t.likelyFixFile || '',
+    knownIssueId: t.knownIssueId || '',
+    knownIssueReason: t.knownIssueReason || '',
+    muted: !!t.muted,
     stabilityPct: typeof t.stabilityPct === 'number' ? t.stabilityPct : null,
     testHistory: t.testHistory || [],
   }));
@@ -1198,7 +1201,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     if(!t){document.getElementById('caseBody').innerHTML='<div class="empty">Test not found.</div>';return;}
     var st=t.flaky?'flaky':t.status;
     document.getElementById('caseTitle').textContent=t.title;
-    document.getElementById('caseBadges').innerHTML='<span class="status-pill '+esc(st)+'">'+esc(st)+'</span>'+(t.regression?'<span class="badge-reg">new failure</span>':'')+(t.failureCategory?'<span class="tag">'+esc(t.failureCategory)+'</span>':'')+(t.defectKind?'<span class="tag">'+esc(t.defectKind)+'</span>':'')+(t.owner?'<span class="tag">owner:'+esc(t.owner)+'</span>':'')+(t.severity?'<span class="tag">'+esc(t.severity)+'</span>':'')+(t.stabilityPct!=null?'<span class="runmeta">Stability '+t.stabilityPct+'%</span>':'');
+    document.getElementById('caseBadges').innerHTML='<span class="status-pill '+esc(st)+'">'+esc(st)+'</span>'+(t.muted?'<span class="tag">muted</span>':'')+(t.knownIssueId?'<span class="tag">known:'+esc(t.knownIssueId)+'</span>':'')+(t.regression?'<span class="badge-reg">new failure</span>':'')+(t.failureCategory?'<span class="tag">'+esc(t.failureCategory)+'</span>':'')+(t.defectKind?'<span class="tag">'+esc(t.defectKind)+'</span>':'')+(t.owner?'<span class="tag">owner:'+esc(t.owner)+'</span>':'')+(t.severity?'<span class="tag">'+esc(t.severity)+'</span>':'')+(t.stabilityPct!=null?'<span class="runmeta">Stability '+t.stabilityPct+'%</span>':'');
     document.getElementById('casePath').innerHTML=pathActionsHtml(t)+'<div class="meta" style="margin-top:6px">'+esc(t.fullTitle||'')+(t.project?' · '+esc(t.project):'')+'</div>';
     document.querySelectorAll('#caseTabs .tab').forEach(function(b){
       var key=b.getAttribute('data-ctab');
@@ -1350,7 +1353,15 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
   function renderAnalytics(){
     var a=DATA.analytics;
     var insights=DATA.aiInsights||[];
+    var defectCounts={};
+    (DATA.tests||[]).forEach(function(t){
+      if(!(t.status==='failed'||t.status==='timedOut'))return;
+      var k=t.defectKind||'unknown';
+      defectCounts[k]=(defectCounts[k]||0)+1;
+    });
+    var mutedN=(DATA.tests||[]).filter(function(t){return t.muted;}).length;
     var html='';
+    html+='<div class="card"><h3>Defect kinds</h3>'+(Object.keys(defectCounts).length?Object.keys(defectCounts).map(function(k){return '<div class="barrow"><span>'+esc(k)+'</span><div class="bartrack"><div class="seg f" style="width:'+Math.min(100,defectCounts[k]*20)+'%"></div></div><span>'+defectCounts[k]+'</span></div>';}).join('')+'<div class="runmeta" style="margin-top:8px">Muted known issues: <b>'+mutedN+'</b></div>':'<div class="empty" style="padding:8px">No failing tests to classify</div>')+'</div>';
     html+='<div class="card"><h3>AI Insights</h3>'+(insights.length?insights.slice(0,8).map(function(i){
       return '<div style="padding:8px 0;border-bottom:1px solid var(--soft2)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><b>'+esc((i.summary||'').slice(0,120))+'</b><div class="runmeta">'+esc(i.defectKind||'unknown')+' · conf '+(Math.round((i.confidence||0)*100))+'% · cluster '+esc(i.clusterId||'')+'</div>'+
         ((i.nextSteps||[]).length?'<div class="runmeta" style="margin-top:4px">'+(i.nextSteps||[]).slice(0,3).map(function(s){return esc(s);}).join(' · ')+'</div>':'')+

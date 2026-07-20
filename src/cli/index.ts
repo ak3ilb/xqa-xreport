@@ -16,6 +16,8 @@ import {
 import { analyzeRunWithAi, isAiConfigured } from '../core/ai-analyze';
 import { writeAiContextPack } from '../core/ai-context';
 import { flakeStatsFromHistory } from '../core/analytics';
+import { applyKnownIssues, listKnownIssueMatches } from '../core/known-issues';
+import { buildQuarantineExport, evaluateQualityGate } from '../core/quality-gate';
 import { generateReport, mergeRuns } from '../generator';
 import type { XReportAiOptions, XReportRun } from '../core/types';
 import { formatDuration, readJson, writeJson } from '../core/utils';
@@ -32,6 +34,8 @@ Usage:
   xreport view [port]
   xreport ai context [dir]
   xreport ai analyze [dir]
+  xreport gate [dir] [--max-failed=N] [--max-new=N] [--max-product=N] [--max-clusters=N] [--fail-unknown]
+  xreport quarantine export [dir] [-o file]
   xreport mcp
   xreport history list [n]
   xreport history stats
@@ -46,9 +50,11 @@ Usage:
 Commands:
   generate   Build HTML/CSV/CTRF from an XReport JSON file
   open       Serve a report folder locally (needed for embedded trace viewer)
-  merge      Merge multiple xreport.json partials
+  merge      Merge multiple xreport.json partials (Playwright shards / WDIO workers)
   view       Open interactive JSON drag-drop viewer
   ai         Local-first AI context pack / optional LLM analyze
+  gate       Quality gate exit codes from xreport.json (muted known issues ignored by default)
+  quarantine Export quarantine / muted tips for CI skip lists
   mcp        Start local MCP server (stdio) for Cursor / agents
   history    Local run history (list/stats/trends/flakes/failed-rerun/...)
 
@@ -109,6 +115,60 @@ async function cmdAi(args: string[]): Promise<void> {
   }
   console.error('Usage: xreport ai context [dir] | xreport ai analyze [dir]');
   process.exit(1);
+}
+
+function cmdGate(args: string[]): void {
+  const dirArg = args.find((a) => !a.startsWith('-'));
+  const dir = resolveReportDir(dirArg);
+  let run = readJson<XReportRun>(path.join(dir, 'xreport.json'));
+  run = applyKnownIssues(run, run.options?.knownIssuesPath);
+  const num = (flag: string) => {
+    const hit = args.find((a) => a.startsWith(flag + '='));
+    return hit ? Number(hit.split('=')[1]) : undefined;
+  };
+  const result = evaluateQualityGate(run, {
+    maxFailed: num('--max-failed'),
+    maxNewFailures: num('--max-new'),
+    maxProductDefects: num('--max-product'),
+    maxClusters: num('--max-clusters'),
+    failOnUnknownDefect: args.includes('--fail-unknown'),
+    ignoreMuted: !args.includes('--count-muted'),
+  });
+  console.log('\nXREPORT quality gate');
+  console.log(
+    `  failed=${result.counts.failed} muted=${result.counts.mutedFailed} new=${result.counts.newFailures} product=${result.counts.productDefects} clusters=${result.counts.clusters}`,
+  );
+  if (result.violations.length) {
+    for (const v of result.violations) console.log(`  FAIL: ${v}`);
+  } else {
+    console.log('  OK');
+  }
+  console.log('');
+  const matches = listKnownIssueMatches(run);
+  if (matches.length) {
+    console.log(`  Known issues matched: ${matches.length}`);
+    for (const m of matches.slice(0, 10)) {
+      console.log(`    ${m.ruleId}${m.muted ? ' (muted)' : ''} — ${m.fullTitle}`);
+    }
+    console.log('');
+  }
+  process.exit(result.exitCode);
+}
+
+function cmdQuarantine(args: string[]): void {
+  if (args[0] !== 'export') {
+    console.error('Usage: xreport quarantine export [dir] [-o file]');
+    process.exit(1);
+  }
+  const dirArg = args.slice(1).find((a) => !a.startsWith('-'));
+  const dir = resolveReportDir(dirArg);
+  const outIdx = args.indexOf('-o');
+  const out = outIdx >= 0 ? args[outIdx + 1] : path.join(dir, 'quarantine.txt');
+  let run = readJson<XReportRun>(path.join(dir, 'xreport.json'));
+  run = applyKnownIssues(run, run.options?.knownIssuesPath);
+  const { lines, commandHint } = buildQuarantineExport(run);
+  fs.writeFileSync(out, lines.join('\n') + '\n', 'utf8');
+  console.log(`\n  Wrote ${out}\n  ${commandHint}\n`);
 }
 
 function pad(s: string, n: number): string {
@@ -378,6 +438,14 @@ export async function runCli(argv = process.argv.slice(2)): Promise<void> {
   if (cmd === 'merge') return cmdMerge(argv.slice(1));
   if (cmd === 'view') return cmdView(argv.slice(1));
   if (cmd === 'ai') return cmdAi(argv.slice(1));
+  if (cmd === 'gate') {
+    cmdGate(argv.slice(1));
+    return;
+  }
+  if (cmd === 'quarantine') {
+    cmdQuarantine(argv.slice(1));
+    return;
+  }
   if (cmd === 'mcp') return runMcpServer();
   if (cmd === 'history') {
     cmdHistory(argv.slice(1));
