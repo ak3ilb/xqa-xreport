@@ -1,6 +1,6 @@
 {
   "name": "@xqa.io/xreport",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "XREPORT by XQA — all-in-one HTML test reporter for Playwright, WebdriverIO (WDIO), Jasmine, Cypress, Jest, Vitest & Mocha. Local CI analytics, flaky detection, run history, traces, local-first AI + MCP. Zero Java. From xqa.io.",
   "keywords": [
     "xreport",

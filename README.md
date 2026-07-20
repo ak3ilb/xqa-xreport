@@ -19,27 +19,32 @@
 - **Compact triage UI** — Dashboard, Test Runs (compare), Explorer side panel, full case pages
 - **Failures-first** — flaky badges, new-fail filter, soft-assert multi-errors, attempt picker
 - **Power search** — `s:failed` · `p:chromium` · `@smoke` · `file:` · `error:` · `owner:` · `severity:` · `cluster:` · `regression`
-- **Analytics** — slowest tests, by-file, tag health, clickable error clusters, stability score
+- **Analytics** — defect kinds, AI Insights, error groups, slowest / by-file, coverage, tag health
 - **Media & traces** — screenshots, videos, lightbox; Playwright trace viewer via `xreport open`
 - **History** — local trends, compare two runs, quarantine tips (`enableHistory`)
-- **AI (local-first)** — `ai-context.md/json` per run, Copy Prompt for Cursor, optional OpenAI-compatible analyze, local MCP
+- **AI (local-first)** — `ai-context.md/json` per run, Copy Prompt, optional OpenAI-compatible analyze, local MCP
+- **CI maturity** — quality gate (`xreport gate`), known-issues mute, quarantine export, shard merge helpers
 - **Exports** — HTML, JSON, CSV, CTRF, optional PDF; WDIO worker auto-merge
 - **Context API** — `attach` / `testContext` (+ Cypress `cy.xreportNote` / `cy.xreportMeta`)
 - **TypeScript & JavaScript** — published types, zero Java, report ready when tests finish
 
 ### Features Preview
 
-**Dashboard** — Pass rate, KPIs, Explorer / Insights / Debug shortcuts, and a clickable test-case list.
+**Dashboard** — Pass-rate donut, compact KPIs, Explorer / Insights / Debug shortcuts, charts, and a clickable test-case list.
 
 ![XREPORT Dashboard](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/dashboard.png)
 
-**Test Runs** — Local run history with status pills, compare-two-runs, branch & environment filters.
+**Test Runs** — Local run history with status pills, compare-two-runs (newly failed / passed / still failing / slowdowns), branch & environment filters.
 
 ![XREPORT Test Runs](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/test-runs.png)
 
-**Test Explorer** — Failures-first triage grid with side panel (attempts, steps, errors, logs, attachments).
+**Test Explorer** — Failures-first triage grid with side panel (attempts, steps, errors, logs, attachments) plus Copy error / Copy AI prompt.
 
 ![XREPORT Test Explorer](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/test-explorer.png)
+
+**Analytics** — Defect kinds, AI Insights, suite-by-file, timing, error categories, and clickable error groups with Copy Prompt.
+
+![XREPORT Analytics](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/analytics.png)
 
 Preview the demo locally:
 
@@ -52,12 +57,12 @@ npx xreport open ./examples/sample-report
 
 | Area | What you get |
 |------|----------------|
-| **Dashboard** | Pass-rate donut, KPIs, Explorer/Insights/Debug shortcuts, test-case table |
+| **Dashboard** | Pass-rate donut, compact KPIs, Explorer/Insights/Debug shortcuts, charts, test-case table |
 | **Test Runs** | Local history table, status pills, branch/env filters, **compare two runs** |
 | **Run detail** | Per-run filters (All / Failed / Passed / Flaky / Skipped) + clickable cases |
 | **Test Explorer** | Failures-first grid + **side panel** (Attempts · Steps · Error · Logs · Hooks · Attachments · History · Meta) |
 | **Case page** | Overview · Errors · Steps (nested) · Hooks · Logs · History · Attachments · Meta |
-| **Analytics** | By-file, slowest, error categories, **AI Insights**, **clickable error groups** + Copy Prompt, coverage, tag health, quarantine tips |
+| **Analytics** | Defect kinds, by-file, slowest, error categories, **AI Insights**, **clickable error groups** + Copy Prompt, coverage, tag health, quarantine tips |
 | **Flaky Tests** | Stability % + failure category |
 | **Gallery / Timeline** | Screenshots & videos · approximate worker lanes |
 | **Config** | Environment + report metadata |
@@ -78,9 +83,12 @@ npx xreport open ./examples/sample-report
 
 - Flaky badges when a test fails then passes on retry
 - Per-test **stability score** and failure categories (timing / network / assertion / environment / other)
+- **Defect kinds** (product / automation / environment / flake) + mute via `knownIssuesPath`
 - Error **clusters** (similar signatures) — click in Analytics to filter Explorer
-- Pass-rate trends, environment rates, quarantine tips (display / guidance only)
+- Pass-rate trends, environment rates, quarantine tips + `xreport quarantine export`
+- **Quality gate** — `xreport gate` for max failed / new / flaky thresholds in CI
 - Rerun helpers — `failed-tests.txt` + copyable CLI command
+- Shard / merge helpers — see [`docs/sharding.md`](docs/sharding.md)
 
 ### Attachments & media
 

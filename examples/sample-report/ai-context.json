@@ -1,0 +1,299 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-20T20:37:32.895Z",
+  "generator": "@xqa.io/xreport@0.5.2",
+  "brand": {
+    "name": "XREPORT",
+    "website": "https://xqa.io"
+  },
+  "run": {
+    "title": "XREPORT Sample · Dashboard Demo",
+    "framework": "playwright",
+    "startedAt": 1784579812888,
+    "finishedAt": 1784579852888,
+    "duration": 40000,
+    "summary": {
+      "total": 7,
+      "passed": 3,
+      "failed": 2,
+      "flaky": 1,
+      "skipped": 1,
+      "timedOut": 1
+    },
+    "branch": "main"
+  },
+  "clusters": [
+    {
+      "id": "75c2e98605",
+      "signature": "timeout nms exceeded. waiting for locator('#pay')",
+      "count": 1,
+      "sample": "Timeout 5000ms exceeded.\nwaiting for locator(\"#pay\")",
+      "category": "timing",
+      "defectKind": "flake",
+      "defectConfidence": 0.82,
+      "likelyFixFile": "checkout.spec.ts",
+      "testIds": [
+        "t1"
+      ],
+      "tests": [
+        {
+          "id": "t1",
+          "historyId": "hid-checkout-pay",
+          "title": "pays with valid card @smoke",
+          "fullTitle": "Checkout › pays with valid card @smoke",
+          "status": "failed",
+          "file": "tests/checkout.spec.ts",
+          "line": 42,
+          "flaky": false,
+          "duration": 4200,
+          "owner": "payments-team",
+          "severity": "critical",
+          "failureCategory": "timing",
+          "defectKind": "flake",
+          "stabilityPct": 43,
+          "clusterId": "75c2e98605",
+          "errorMessage": "Timeout 5000ms exceeded.\nwaiting for locator(\"#pay\")",
+          "errorStack": "Error: Timeout\n    at checkout.spec.ts:48",
+          "attempts": [
+            {
+              "status": "failed",
+              "duration": 2100
+            },
+            {
+              "status": "failed",
+              "duration": 2100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "543e8a6a47",
+      "signature": "expected url to contain /dashboard, got /error",
+      "count": 1,
+      "sample": "Expected URL to contain /dashboard, got /error",
+      "category": "assertion",
+      "defectKind": "flake",
+      "defectConfidence": 0.82,
+      "likelyFixFile": "auth.spec.ts",
+      "testIds": [
+        "t4"
+      ],
+      "tests": [
+        {
+          "id": "t4",
+          "historyId": "hid-auth-sso",
+          "title": "SSO redirect @smoke",
+          "fullTitle": "Auth › SSO redirect @smoke",
+          "status": "failed",
+          "file": "tests/auth.spec.ts",
+          "line": 33,
+          "flaky": false,
+          "duration": 3100,
+          "owner": "identity",
+          "severity": "blocker",
+          "failureCategory": "assertion",
+          "defectKind": "flake",
+          "stabilityPct": 71,
+          "clusterId": "543e8a6a47",
+          "errorMessage": "Expected URL to contain /dashboard, got /error",
+          "errorStack": "Error: URL\n    at auth.spec.ts:40",
+          "attempts": [
+            {
+              "status": "failed",
+              "duration": 3100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "9748c9e089",
+      "signature": "test timeout of nms exceeded.",
+      "count": 1,
+      "sample": "Test timeout of 30000ms exceeded.",
+      "category": "timing",
+      "defectKind": "flake",
+      "defectConfidence": 0.82,
+      "testIds": [
+        "t7"
+      ],
+      "tests": [
+        {
+          "id": "t7",
+          "historyId": "hid-catalog-filter",
+          "title": "filters by price",
+          "fullTitle": "Catalog › filters by price",
+          "status": "timedOut",
+          "file": "tests/catalog.spec.ts",
+          "line": 22,
+          "flaky": false,
+          "duration": 30000,
+          "severity": "minor",
+          "failureCategory": "timing",
+          "defectKind": "flake",
+          "stabilityPct": 57,
+          "clusterId": "9748c9e089",
+          "errorMessage": "Test timeout of 30000ms exceeded.",
+          "attempts": [
+            {
+              "status": "timedOut",
+              "duration": 30000
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "failures": [
+    {
+      "id": "t1",
+      "historyId": "hid-checkout-pay",
+      "title": "pays with valid card @smoke",
+      "fullTitle": "Checkout › pays with valid card @smoke",
+      "status": "failed",
+      "file": "tests/checkout.spec.ts",
+      "line": 42,
+      "flaky": false,
+      "duration": 4200,
+      "owner": "payments-team",
+      "severity": "critical",
+      "failureCategory": "timing",
+      "defectKind": "flake",
+      "stabilityPct": 43,
+      "clusterId": "75c2e98605",
+      "errorMessage": "Timeout 5000ms exceeded.\nwaiting for locator(\"#pay\")",
+      "errorStack": "Error: Timeout\n    at checkout.spec.ts:48",
+      "attempts": [
+        {
+          "status": "failed",
+          "duration": 2100
+        },
+        {
+          "status": "failed",
+          "duration": 2100
+        }
+      ]
+    },
+    {
+      "id": "t4",
+      "historyId": "hid-auth-sso",
+      "title": "SSO redirect @smoke",
+      "fullTitle": "Auth › SSO redirect @smoke",
+      "status": "failed",
+      "file": "tests/auth.spec.ts",
+      "line": 33,
+      "flaky": false,
+      "duration": 3100,
+      "owner": "identity",
+      "severity": "blocker",
+      "failureCategory": "assertion",
+      "defectKind": "flake",
+      "stabilityPct": 71,
+      "clusterId": "543e8a6a47",
+      "errorMessage": "Expected URL to contain /dashboard, got /error",
+      "errorStack": "Error: URL\n    at auth.spec.ts:40",
+      "attempts": [
+        {
+          "status": "failed",
+          "duration": 3100
+        }
+      ]
+    },
+    {
+      "id": "t7",
+      "historyId": "hid-catalog-filter",
+      "title": "filters by price",
+      "fullTitle": "Catalog › filters by price",
+      "status": "timedOut",
+      "file": "tests/catalog.spec.ts",
+      "line": 22,
+      "flaky": false,
+      "duration": 30000,
+      "severity": "minor",
+      "failureCategory": "timing",
+      "defectKind": "flake",
+      "stabilityPct": 57,
+      "clusterId": "9748c9e089",
+      "errorMessage": "Test timeout of 30000ms exceeded.",
+      "attempts": [
+        {
+          "status": "timedOut",
+          "duration": 30000
+        }
+      ]
+    }
+  ],
+  "flaky": [
+    {
+      "id": "t2",
+      "historyId": "hid-checkout-coupon",
+      "title": "applies coupon @regression",
+      "fullTitle": "Checkout › applies coupon @regression",
+      "status": "passed",
+      "file": "tests/checkout.spec.ts",
+      "line": 70,
+      "flaky": true,
+      "duration": 1800,
+      "owner": "growth",
+      "severity": "normal",
+      "failureCategory": "assertion",
+      "defectKind": "flake",
+      "stabilityPct": 71,
+      "errorMessage": "Expected discount 10%, got 0%",
+      "attempts": [
+        {
+          "status": "failed",
+          "duration": 900
+        },
+        {
+          "status": "passed",
+          "duration": 900
+        }
+      ]
+    }
+  ],
+  "quarantine": [
+    {
+      "historyId": "hid-auth-logout",
+      "title": "Auth › logs out",
+      "stabilityPct": 0,
+      "reason": "Low stability across runs"
+    },
+    {
+      "historyId": "hid-checkout-pay",
+      "title": "Checkout › pays with valid card @smoke",
+      "stabilityPct": 43,
+      "reason": "Low stability across runs"
+    },
+    {
+      "historyId": "hid-catalog-filter",
+      "title": "Catalog › filters by price",
+      "stabilityPct": 57,
+      "reason": "Low stability across runs"
+    },
+    {
+      "historyId": "hid-checkout-coupon",
+      "title": "Checkout › applies coupon @regression",
+      "stabilityPct": 71,
+      "reason": "Flaky in this run"
+    },
+    {
+      "historyId": "hid-auth-sso",
+      "title": "Auth › SSO redirect @smoke",
+      "stabilityPct": 71,
+      "reason": "Unstable across recent history"
+    }
+  ],
+  "insights": [],
+  "failedRerun": {
+    "command": "npx playwright test \"tests/checkout.spec.ts\" \"tests/auth.spec.ts\" \"tests/catalog.spec.ts\"",
+    "files": [
+      "tests/checkout.spec.ts:42",
+      "tests/auth.spec.ts:33",
+      "tests/catalog.spec.ts:22"
+    ],
+    "count": 3
+  },
+  "agentPrompt": "You are helping fix failing automated tests. Use only the evidence below.\n\n## Run: XREPORT Sample · Dashboard Demo\n- Framework: playwright\n- Summary: 3 passed / 2 failed / 1 flaky / 7 total\n- Branch: main\n\n\n## Top failure clusters (fix root causes, not every test)\n\n### Cluster 75c2e98605 ×1\n- Signature: timeout nms exceeded. waiting for locator('#pay')\n- Category: timing · Defect: flake\n- Likely file: checkout.spec.ts\n- Sample: Timeout 5000ms exceeded.\nwaiting for locator(\"#pay\")\n- Example test: Checkout › pays with valid card @smoke\n- Example location: tests/checkout.spec.ts:42\n```\nError: Timeout\n    at checkout.spec.ts:48\n```\n\n### Cluster 543e8a6a47 ×1\n- Signature: expected url to contain /dashboard, got /error\n- Category: assertion · Defect: flake\n- Likely file: auth.spec.ts\n- Sample: Expected URL to contain /dashboard, got /error\n- Example test: Auth › SSO redirect @smoke\n- Example location: tests/auth.spec.ts:33\n```\nError: URL\n    at auth.spec.ts:40\n```\n\n### Cluster 9748c9e089 ×1\n- Signature: test timeout of nms exceeded.\n- Category: timing · Defect: flake\n- Sample: Test timeout of 30000ms exceeded.\n- Example test: Catalog › filters by price\n- Example location: tests/catalog.spec.ts:22\n\n## Rerun failed\n```\nnpx playwright test \"tests/checkout.spec.ts\" \"tests/auth.spec.ts\" \"tests/catalog.spec.ts\"\n```\n\n## Your task\n1. Identify the highest-impact root cause(s).\n2. Say whether each is product / automation / environment / flake.\n3. Propose concrete code or test changes with file paths.\n4. If evidence is insufficient, say what to inspect next (trace, network, history)."
+}
