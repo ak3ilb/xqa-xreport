@@ -1,0 +1,7 @@
+# XREPORT failed tests (3)
+# Suggested command:
+npx playwright test "tests/checkout.spec.ts" "tests/auth.spec.ts" "tests/catalog.spec.ts"
+
+tests/checkout.spec.ts:42
+tests/auth.spec.ts:33
+tests/catalog.spec.ts:22

@@ -1,0 +1,15 @@
+{
+  "reporter": "../../dist/reporters/mocha.js",
+  "reporterOptions": {
+    "reportTitle": "Mocha XREPORT",
+    "reportDir": "./xreport",
+    "exportCSV": true,
+    "autoOpen": false,
+    "branding": {
+      "projectName": "XREPORT",
+      "companyName": "XQA",
+      "website": "https://xqa.io"
+    }
+  },
+  "spec": ["test/**/*.js"]
+}

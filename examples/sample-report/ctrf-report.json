@@ -1,0 +1,105 @@
+{
+  "results": {
+    "tool": {
+      "name": "xreport"
+    },
+    "summary": {
+      "tests": 7,
+      "passed": 3,
+      "failed": 3,
+      "pending": 0,
+      "skipped": 1,
+      "other": 0,
+      "start": 1784505402133,
+      "stop": 1784505442133
+    },
+    "tests": [
+      {
+        "name": "Checkout › pays with valid card @smoke",
+        "status": "failed",
+        "duration": 4200,
+        "message": "Timeout 5000ms exceeded.\nwaiting for locator(\"#pay\")",
+        "trace": "Error: Timeout\n    at checkout.spec.ts:48",
+        "suite": "Checkout",
+        "filePath": "tests/checkout.spec.ts",
+        "retries": 1,
+        "flaky": false,
+        "rawStatus": "failed"
+      },
+      {
+        "name": "Checkout › applies coupon @regression",
+        "status": "passed",
+        "duration": 1800,
+        "suite": "Checkout",
+        "filePath": "tests/checkout.spec.ts",
+        "retries": 1,
+        "flaky": true,
+        "rawStatus": "passed"
+      },
+      {
+        "name": "Auth › logs in with email @smoke",
+        "status": "passed",
+        "duration": 650,
+        "suite": "Auth",
+        "filePath": "tests/auth.spec.ts",
+        "retries": 0,
+        "flaky": false,
+        "rawStatus": "passed"
+      },
+      {
+        "name": "Auth › SSO redirect @smoke",
+        "status": "failed",
+        "duration": 3100,
+        "message": "Expected URL to contain /dashboard, got /error",
+        "trace": "Error: URL\n    at auth.spec.ts:40",
+        "suite": "Auth",
+        "filePath": "tests/auth.spec.ts",
+        "retries": 0,
+        "flaky": false,
+        "rawStatus": "failed"
+      },
+      {
+        "name": "Auth › logs out",
+        "status": "skipped",
+        "duration": 0,
+        "suite": "Auth",
+        "filePath": "tests/auth.spec.ts",
+        "retries": 0,
+        "flaky": false,
+        "rawStatus": "skipped"
+      },
+      {
+        "name": "Catalog › search returns products",
+        "status": "passed",
+        "duration": 1100,
+        "suite": "Catalog",
+        "filePath": "tests/catalog.spec.ts",
+        "retries": 0,
+        "flaky": false,
+        "rawStatus": "passed"
+      },
+      {
+        "name": "Catalog › filters by price",
+        "status": "failed",
+        "duration": 30000,
+        "message": "Test timeout of 30000ms exceeded.",
+        "suite": "Catalog",
+        "filePath": "tests/catalog.spec.ts",
+        "retries": 0,
+        "flaky": false,
+        "rawStatus": "timedOut"
+      }
+    ],
+    "environment": {
+      "os": "darwin",
+      "node": "v22.4.1",
+      "ci": false,
+      "branch": "main",
+      "browser": "chromium / firefox / webkit",
+      "baseURL": "https://xqa.io/practice",
+      "appName": "XREPORT",
+      "reportBrand": "XREPORT by XQA",
+      "reportWebsite": "https://xqa.io"
+    }
+  }
+}

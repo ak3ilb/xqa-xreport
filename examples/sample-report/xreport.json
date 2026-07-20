@@ -1,0 +1,1795 @@
+{
+  "version": "0.4.0",
+  "generator": "@xqa.io/xreport@0.4.0",
+  "brand": {
+    "name": "XREPORT",
+    "website": "https://xqa.io"
+  },
+  "title": "XREPORT Sample · Dashboard Demo",
+  "framework": "playwright",
+  "startedAt": 1784505402133,
+  "finishedAt": 1784505442133,
+  "duration": 40000,
+  "summary": {
+    "total": 7,
+    "passed": 3,
+    "failed": 2,
+    "skipped": 1,
+    "pending": 0,
+    "timedOut": 1,
+    "flaky": 1,
+    "duration": 40000
+  },
+  "suites": [
+    {
+      "id": "suite-checkout",
+      "title": "Checkout",
+      "file": "tests/checkout.spec.ts",
+      "suites": [],
+      "tests": [
+        {
+          "id": "t1",
+          "historyId": "hid-checkout-pay",
+          "title": "pays with valid card @smoke",
+          "fullTitle": "Checkout › pays with valid card @smoke",
+          "status": "failed",
+          "flaky": false,
+          "duration": 4200,
+          "file": "tests/checkout.spec.ts",
+          "line": 42,
+          "project": "chromium",
+          "tags": [
+            "@smoke",
+            "@payments",
+            "@checkout"
+          ],
+          "attempts": [
+            {
+              "status": "failed",
+              "duration": 2100,
+              "errors": [
+                {
+                  "message": "Timeout 5000ms exceeded.\nwaiting for locator(\"#pay\")",
+                  "stack": "Error: Timeout\n    at checkout.spec.ts:48"
+                }
+              ],
+              "startedAt": 1784505430133
+            },
+            {
+              "status": "failed",
+              "duration": 2100,
+              "errors": [
+                {
+                  "message": "Timeout 5000ms exceeded.\nwaiting for locator(\"#pay\")",
+                  "stack": "Error: Timeout\n    at checkout.spec.ts:48"
+                }
+              ],
+              "startedAt": 1784505433133
+            }
+          ],
+          "steps": [
+            {
+              "title": "Navigate to /checkout",
+              "status": "passed",
+              "duration": 320,
+              "category": "test.step",
+              "slow": false
+            },
+            {
+              "title": "Fill shipping form",
+              "status": "passed",
+              "duration": 890,
+              "category": "test.step",
+              "steps": [
+                {
+                  "title": "Fill name",
+                  "status": "passed",
+                  "duration": 120,
+                  "category": "pw:api",
+                  "slow": false
+                },
+                {
+                  "title": "Fill address",
+                  "status": "passed",
+                  "duration": 210,
+                  "category": "pw:api",
+                  "slow": false
+                },
+                {
+                  "title": "Select country",
+                  "status": "passed",
+                  "duration": 180,
+                  "category": "pw:api",
+                  "slow": false
+                }
+              ],
+              "slow": false
+            },
+            {
+              "title": "Complete payment",
+              "status": "failed",
+              "duration": 5000,
+              "category": "test.step",
+              "slow": true,
+              "steps": [
+                {
+                  "title": "Enter card",
+                  "status": "passed",
+                  "duration": 240,
+                  "category": "pw:api",
+                  "slow": false
+                },
+                {
+                  "title": "Click Pay",
+                  "status": "failed",
+                  "duration": 4600,
+                  "category": "pw:api",
+                  "error": {
+                    "message": "Timeout waiting for #pay"
+                  },
+                  "slow": true
+                }
+              ]
+            }
+          ],
+          "errors": [
+            {
+              "message": "Timeout 5000ms exceeded.\nwaiting for locator(\"#pay\")",
+              "stack": "Error: Timeout\n    at checkout.spec.ts:48"
+            },
+            {
+              "message": "expect(received).toBeVisible()\nReceived element is not visible: #confirm",
+              "stack": "Error: expect(received).toBeVisible()\n    at checkout.spec.ts:52"
+            }
+          ],
+          "attachments": [
+            {
+              "id": "att-failure.png",
+              "name": "failure.png",
+              "type": "screenshot",
+              "contentType": "image/png",
+              "body": "data:image/png;base64,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"
+            },
+            {
+              "id": "att-expected.png",
+              "name": "expected.png",
+              "type": "diff",
+              "contentType": "image/png",
+              "body": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAC0CAIAAABqhmJGAAAHNklEQVR42u3T1w3oNgIF0VeEYYkUJUoiqdCKwwZvcNi1NzgV5kbdAufLj8BcnAouMB8+cc4Nuw9e4JwBO+f+0IA//e2zHhM0QwGK0AIlaIU2KEM7dEAnVKAKNeiCbuiB3j4GbMAGbMAGbMAG/NEE/HmPCZqhAEVogRK0QhuUoR06oBMqUIUadEE39EBvHwM2YAM2YAM2YAM2YAM2YAM2YAM2YAM2YAM24DED/qLHBM1QgCK0QAlaoQ3K0A4d0AkVqEINuqAbeqC3jwEbsAEbsAEbsAEbsAEbsAEbsAEbsAEbsAEb8JgBf9ljgmYoQBFaoASt0AZlaIcO6IQKVKEGXdANPdDbx4AN2IAN2IAN2IAN2IAN2IAN2IAN2IAN2IANeMyA/9RjgmYoQBFaoASt0AZlaIcO6IQKVKEGXdANPdDbx4AN2IAN2IAN2IAN2IAN2IAN2IAN2IAN2IANeMyA/9xjgmYoQBFaoASt0AZlaIcO6IQKVKEGXdANPdDbx4AN2IAN2IAN2IAN2IAN2IAN2IAN2IAN2IANeMyA/9JjgmYoQBFaoASt0AZlaIcO6IQKVKEGXdANPdDbx4AN2IAN2IAN2IAN2IAN2IAN2IAN2IAN2IANeMyA/9pjgmYoQBFaoASt0AZlaIcO6IQKVKEGXdANPdDbx4AN2IAN2IAN2IAN2IAN2IAN2IAN2IAN2IANeMyAv+oxQTMUoAgtUIJWaIMytEMHdEIFqlCDLuiGHujtY8AGbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMAGPGbAf+sxQTMUoAgtUIJWaIMytEMHdEIFqlCDLuiGHujtY8AGbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMAGPGbAf+8xQTMUoAgtUIJWaIMytEMHdEIFqlCDLuiGHujtY8AGbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMAGPGbA/+gxQTMUoAgtUIJWaIMytEMHdEIFqlCDLuiGHujtY8AGbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMAGPGbA/+wxQTMUoAgtUIJWaIMytEMHdEIFqlCDLuiGHujtY8AGbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMAGPGbAX/eYoBkKUIQWKEErtEEZ2qEDOqECVahBF3RDD/T2MWADNmADNmADNmADNmADNmADNmADNmADNmADHjPgb3pM0AwFKEILlKAV2qAM7dABnVCBKtSgC7qhB3r7GLABG7ABG7ABG7ABG7ABG7ABG7ABG7ABG7ABjxnwtz0maIYCFKEFStAKbVCGduiATqhAFWrQBd3QA719DNiADdiADdiADdiADdiADdiADdiADdiADdiAxwz4ux4TNEMBitACJWiFNihDO3RAJ1SgCjXogm7ogd4+BmzABmzABmzABmzABmzABmzABmzABmzABmzAYwb8rx4TNEMBitACJWiFNihDO3RAJ1SgCjXogm7ogd4+BmzABmzABmzABmzABmzABmzABmzABmzABmzAYwb87x4TNEMBitACJWiFNihDO3RAJ1SgCjXogm7ogd4+BmzABmzABmzABmzABmzABmzABmzABmzABmzAYwb8fY8JmqEARWiBErRCG5ShHTqgEypQhRp0QTf0QG8fAzZgAzZgAzZgAzZgAzZgAzZgAzZgAzZgAzbgMQP+occEzVCAIrRACVqhDcrQDh3QCRWoQg26oBt6oLePARuwARuwARuwARuwARuwARuwARuwARuwARvwmAH/p8cEzVCAIrRACVqhDcrQDh3QCRWoQg26oBt6oLePARuwARuwARuwARuwARuwARuwARuwARuwARvwmAH/t8cEzVCAIrRACVqhDcrQDh3QCRWoQg26oBt6oLePARuwARuwARuwARuwARuwARuwARuwARuwARvwmAH/r8cEzVCAIrRACVqhDcrQDh3QCRWoQg26oBt6oLePARuwARuwARuwARuwARuwARuwARuwARuwARvwmAH/v8cEzVCAIrRACVqhDcrQDh3QCRWoQg26oBt6oLePARuwARuwARuwARuwARuwARuwARuwARuwARvwmAH/2GOCZihAEVqgBK3QBmVohw7ohApUoQZd0A090NvHgA3YgA3YgA3YgA3YgA3YgA3YgA3YgA3YgA14zIB/6jFBMxSgCC1QglZogzK0Qwd0QgWqUIMu6IYe6O1jwAZswAZswAZswAZswAZswAZswAZswAZswAY8ZsA/95igGQpQhBYoQSu0QRnaoQM6oQJVqEEXdEMP9PYxYAM2YAM2YAM2YAM2YAM2YAM2YAM2YAM2YAMeM+BfekzQDAUoQguUoBXaoAzt0AGdUIEq1KALuqEHevsYsAEbsAEbsAEbsAEbsAEbsAEbsAEbsAEbsAGPGfCvPSZohgIUoQVK0AptUIZ26IBOqEAVatAF3dADvX0M2IAN2IAN2IAN+CMJ2Dk33AzYOQN2zv0R+x1ZnLMHILQ23gAAAABJRU5ErkJggg=="
+            },
+            {
+              "id": "att-actual.png",
+              "name": "actual.png",
+              "type": "diff",
+              "contentType": "image/png",
+              "body": "data:image/png;base64,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"
+            },
+            {
+              "id": "net1",
+              "name": "network.har",
+              "type": "network",
+              "contentType": "application/json",
+              "body": "{\n  \"log\": {\n    \"entries\": [\n      {\n        \"request\": {\n          \"url\": \"/api/pay\",\n          \"method\": \"POST\"\n        },\n        \"response\": {\n          \"status\": 500\n        }\n      }\n    ]\n  }\n}"
+            },
+            {
+              "id": "dom1",
+              "name": "page.dom.html",
+              "type": "dom",
+              "contentType": "text/html",
+              "body": "<html><body><button id=\"pay\">Pay</button><div class=\"error\">Payment gateway timeout</div></body></html>"
+            }
+          ],
+          "annotations": [
+            {
+              "type": "owner",
+              "description": "payments-team"
+            },
+            {
+              "type": "severity",
+              "description": "critical"
+            },
+            {
+              "type": "tag",
+              "description": "checkout"
+            },
+            {
+              "type": "jira",
+              "description": "PAY-1204"
+            }
+          ],
+          "stdout": "[checkout] starting payment flow\n[checkout] card tokenized\n",
+          "stderr": "WARN: slow network simulated\n",
+          "logs": [
+            {
+              "type": "stdout",
+              "text": "[checkout] starting payment flow\n[checkout] card tokenized\n"
+            },
+            {
+              "type": "stderr",
+              "text": "WARN: slow network simulated\n"
+            }
+          ],
+          "owner": "payments-team",
+          "severity": "critical",
+          "labels": {
+            "jira": "PAY-1204"
+          },
+          "hooks": [
+            {
+              "title": "beforeEach: login",
+              "type": "beforeEach",
+              "status": "passed",
+              "duration": 210
+            },
+            {
+              "title": "afterEach: cleanup",
+              "type": "afterEach",
+              "status": "passed",
+              "duration": 40
+            }
+          ],
+          "workerIndex": 0,
+          "startTime": 1784505430133,
+          "retries": 1,
+          "errorSignature": "timeout nms exceeded. waiting for locator(\"#pay\")",
+          "clusterId": "951fa440f6",
+          "failureCategory": "timing",
+          "stabilityPct": 43,
+          "testHistory": [
+            {
+              "date": 1784419042133,
+              "status": "failed",
+              "duration": 4000
+            },
+            {
+              "date": 1784332642133,
+              "status": "failed",
+              "duration": 4000
+            },
+            {
+              "date": 1784246242133,
+              "status": "failed",
+              "duration": 4000
+            },
+            {
+              "date": 1784159842133,
+              "status": "passed",
+              "duration": 4000
+            },
+            {
+              "date": 1784073442133,
+              "status": "passed",
+              "duration": 4000
+            },
+            {
+              "date": 1783987042133,
+              "status": "passed",
+              "duration": 4000
+            }
+          ],
+          "regression": false
+        },
+        {
+          "id": "t2",
+          "historyId": "hid-checkout-coupon",
+          "title": "applies coupon @regression",
+          "fullTitle": "Checkout › applies coupon @regression",
+          "status": "passed",
+          "flaky": true,
+          "duration": 1800,
+          "file": "tests/checkout.spec.ts",
+          "line": 70,
+          "project": "chromium",
+          "tags": [
+            "@regression"
+          ],
+          "attempts": [
+            {
+              "status": "failed",
+              "duration": 900,
+              "errors": [
+                {
+                  "message": "Expected discount 10%, got 0%"
+                }
+              ],
+              "startedAt": 1784505434133
+            },
+            {
+              "status": "passed",
+              "duration": 900,
+              "errors": [],
+              "startedAt": 1784505435133
+            }
+          ],
+          "steps": [
+            {
+              "title": "Open cart",
+              "status": "passed",
+              "duration": 200,
+              "slow": false
+            },
+            {
+              "title": "Apply SAVE10",
+              "status": "passed",
+              "duration": 400,
+              "slow": false
+            }
+          ],
+          "errors": [],
+          "attachments": [
+            {
+              "id": "att-coupon.png",
+              "name": "coupon.png",
+              "type": "screenshot",
+              "contentType": "image/png",
+              "body": "data:image/png;base64,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"
+            }
+          ],
+          "annotations": [
+            {
+              "type": "owner",
+              "description": "growth"
+            },
+            {
+              "type": "severity",
+              "description": "normal"
+            }
+          ],
+          "owner": "growth",
+          "severity": "normal",
+          "workerIndex": 0,
+          "startTime": 1784505434133,
+          "retries": 1,
+          "stdout": "coupon applied\n",
+          "errorSignature": "expected discount n%, got n%",
+          "labels": {},
+          "failureCategory": "assertion",
+          "stabilityPct": 71,
+          "testHistory": [
+            {
+              "date": 1784419042133,
+              "status": "passed",
+              "duration": 1800
+            },
+            {
+              "date": 1784332642133,
+              "status": "passed",
+              "duration": 1800
+            },
+            {
+              "date": 1784246242133,
+              "status": "failed",
+              "duration": 1800
+            },
+            {
+              "date": 1784159842133,
+              "status": "passed",
+              "duration": 1800
+            },
+            {
+              "date": 1784073442133,
+              "status": "passed",
+              "duration": 1800
+            },
+            {
+              "date": 1783987042133,
+              "status": "failed",
+              "duration": 1800
+            }
+          ],
+          "regression": false
+        }
+      ]
+    },
+    {
+      "id": "suite-auth",
+      "title": "Auth",
+      "file": "tests/auth.spec.ts",
+      "suites": [],
+      "tests": [
+        {
+          "id": "t3",
+          "historyId": "hid-auth-login",
+          "title": "logs in with email @smoke",
+          "fullTitle": "Auth › logs in with email @smoke",
+          "status": "passed",
+          "flaky": false,
+          "duration": 650,
+          "file": "tests/auth.spec.ts",
+          "line": 12,
+          "project": "firefox",
+          "tags": [
+            "@smoke"
+          ],
+          "attempts": [
+            {
+              "status": "passed",
+              "duration": 650,
+              "errors": [],
+              "startedAt": 1784505436133
+            }
+          ],
+          "steps": [
+            {
+              "title": "Goto /login",
+              "status": "passed",
+              "duration": 120,
+              "slow": false
+            },
+            {
+              "title": "Submit credentials",
+              "status": "passed",
+              "duration": 400,
+              "slow": false
+            }
+          ],
+          "errors": [],
+          "attachments": [],
+          "annotations": [
+            {
+              "type": "owner",
+              "description": "identity"
+            }
+          ],
+          "owner": "identity",
+          "severity": "critical",
+          "workerIndex": 1,
+          "startTime": 1784505436133,
+          "retries": 0,
+          "labels": {},
+          "stabilityPct": 100,
+          "testHistory": [
+            {
+              "date": 1784419042133,
+              "status": "passed",
+              "duration": 650
+            },
+            {
+              "date": 1784332642133,
+              "status": "passed",
+              "duration": 650
+            },
+            {
+              "date": 1784246242133,
+              "status": "passed",
+              "duration": 650
+            },
+            {
+              "date": 1784159842133,
+              "status": "passed",
+              "duration": 650
+            },
+            {
+              "date": 1784073442133,
+              "status": "passed",
+              "duration": 650
+            },
+            {
+              "date": 1783987042133,
+              "status": "passed",
+              "duration": 650
+            }
+          ],
+          "regression": false
+        },
+        {
+          "id": "t4",
+          "historyId": "hid-auth-sso",
+          "title": "SSO redirect @smoke",
+          "fullTitle": "Auth › SSO redirect @smoke",
+          "status": "failed",
+          "flaky": false,
+          "duration": 3100,
+          "file": "tests/auth.spec.ts",
+          "line": 33,
+          "project": "firefox",
+          "tags": [
+            "@smoke",
+            "@sso"
+          ],
+          "attempts": [
+            {
+              "status": "failed",
+              "duration": 3100,
+              "errors": [
+                {
+                  "message": "Expected URL to contain /dashboard, got /error",
+                  "stack": "Error: URL\n    at auth.spec.ts:40"
+                }
+              ],
+              "startedAt": 1784505437133
+            }
+          ],
+          "steps": [
+            {
+              "title": "Click Continue with Google",
+              "status": "passed",
+              "duration": 180,
+              "slow": false
+            },
+            {
+              "title": "Wait for redirect",
+              "status": "failed",
+              "duration": 2800,
+              "error": {
+                "message": "Wrong URL"
+              },
+              "slow": true
+            }
+          ],
+          "errors": [
+            {
+              "message": "Expected URL to contain /dashboard, got /error",
+              "stack": "Error: URL\n    at auth.spec.ts:40"
+            }
+          ],
+          "attachments": [
+            {
+              "id": "att-sso-fail.png",
+              "name": "sso-fail.png",
+              "type": "screenshot",
+              "contentType": "image/png",
+              "body": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAC0CAIAAABqhmJGAAAHNUlEQVR42u3T6RHAtAEFYYpIDRCucCQcSbjpvwMsH7IsWbbsFmhB+ws0s2++Ct7MfvAP59yw+8ALnDNg59xfGvAfH37YY4ICNEMLtEIbFKEdStABZahAJ1ShC7qhBj3Q28eADdiADdiADdiA/zYBf9RjggI0Qwu0QhsUoR1K0AFlqEAnVKELuqEGPdDbx4AN2IAN2IAN2IAN2IAN2IAN2IAN2IAN2IANeMyA/9ljggI0Qwu0QhsUoR1K0AFlqEAnVKELuqEGPdDbx4AN2IAN2IAN2IAN2IAN2IAN2IAN2IAN2IANeMyAP+4xQQGaoQVaoQ2K0A4l6IAyVKATqtAF3VCDHujtY8AGbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMAGPGbAn/SYoADN0AKt0AZFaIcSdEAZKtAJVeiCbqhBD/T2MWADNmADNmADNmADNmADNmADNmADNmADNmADHjPgT3tMUIBmaIFWaIMitEMJOqAMFeiEKnRBN9SgB3r7GLABG7ABG7ABG7ABG7ABG7ABG7ABG7ABG7ABjxnwZz0mKEAztEArtEER2qEEHVCGCnRCFbqgG2rQA719DNiADdiADdiADdiADdiADdiADdiADdiADdiAxwz48x4TFKAZWqAV2qAI7VCCDihDBTqhCl3QDTXogd4+BmzABmzABmzABmzABmzABmzABmzABmzABmzAYwb8rx4TFKAZWqAV2qAI7VCCDihDBTqhCl3QDTXogd4+BmzABmzABmzABmzABmzABmzABmzABmzABmzAYwb8RY8JCtAMLdAKbVCEdihBB5ShAp1QhS7ohhr0QG8fAzZgAzZgAzZgAzZgAzZgAzZgAzZgAzZgAzbgMQP+sscEBWiGFmiFNihCO5SgA8pQgU6oQhd0Qw16oLePARuwARuwARuwARuwARuwARuwARuwARuwARvwmAF/1WOCAjRDC7RCGxShHUrQAWWoQCdUoQu6oQY90NvHgA3YgA3YgA3YgA3YgA3YgA3YgA3YgA3YgA14zIC/7jFBAZqhBVqhDYrQDiXogDJUoBOq0AXdUIMe6O1jwAZswAZswAZswAZswAZswAZswAZswAZswAY8ZsD/7jFBAZqhBVqhDYrQDiXogDJUoBOq0AXdUIMe6O1jwAZswAZswAZswAZswAZswAZswAZswAZswAY8ZsD/6TFBAZqhBVqhDYrQDiXogDJUoBOq0AXdUIMe6O1jwAZswAZswAZswAZswAZswAZswAZswAZswAY8ZsDf9JigAM3QAq3QBkVohxJ0QBkq0AlV6IJuqEEP9PYxYAM2YAM2YAM2YAM2YAM2YAM2YAM2YAM2YAMeM+Bve0xQgGZogVZogyK0Qwk6oAwV6IQqdEE31KAHevsYsAEbsAEbsAEbsAEbsAEbsAEbsAEbsAEbsAGPGfB3PSYoQDO0QCu0QRHaoQQdUIYKdEIVuqAbatADvX0M2IAN2IAN2IAN2IAN2IAN2IAN2IAN2IAN2IDHDPj7HhMUoBlaoBXaoAjtUIIOKEMFOqEKXdANNeiB3j4GbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMBjBvzfHhMUoBlaoBXaoAjtUIIOKEMFOqEKXdANNeiB3j4GbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMBjBvy/HhMUoBlaoBXaoAjtUIIOKEMFOqEKXdANNeiB3j4GbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMBjBvz/HhMUoBlaoBXaoAjtUIIOKEMFOqEKXdANNeiB3j4GbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMAGbMBjBvxDjwkK0Awt0AptUIR2KEEHlKECnVCFLuiGGvRAbx8DNmADNmADNmADNmADNmADNmADNmADNmADNuAxA/6xxwQFaIYWaIU2KEI7lKADylCBTqhCF3RDDXqgt48BG7ABG7ABG7ABG7ABG7ABG7ABG7ABG7ABG/CYAf/UY4ICNEMLtEIbFKEdStABZahAJ1ShC7qhBj3Q28eADdiADdiADdiADdiADdiADdiADdiADdiADXjMgH/uMUEBmqEFWqENitAOJeiAMlSgE6rQBd1Qgx7o7WPABmzABmzABmzABmzABmzABmzABmzABmzABjxmwL/0mKAAzdACrdAGRWiHEnRAGSrQCVXogm6oQQ/09jFgAzZgAzZgAzZgAzZgAzZgAzZgAzZgAzZgAx4z4F97TFCAZmiBVmiDIrRDCTqgDBXohCp0QTfUoAd6+xiwARuwARuwARuwARuwARuwARuwARuwARuwAY8Z8G89JihAM7RAK7RBEdqhBB1Qhgp0QhW6oBtq0AO9fQzYgA3YgA3YgA3YgA3YgA3YgA3YgA3YgA3YgMcM+PceExSgGVqgFdqgCO1Qgg4oQwU6oQpd0A016IHePgZswAZswAZswAb8NwnYOTfcDNg5A3bO/RX7Ew+cjXT2K7JMAAAAAElFTkSuQmCC"
+            },
+            {
+              "id": "tr1",
+              "name": "trace",
+              "type": "trace",
+              "path": "trace.zip"
+            }
+          ],
+          "annotations": [
+            {
+              "type": "owner",
+              "description": "identity"
+            },
+            {
+              "type": "severity",
+              "description": "blocker"
+            },
+            {
+              "type": "jira",
+              "description": "ID-88"
+            }
+          ],
+          "owner": "identity",
+          "severity": "blocker",
+          "labels": {
+            "jira": "ID-88"
+          },
+          "hooks": [
+            {
+              "title": "beforeAll: seed users",
+              "type": "beforeAll",
+              "status": "passed",
+              "duration": 90
+            }
+          ],
+          "workerIndex": 1,
+          "startTime": 1784505437133,
+          "retries": 0,
+          "stderr": "oauth provider returned 502\n",
+          "errorSignature": "expected url to contain /dashboard, got /error",
+          "clusterId": "543e8a6a47",
+          "failureCategory": "assertion",
+          "stabilityPct": 71,
+          "testHistory": [
+            {
+              "date": 1784419042133,
+              "status": "failed",
+              "duration": 3000
+            },
+            {
+              "date": 1784332642133,
+              "status": "passed",
+              "duration": 3000
+            },
+            {
+              "date": 1784246242133,
+              "status": "passed",
+              "duration": 3000
+            },
+            {
+              "date": 1784159842133,
+              "status": "passed",
+              "duration": 3000
+            },
+            {
+              "date": 1784073442133,
+              "status": "passed",
+              "duration": 3000
+            },
+            {
+              "date": 1783987042133,
+              "status": "passed",
+              "duration": 3000
+            }
+          ],
+          "regression": true
+        },
+        {
+          "id": "t5",
+          "historyId": "hid-auth-logout",
+          "title": "logs out",
+          "fullTitle": "Auth › logs out",
+          "status": "skipped",
+          "flaky": false,
+          "duration": 0,
+          "file": "tests/auth.spec.ts",
+          "line": 55,
+          "project": "webkit",
+          "tags": [],
+          "attempts": [
+            {
+              "status": "skipped",
+              "duration": 0,
+              "errors": []
+            }
+          ],
+          "steps": [],
+          "errors": [],
+          "attachments": [],
+          "annotations": [],
+          "workerIndex": 2,
+          "startTime": 1784505440133,
+          "retries": 0,
+          "labels": {},
+          "stabilityPct": 0,
+          "testHistory": [
+            {
+              "date": 1784419042133,
+              "status": "skipped",
+              "duration": 0
+            },
+            {
+              "date": 1784332642133,
+              "status": "skipped",
+              "duration": 0
+            },
+            {
+              "date": 1784246242133,
+              "status": "skipped",
+              "duration": 0
+            },
+            {
+              "date": 1784159842133,
+              "status": "skipped",
+              "duration": 0
+            },
+            {
+              "date": 1784073442133,
+              "status": "skipped",
+              "duration": 0
+            },
+            {
+              "date": 1783987042133,
+              "status": "skipped",
+              "duration": 0
+            }
+          ],
+          "regression": false
+        }
+      ]
+    },
+    {
+      "id": "suite-catalog",
+      "title": "Catalog",
+      "file": "tests/catalog.spec.ts",
+      "suites": [],
+      "tests": [
+        {
+          "id": "t6",
+          "historyId": "hid-catalog-search",
+          "title": "search returns products",
+          "fullTitle": "Catalog › search returns products",
+          "status": "passed",
+          "flaky": false,
+          "duration": 1100,
+          "file": "tests/catalog.spec.ts",
+          "line": 8,
+          "project": "chromium",
+          "tags": [
+            "@catalog"
+          ],
+          "attempts": [
+            {
+              "status": "passed",
+              "duration": 1100,
+              "errors": [],
+              "startedAt": 1784505438133
+            }
+          ],
+          "steps": [
+            {
+              "title": "Type query",
+              "status": "passed",
+              "duration": 300,
+              "slow": false
+            }
+          ],
+          "errors": [],
+          "attachments": [],
+          "annotations": [],
+          "workerIndex": 0,
+          "startTime": 1784505438133,
+          "retries": 0,
+          "coverageSummary": {
+            "lines": 82,
+            "statements": 80,
+            "branches": 71,
+            "functions": 85
+          },
+          "labels": {},
+          "stabilityPct": 100,
+          "testHistory": [
+            {
+              "date": 1784419042133,
+              "status": "passed",
+              "duration": 1100
+            },
+            {
+              "date": 1784332642133,
+              "status": "passed",
+              "duration": 1100
+            },
+            {
+              "date": 1784246242133,
+              "status": "passed",
+              "duration": 1100
+            },
+            {
+              "date": 1784159842133,
+              "status": "passed",
+              "duration": 1100
+            },
+            {
+              "date": 1784073442133,
+              "status": "passed",
+              "duration": 1100
+            },
+            {
+              "date": 1783987042133,
+              "status": "passed",
+              "duration": 1100
+            }
+          ],
+          "regression": false
+        },
+        {
+          "id": "t7",
+          "historyId": "hid-catalog-filter",
+          "title": "filters by price",
+          "fullTitle": "Catalog › filters by price",
+          "status": "timedOut",
+          "flaky": false,
+          "duration": 30000,
+          "file": "tests/catalog.spec.ts",
+          "line": 22,
+          "project": "webkit",
+          "tags": [
+            "@catalog"
+          ],
+          "attempts": [
+            {
+              "status": "timedOut",
+              "duration": 30000,
+              "errors": [
+                {
+                  "message": "Test timeout of 30000ms exceeded."
+                }
+              ],
+              "startedAt": 1784505407133
+            }
+          ],
+          "steps": [
+            {
+              "title": "Open filters",
+              "status": "passed",
+              "duration": 200,
+              "slow": false
+            },
+            {
+              "title": "Drag price slider",
+              "status": "timedOut",
+              "duration": 29800,
+              "slow": true
+            }
+          ],
+          "errors": [
+            {
+              "message": "Test timeout of 30000ms exceeded."
+            }
+          ],
+          "attachments": [
+            {
+              "id": "att-timeout.png",
+              "name": "timeout.png",
+              "type": "screenshot",
+              "contentType": "image/png",
+              "body": "data:image/png;base64,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"
+            }
+          ],
+          "annotations": [
+            {
+              "type": "severity",
+              "description": "minor"
+            }
+          ],
+          "severity": "minor",
+          "workerIndex": 2,
+          "startTime": 1784505407133,
+          "retries": 0,
+          "stdout": "filter panel opened\n",
+          "errorSignature": "test timeout of nms exceeded.",
+          "clusterId": "9748c9e089",
+          "labels": {},
+          "failureCategory": "timing",
+          "stabilityPct": 57,
+          "testHistory": [
+            {
+              "date": 1784419042133,
+              "status": "timedOut",
+              "duration": 28000
+            },
+            {
+              "date": 1784332642133,
+              "status": "timedOut",
+              "duration": 28000
+            },
+            {
+              "date": 1784246242133,
+              "status": "passed",
+              "duration": 28000
+            },
+            {
+              "date": 1784159842133,
+              "status": "passed",
+              "duration": 28000
+            },
+            {
+              "date": 1784073442133,
+              "status": "passed",
+              "duration": 28000
+            },
+            {
+              "date": 1783987042133,
+              "status": "passed",
+              "duration": 28000
+            }
+          ],
+          "regression": false
+        }
+      ]
+    }
+  ],
+  "environment": {
+    "os": "darwin",
+    "node": "v22.4.1",
+    "ci": false,
+    "branch": "main",
+    "browser": "chromium / firefox / webkit",
+    "baseURL": "https://xqa.io/practice"
+  },
+  "branding": {
+    "projectName": "XREPORT",
+    "companyName": "XQA",
+    "accentColor": "#0071E3",
+    "headerColor": "#FFFFFF",
+    "website": "https://xqa.io"
+  },
+  "options": {
+    "reportDir": "/Users/tgnationwide/Documents/Bit_Bucket_project/XReport/examples/sample-report",
+    "reportTitle": "XREPORT Sample · Dashboard Demo",
+    "reportFilename": "index",
+    "autoOpen": false,
+    "exportCSV": true,
+    "exportPDF": false,
+    "exportCtrf": true,
+    "saveJson": true,
+    "saveHtml": true,
+    "branding": {
+      "projectName": "XREPORT",
+      "companyName": "XQA",
+      "accentColor": "#0071E3",
+      "headerColor": "#FFFFFF",
+      "website": "https://xqa.io"
+    },
+    "showHooks": "failed",
+    "groupByFile": true,
+    "reportStrategy": "unified",
+    "quiet": false,
+    "charts": true,
+    "enableHistory": true,
+    "inlineAssets": false,
+    "historyOptions": {
+      "enabled": true,
+      "dbPath": "/Users/tgnationwide/Documents/Bit_Bucket_project/XReport/.xreport/history.json",
+      "maxRecords": 100,
+      "retentionDays": 30,
+      "autoCleanup": true,
+      "saveFullResults": true
+    }
+  },
+  "coverageSummary": {
+    "lines": 82,
+    "statements": 80,
+    "branches": 71,
+    "functions": 85
+  },
+  "analytics": {
+    "slowest": [
+      {
+        "historyId": "hid-catalog-filter",
+        "title": "Catalog › filters by price",
+        "duration": 30000,
+        "status": "timedOut"
+      },
+      {
+        "historyId": "hid-checkout-pay",
+        "title": "Checkout › pays with valid card @smoke",
+        "duration": 4200,
+        "status": "failed"
+      },
+      {
+        "historyId": "hid-auth-sso",
+        "title": "Auth › SSO redirect @smoke",
+        "duration": 3100,
+        "status": "failed"
+      },
+      {
+        "historyId": "hid-checkout-coupon",
+        "title": "Checkout › applies coupon @regression",
+        "duration": 1800,
+        "status": "passed"
+      },
+      {
+        "historyId": "hid-catalog-search",
+        "title": "Catalog › search returns products",
+        "duration": 1100,
+        "status": "passed"
+      },
+      {
+        "historyId": "hid-auth-login",
+        "title": "Auth › logs in with email @smoke",
+        "duration": 650,
+        "status": "passed"
+      },
+      {
+        "historyId": "hid-auth-logout",
+        "title": "Auth › logs out",
+        "duration": 0,
+        "status": "skipped"
+      }
+    ],
+    "byFile": [
+      {
+        "file": "tests/auth.spec.ts",
+        "total": 3,
+        "passed": 1,
+        "failed": 1,
+        "flaky": 0
+      },
+      {
+        "file": "tests/checkout.spec.ts",
+        "total": 2,
+        "passed": 1,
+        "failed": 1,
+        "flaky": 1
+      },
+      {
+        "file": "tests/catalog.spec.ts",
+        "total": 2,
+        "passed": 1,
+        "failed": 1,
+        "flaky": 0
+      }
+    ],
+    "tagHealth": [
+      {
+        "tag": "@payments",
+        "total": 1,
+        "passed": 0,
+        "failed": 1,
+        "passRate": 0
+      },
+      {
+        "tag": "@checkout",
+        "total": 1,
+        "passed": 0,
+        "failed": 1,
+        "passRate": 0
+      },
+      {
+        "tag": "@sso",
+        "total": 1,
+        "passed": 0,
+        "failed": 1,
+        "passRate": 0
+      },
+      {
+        "tag": "@smoke",
+        "total": 3,
+        "passed": 1,
+        "failed": 2,
+        "passRate": 33
+      },
+      {
+        "tag": "@catalog",
+        "total": 2,
+        "passed": 1,
+        "failed": 1,
+        "passRate": 50
+      },
+      {
+        "tag": "@regression",
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "passRate": 100
+      }
+    ],
+    "clusters": [
+      {
+        "id": "951fa440f6",
+        "signature": "timeout nms exceeded. waiting for locator(\"#pay\")",
+        "count": 1,
+        "sample": "Timeout 5000ms exceeded.\nwaiting for locator(\"#pay\")",
+        "testIds": [
+          "t1"
+        ],
+        "category": "timing"
+      },
+      {
+        "id": "543e8a6a47",
+        "signature": "expected url to contain /dashboard, got /error",
+        "count": 1,
+        "sample": "Expected URL to contain /dashboard, got /error",
+        "testIds": [
+          "t4"
+        ],
+        "category": "assertion"
+      },
+      {
+        "id": "9748c9e089",
+        "signature": "test timeout of nms exceeded.",
+        "count": 1,
+        "sample": "Test timeout of 30000ms exceeded.",
+        "testIds": [
+          "t7"
+        ],
+        "category": "timing"
+      }
+    ],
+    "regressions": [
+      {
+        "historyId": "hid-auth-sso",
+        "title": "Auth › SSO redirect @smoke"
+      }
+    ],
+    "byProject": [
+      {
+        "project": "chromium",
+        "total": 3,
+        "passed": 2,
+        "failed": 1,
+        "flaky": 1,
+        "skipped": 0
+      },
+      {
+        "project": "firefox",
+        "total": 2,
+        "passed": 1,
+        "failed": 1,
+        "flaky": 0,
+        "skipped": 0
+      },
+      {
+        "project": "webkit",
+        "total": 2,
+        "passed": 0,
+        "failed": 1,
+        "flaky": 0,
+        "skipped": 1
+      }
+    ],
+    "delta": {
+      "total": 0,
+      "passed": -2,
+      "failed": 1,
+      "flaky": 1,
+      "duration": 0
+    },
+    "stabilityGrade": "F",
+    "stabilityScore": 37,
+    "historyTrend": [
+      {
+        "date": 1783987042133,
+        "passRate": 57,
+        "failed": 1,
+        "total": 7,
+        "duration": 45000
+      },
+      {
+        "date": 1784073442133,
+        "passRate": 71,
+        "failed": 2,
+        "total": 7,
+        "duration": 44000
+      },
+      {
+        "date": 1784159842133,
+        "passRate": 57,
+        "failed": 1,
+        "total": 7,
+        "duration": 43000
+      },
+      {
+        "date": 1784246242133,
+        "passRate": 71,
+        "failed": 2,
+        "total": 7,
+        "duration": 42000
+      },
+      {
+        "date": 1784332642133,
+        "passRate": 57,
+        "failed": 1,
+        "total": 7,
+        "duration": 41000
+      },
+      {
+        "date": 1784419042133,
+        "passRate": 71,
+        "failed": 2,
+        "total": 7,
+        "duration": 40000
+      }
+    ],
+    "coverage": {
+      "lines": 82,
+      "statements": 80,
+      "branches": 71,
+      "functions": 85
+    },
+    "byCategory": [
+      {
+        "category": "timing",
+        "count": 2
+      },
+      {
+        "category": "assertion",
+        "count": 2
+      }
+    ],
+    "quarantine": [
+      {
+        "historyId": "hid-auth-logout",
+        "title": "Auth › logs out",
+        "stabilityPct": 0,
+        "reason": "Low stability across runs"
+      },
+      {
+        "historyId": "hid-checkout-pay",
+        "title": "Checkout › pays with valid card @smoke",
+        "stabilityPct": 43,
+        "category": "timing",
+        "reason": "Low stability across runs"
+      },
+      {
+        "historyId": "hid-catalog-filter",
+        "title": "Catalog › filters by price",
+        "stabilityPct": 57,
+        "category": "timing",
+        "reason": "Low stability across runs"
+      },
+      {
+        "historyId": "hid-checkout-coupon",
+        "title": "Checkout › applies coupon @regression",
+        "stabilityPct": 71,
+        "category": "assertion",
+        "reason": "Flaky in this run"
+      },
+      {
+        "historyId": "hid-auth-sso",
+        "title": "Auth › SSO redirect @smoke",
+        "stabilityPct": 71,
+        "category": "assertion",
+        "reason": "Unstable across recent history"
+      }
+    ],
+    "byEnvironment": [
+      {
+        "key": "staging·webkit",
+        "label": "staging·webkit",
+        "runs": 1,
+        "passRate": 71
+      },
+      {
+        "key": "main·firefox",
+        "label": "main·firefox",
+        "runs": 1,
+        "passRate": 57
+      },
+      {
+        "key": "staging·chromium",
+        "label": "staging·chromium",
+        "runs": 1,
+        "passRate": 71
+      },
+      {
+        "key": "main·webkit",
+        "label": "main·webkit",
+        "runs": 1,
+        "passRate": 57
+      },
+      {
+        "key": "staging·firefox",
+        "label": "staging·firefox",
+        "runs": 1,
+        "passRate": 71
+      },
+      {
+        "key": "main·chromium",
+        "label": "main·chromium",
+        "runs": 1,
+        "passRate": 57
+      },
+      {
+        "key": "main·chromium / firefox / webkit",
+        "label": "main·chromium / firefox / webkit",
+        "runs": 1,
+        "passRate": 43
+      }
+    ],
+    "historyRuns": [
+      {
+        "id": "current",
+        "date": 1784505442133,
+        "title": "XREPORT Sample · Dashboard Demo",
+        "framework": "playwright",
+        "summary": {
+          "total": 7,
+          "passed": 3,
+          "failed": 2,
+          "skipped": 1,
+          "pending": 0,
+          "timedOut": 1,
+          "flaky": 1,
+          "duration": 40000
+        },
+        "branch": "main",
+        "env": "chromium / firefox / webkit",
+        "passRate": 43,
+        "tests": [
+          {
+            "id": "t1",
+            "historyId": "hid-checkout-pay",
+            "title": "pays with valid card @smoke",
+            "status": "failed",
+            "duration": 4200,
+            "flaky": false
+          },
+          {
+            "id": "t2",
+            "historyId": "hid-checkout-coupon",
+            "title": "applies coupon @regression",
+            "status": "passed",
+            "duration": 1800,
+            "flaky": true
+          },
+          {
+            "id": "t3",
+            "historyId": "hid-auth-login",
+            "title": "logs in with email @smoke",
+            "status": "passed",
+            "duration": 650,
+            "flaky": false
+          },
+          {
+            "id": "t4",
+            "historyId": "hid-auth-sso",
+            "title": "SSO redirect @smoke",
+            "status": "failed",
+            "duration": 3100,
+            "flaky": false
+          },
+          {
+            "id": "t5",
+            "historyId": "hid-auth-logout",
+            "title": "logs out",
+            "status": "skipped",
+            "duration": 0,
+            "flaky": false
+          },
+          {
+            "id": "t6",
+            "historyId": "hid-catalog-search",
+            "title": "search returns products",
+            "status": "passed",
+            "duration": 1100,
+            "flaky": false
+          },
+          {
+            "id": "t7",
+            "historyId": "hid-catalog-filter",
+            "title": "filters by price",
+            "status": "timedOut",
+            "duration": 30000,
+            "flaky": false
+          }
+        ]
+      },
+      {
+        "id": "h5",
+        "date": 1784419042133,
+        "title": "CI run · staging",
+        "framework": "playwright",
+        "summary": {
+          "total": 7,
+          "passed": 5,
+          "failed": 1,
+          "skipped": 1,
+          "pending": 0,
+          "timedOut": 1,
+          "flaky": 0,
+          "duration": 40000
+        },
+        "branch": "staging",
+        "env": "webkit",
+        "passRate": 71,
+        "tests": [
+          {
+            "id": "hid-checkout-pay",
+            "historyId": "hid-checkout-pay",
+            "title": "Checkout › pays with valid card",
+            "status": "failed",
+            "duration": 4000,
+            "flaky": false
+          },
+          {
+            "id": "hid-checkout-coupon",
+            "historyId": "hid-checkout-coupon",
+            "title": "Checkout › applies coupon",
+            "status": "passed",
+            "duration": 1800,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-login",
+            "historyId": "hid-auth-login",
+            "title": "Auth › logs in with email",
+            "status": "passed",
+            "duration": 650,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-sso",
+            "historyId": "hid-auth-sso",
+            "title": "Auth › SSO redirect",
+            "status": "failed",
+            "duration": 3000,
+            "flaky": false
+          },
+          {
+            "id": "hid-catalog-search",
+            "historyId": "hid-catalog-search",
+            "title": "Catalog › search",
+            "status": "passed",
+            "duration": 1100,
+            "flaky": false
+          },
+          {
+            "id": "hid-catalog-filter",
+            "historyId": "hid-catalog-filter",
+            "title": "Catalog › filters by price",
+            "status": "timedOut",
+            "duration": 28000,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-logout",
+            "historyId": "hid-auth-logout",
+            "title": "Auth › logs out",
+            "status": "skipped",
+            "duration": 0,
+            "flaky": false
+          }
+        ]
+      },
+      {
+        "id": "h4",
+        "date": 1784332642133,
+        "title": "Local sample run",
+        "framework": "playwright",
+        "summary": {
+          "total": 7,
+          "passed": 4,
+          "failed": 1,
+          "skipped": 1,
+          "pending": 0,
+          "timedOut": 0,
+          "flaky": 0,
+          "duration": 41000
+        },
+        "branch": "main",
+        "env": "firefox",
+        "passRate": 57,
+        "tests": [
+          {
+            "id": "hid-checkout-pay",
+            "historyId": "hid-checkout-pay",
+            "title": "Checkout › pays with valid card",
+            "status": "failed",
+            "duration": 4000,
+            "flaky": false
+          },
+          {
+            "id": "hid-checkout-coupon",
+            "historyId": "hid-checkout-coupon",
+            "title": "Checkout › applies coupon",
+            "status": "passed",
+            "duration": 1800,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-login",
+            "historyId": "hid-auth-login",
+            "title": "Auth › logs in with email",
+            "status": "passed",
+            "duration": 650,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-sso",
+            "historyId": "hid-auth-sso",
+            "title": "Auth › SSO redirect",
+            "status": "passed",
+            "duration": 3000,
+            "flaky": false
+          },
+          {
+            "id": "hid-catalog-search",
+            "historyId": "hid-catalog-search",
+            "title": "Catalog › search",
+            "status": "passed",
+            "duration": 1100,
+            "flaky": false
+          },
+          {
+            "id": "hid-catalog-filter",
+            "historyId": "hid-catalog-filter",
+            "title": "Catalog › filters by price",
+            "status": "timedOut",
+            "duration": 28000,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-logout",
+            "historyId": "hid-auth-logout",
+            "title": "Auth › logs out",
+            "status": "skipped",
+            "duration": 0,
+            "flaky": false
+          }
+        ]
+      },
+      {
+        "id": "h3",
+        "date": 1784246242133,
+        "title": "CI run · staging",
+        "framework": "playwright",
+        "summary": {
+          "total": 7,
+          "passed": 5,
+          "failed": 1,
+          "skipped": 1,
+          "pending": 0,
+          "timedOut": 1,
+          "flaky": 1,
+          "duration": 42000
+        },
+        "branch": "staging",
+        "env": "chromium",
+        "passRate": 71,
+        "tests": [
+          {
+            "id": "hid-checkout-pay",
+            "historyId": "hid-checkout-pay",
+            "title": "Checkout › pays with valid card",
+            "status": "failed",
+            "duration": 4000,
+            "flaky": false
+          },
+          {
+            "id": "hid-checkout-coupon",
+            "historyId": "hid-checkout-coupon",
+            "title": "Checkout › applies coupon",
+            "status": "failed",
+            "duration": 1800,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-login",
+            "historyId": "hid-auth-login",
+            "title": "Auth › logs in with email",
+            "status": "passed",
+            "duration": 650,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-sso",
+            "historyId": "hid-auth-sso",
+            "title": "Auth › SSO redirect",
+            "status": "passed",
+            "duration": 3000,
+            "flaky": false
+          },
+          {
+            "id": "hid-catalog-search",
+            "historyId": "hid-catalog-search",
+            "title": "Catalog › search",
+            "status": "passed",
+            "duration": 1100,
+            "flaky": false
+          },
+          {
+            "id": "hid-catalog-filter",
+            "historyId": "hid-catalog-filter",
+            "title": "Catalog › filters by price",
+            "status": "passed",
+            "duration": 28000,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-logout",
+            "historyId": "hid-auth-logout",
+            "title": "Auth › logs out",
+            "status": "skipped",
+            "duration": 0,
+            "flaky": false
+          }
+        ]
+      },
+      {
+        "id": "h2",
+        "date": 1784159842133,
+        "title": "Local sample run",
+        "framework": "playwright",
+        "summary": {
+          "total": 7,
+          "passed": 4,
+          "failed": 1,
+          "skipped": 1,
+          "pending": 0,
+          "timedOut": 0,
+          "flaky": 0,
+          "duration": 43000
+        },
+        "branch": "main",
+        "env": "webkit",
+        "passRate": 57,
+        "tests": [
+          {
+            "id": "hid-checkout-pay",
+            "historyId": "hid-checkout-pay",
+            "title": "Checkout › pays with valid card",
+            "status": "passed",
+            "duration": 4000,
+            "flaky": false
+          },
+          {
+            "id": "hid-checkout-coupon",
+            "historyId": "hid-checkout-coupon",
+            "title": "Checkout › applies coupon",
+            "status": "passed",
+            "duration": 1800,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-login",
+            "historyId": "hid-auth-login",
+            "title": "Auth › logs in with email",
+            "status": "passed",
+            "duration": 650,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-sso",
+            "historyId": "hid-auth-sso",
+            "title": "Auth › SSO redirect",
+            "status": "passed",
+            "duration": 3000,
+            "flaky": false
+          },
+          {
+            "id": "hid-catalog-search",
+            "historyId": "hid-catalog-search",
+            "title": "Catalog › search",
+            "status": "passed",
+            "duration": 1100,
+            "flaky": false
+          },
+          {
+            "id": "hid-catalog-filter",
+            "historyId": "hid-catalog-filter",
+            "title": "Catalog › filters by price",
+            "status": "passed",
+            "duration": 28000,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-logout",
+            "historyId": "hid-auth-logout",
+            "title": "Auth › logs out",
+            "status": "skipped",
+            "duration": 0,
+            "flaky": false
+          }
+        ]
+      },
+      {
+        "id": "h1",
+        "date": 1784073442133,
+        "title": "CI run · staging",
+        "framework": "playwright",
+        "summary": {
+          "total": 7,
+          "passed": 5,
+          "failed": 1,
+          "skipped": 1,
+          "pending": 0,
+          "timedOut": 1,
+          "flaky": 0,
+          "duration": 44000
+        },
+        "branch": "staging",
+        "env": "firefox",
+        "passRate": 71,
+        "tests": [
+          {
+            "id": "hid-checkout-pay",
+            "historyId": "hid-checkout-pay",
+            "title": "Checkout › pays with valid card",
+            "status": "passed",
+            "duration": 4000,
+            "flaky": false
+          },
+          {
+            "id": "hid-checkout-coupon",
+            "historyId": "hid-checkout-coupon",
+            "title": "Checkout › applies coupon",
+            "status": "passed",
+            "duration": 1800,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-login",
+            "historyId": "hid-auth-login",
+            "title": "Auth › logs in with email",
+            "status": "passed",
+            "duration": 650,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-sso",
+            "historyId": "hid-auth-sso",
+            "title": "Auth › SSO redirect",
+            "status": "passed",
+            "duration": 3000,
+            "flaky": false
+          },
+          {
+            "id": "hid-catalog-search",
+            "historyId": "hid-catalog-search",
+            "title": "Catalog › search",
+            "status": "passed",
+            "duration": 1100,
+            "flaky": false
+          },
+          {
+            "id": "hid-catalog-filter",
+            "historyId": "hid-catalog-filter",
+            "title": "Catalog › filters by price",
+            "status": "passed",
+            "duration": 28000,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-logout",
+            "historyId": "hid-auth-logout",
+            "title": "Auth › logs out",
+            "status": "skipped",
+            "duration": 0,
+            "flaky": false
+          }
+        ]
+      },
+      {
+        "id": "h0",
+        "date": 1783987042133,
+        "title": "Local sample run",
+        "framework": "playwright",
+        "summary": {
+          "total": 7,
+          "passed": 4,
+          "failed": 1,
+          "skipped": 1,
+          "pending": 0,
+          "timedOut": 0,
+          "flaky": 1,
+          "duration": 45000
+        },
+        "branch": "main",
+        "env": "chromium",
+        "passRate": 57,
+        "tests": [
+          {
+            "id": "hid-checkout-pay",
+            "historyId": "hid-checkout-pay",
+            "title": "Checkout › pays with valid card",
+            "status": "passed",
+            "duration": 4000,
+            "flaky": false
+          },
+          {
+            "id": "hid-checkout-coupon",
+            "historyId": "hid-checkout-coupon",
+            "title": "Checkout › applies coupon",
+            "status": "failed",
+            "duration": 1800,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-login",
+            "historyId": "hid-auth-login",
+            "title": "Auth › logs in with email",
+            "status": "passed",
+            "duration": 650,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-sso",
+            "historyId": "hid-auth-sso",
+            "title": "Auth › SSO redirect",
+            "status": "passed",
+            "duration": 3000,
+            "flaky": false
+          },
+          {
+            "id": "hid-catalog-search",
+            "historyId": "hid-catalog-search",
+            "title": "Catalog › search",
+            "status": "passed",
+            "duration": 1100,
+            "flaky": false
+          },
+          {
+            "id": "hid-catalog-filter",
+            "historyId": "hid-catalog-filter",
+            "title": "Catalog › filters by price",
+            "status": "passed",
+            "duration": 28000,
+            "flaky": false
+          },
+          {
+            "id": "hid-auth-logout",
+            "historyId": "hid-auth-logout",
+            "title": "Auth › logs out",
+            "status": "skipped",
+            "duration": 0,
+            "flaky": false
+          }
+        ]
+      }
+    ],
+    "failedRerun": {
+      "command": "npx playwright test \"tests/checkout.spec.ts\" \"tests/auth.spec.ts\" \"tests/catalog.spec.ts\"",
+      "files": [
+        "tests/checkout.spec.ts:42",
+        "tests/auth.spec.ts:33",
+        "tests/catalog.spec.ts:22"
+      ],
+      "count": 3
+    }
+  }
+}

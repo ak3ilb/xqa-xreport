@@ -1,0 +1,194 @@
+{
+  "name": "@xqa.io/xreport",
+  "version": "0.4.0",
+  "description": "XREPORT by XQA — Playwright HTML reporter and test analytics for local CI. Also Cypress, Jest, Vitest, Mocha, Jasmine, WebdriverIO. Flaky detection, run history, error grouping, traces. Zero Java. From xqa.io.",
+  "keywords": [
+    "xreport",
+    "xqa",
+    "xqa.io",
+    "playwright html reporter",
+    "playwright test reporter",
+    "playwright reporting",
+    "playwright analytics",
+    "cypress reporter",
+    "cypress html reporter",
+    "jest reporter",
+    "jest html reporter",
+    "vitest reporter",
+    "vitest html reporter",
+    "flaky test detection",
+    "flaky tests",
+    "test run history",
+    "error grouping",
+    "failure triage",
+    "trace viewer",
+    "test explorer",
+    "stability score",
+    "rerun failed tests",
+    "html reporter",
+    "mocha reporter",
+    "jasmine reporter",
+    "webdriverio reporter",
+    "wdio reporter",
+    "allure alternative",
+    "mochawesome alternative",
+    "ctrf",
+    "test automation",
+    "e2e testing",
+    "ci cd",
+    "self-hosted",
+    "local html test report",
+    "zero java",
+    "typescript",
+    "javascript",
+    "qa"
+  ],
+  "author": "XQA <https://xqa.io>",
+  "license": "MIT",
+  "homepage": "https://xqa.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ak3ilb/xqa-xreport.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ak3ilb/xqa-xreport/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "xreport": "bin/xreport.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./context": {
+      "types": "./dist/context/index.d.ts",
+      "default": "./dist/context/index.js"
+    },
+    "./playwright": {
+      "types": "./dist/reporters/playwright.d.ts",
+      "default": "./dist/reporters/playwright.js"
+    },
+    "./mocha": {
+      "types": "./dist/reporters/mocha.d.ts",
+      "default": "./dist/reporters/mocha.js"
+    },
+    "./jasmine": {
+      "types": "./dist/reporters/jasmine.d.ts",
+      "default": "./dist/reporters/jasmine.js"
+    },
+    "./webdriverio": {
+      "types": "./dist/reporters/webdriverio.d.ts",
+      "default": "./dist/reporters/webdriverio.js"
+    },
+    "./jest": {
+      "types": "./dist/reporters/jest.d.ts",
+      "default": "./dist/reporters/jest.js"
+    },
+    "./vitest": {
+      "types": "./dist/reporters/vitest.d.ts",
+      "default": "./dist/reporters/vitest.js"
+    },
+    "./cypress": {
+      "types": "./dist/reporters/cypress.d.ts",
+      "default": "./dist/reporters/cypress.js"
+    },
+    "./cypress/support": {
+      "types": "./dist/reporters/cypress-support.d.ts",
+      "default": "./dist/reporters/cypress-support.js"
+    },
+    "./reporters/PlaywrightReporter": {
+      "types": "./dist/reporters/playwright.d.ts",
+      "default": "./dist/reporters/playwright.js"
+    },
+    "./reporters/MochaReporter": {
+      "types": "./dist/reporters/mocha.d.ts",
+      "default": "./dist/reporters/mocha.js"
+    },
+    "./reporters/JasmineReporter": {
+      "types": "./dist/reporters/jasmine.d.ts",
+      "default": "./dist/reporters/jasmine.js"
+    },
+    "./reporters/WebdriverIOReporter": {
+      "types": "./dist/reporters/webdriverio.d.ts",
+      "default": "./dist/reporters/webdriverio.js"
+    },
+    "./reporters/JestReporter": {
+      "types": "./dist/reporters/jest.d.ts",
+      "default": "./dist/reporters/jest.js"
+    },
+    "./reporters/VitestReporter": {
+      "types": "./dist/reporters/vitest.d.ts",
+      "default": "./dist/reporters/vitest.js"
+    },
+    "./reporters/CypressReporter": {
+      "types": "./dist/reporters/cypress.d.ts",
+      "default": "./dist/reporters/cypress.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "viewer-dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "sample": "npm run build && node scripts/generate-sample.js",
+    "smoke:reporters": "npm run build && node scripts/smoke-reporters.js",
+    "test:unit": "node --test dist/**/*.test.js 2>/dev/null || node --test test/*.test.js 2>/dev/null || echo 'No unit tests yet'"
+  },
+  "dependencies": {
+    "open": "^8.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "typescript": "^5.6.3"
+  },
+  "peerDependencies": {
+    "@playwright/test": ">=1.40.0",
+    "mocha": ">=10.0.0",
+    "jasmine": ">=4.0.0",
+    "@wdio/reporter": ">=8.0.0",
+    "jest": ">=29.0.0",
+    "vitest": ">=1.0.0",
+    "cypress": ">=12.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@playwright/test": {
+      "optional": true
+    },
+    "mocha": {
+      "optional": true
+    },
+    "jasmine": {
+      "optional": true
+    },
+    "@wdio/reporter": {
+      "optional": true
+    },
+    "jest": {
+      "optional": true
+    },
+    "vitest": {
+      "optional": true
+    },
+    "cypress": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

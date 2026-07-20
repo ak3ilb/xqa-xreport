@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XREPORT Viewer · XQA</title>
+  <style>
+    :root { --bg:#fff; --soft:#F5F5F7; --text:#1D1D1F; --muted:#6E6E73; --line:#D2D2D7; --accent:#0071E3; --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+    *{box-sizing:border-box} body{margin:0;font-family:var(--font);color:var(--text);background:var(--bg)}
+    header{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+    header strong{letter-spacing:.06em;font-size:12px;text-transform:uppercase}
+    header a{color:var(--accent);font-weight:600;text-decoration:none}
+    main{max-width:960px;margin:0 auto;padding:24px 20px}
+    .drop{border:2px dashed var(--line);border-radius:14px;padding:48px 24px;text-align:center;background:var(--soft);cursor:pointer}
+    .drop.over{border-color:var(--accent);background:#E8F1FC}
+    .drop h1{font-size:22px;margin:0 0 8px;letter-spacing:-.02em}
+    .drop p{color:var(--muted);margin:0}
+    #meta{margin-top:20px;display:none}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+    .chip{background:var(--soft);padding:6px 10px;border-radius:8px;font-size:12px;font-weight:600}
+    pre{background:var(--soft);border-radius:10px;padding:12px;overflow:auto;font-size:11px;max-height:50vh}
+    button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer}
+    button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  </style>
+</head>
+<body>
+  <header>
+    <div><strong>XREPORT Viewer</strong></div>
+    <a href="https://xqa.io" target="_blank" rel="noopener">xqa.io</a>
+  </header>
+  <main>
+    <div id="root"></div>
+  </main>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="" crossorigin></script>
+  <script>
+    const { useState, useCallback } = React;
+    function App() {
+      const [run, setRun] = useState(null);
+      const [err, setErr] = useState('');
+      const onFile = useCallback((file) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const data = JSON.parse(String(reader.result));
+            if (!data.summary || !data.suites) throw new Error('Not a valid xreport.json');
+            setRun(data); setErr('');
+          } catch (e) { setErr(e.message || String(e)); setRun(null); }
+        };
+        reader.readAsText(file);
+      }, []);
+      const onDrop = (e) => {
+        e.preventDefault(); e.currentTarget.classList.remove('over');
+        const f = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) onFile(f);
+      };
+      return React.createElement('div', null,
+        React.createElement('div', {
+          className: 'drop',
+          onDragOver: (e) => { e.preventDefault(); e.currentTarget.classList.add('over'); },
+          onDragLeave: (e) => e.currentTarget.classList.remove('over'),
+          onDrop,
+          onClick: () => document.getElementById('file').click()
+        },
+          React.createElement('h1', null, 'Drop xreport.json here'),
+          React.createElement('p', null, 'Interactive viewer by XQA · React'),
+          React.createElement('input', {
+            id: 'file', type: 'file', accept: 'application/json,.json', style: { display: 'none' },
+            onChange: (e) => e.target.files && e.target.files[0] && onFile(e.target.files[0])
+          })
+        ),
+        err && React.createElement('p', { style: { color: '#FF3B30' } }, err),
+        run && React.createElement('div', { id: 'meta' , style: { display: 'block' } },
+          React.createElement('h2', null, run.title || 'XREPORT'),
+          React.createElement('div', { className: 'chips' },
+            React.createElement('span', { className: 'chip' }, (run.summary.failed + (run.summary.timedOut||0)) + ' failed'),
+            React.createElement('span', { className: 'chip' }, (run.summary.flaky||0) + ' flaky'),
+            React.createElement('span', { className: 'chip' }, run.summary.passed + ' passed'),
+            React.createElement('span', { className: 'chip' }, run.framework),
+            React.createElement('span', { className: 'chip' }, run.summary.total + ' tests')
+          ),
+          React.createElement('p', null, 'Generate a full HTML report locally:'),
+          React.createElement('pre', null, 'npx xreport generate ./xreport.json -o ./xreport'),
+          React.createElement('pre', null, JSON.stringify({ summary: run.summary, environment: run.environment, generator: run.generator }, null, 2))
+        )
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+  </script>
+</body>
+</html>
