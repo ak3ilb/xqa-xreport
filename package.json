@@ -1,6 +1,6 @@
 {
   "name": "@xqa.io/xreport",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "XREPORT by XQA — Playwright HTML reporter and test analytics for local CI. Also Cypress, Jest, Vitest, Mocha, Jasmine, WebdriverIO. Flaky detection, run history, error grouping, traces. Zero Java. From xqa.io.",
   "keywords": [
     "xreport",
@@ -137,6 +137,7 @@
     "dist",
     "bin",
     "viewer-dist",
+    "docs/images",
     "README.md",
     "LICENSE"
   ],

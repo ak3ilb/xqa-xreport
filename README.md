@@ -13,54 +13,18 @@
 
 ---
 
-## Report screenshots
-
-### Dashboard
-
-Pass rate, KPIs, Explorer / Insights / Debug shortcuts, and a clickable test-case list.
-
-![XREPORT Dashboard](docs/images/dashboard.png)
-
-### Test Runs
-
-Local run history with status pills, compare-two-runs, branch & environment filters.
-
-![XREPORT Test Runs](docs/images/test-runs.png)
-
-### Test Explorer
-
-Failures-first triage grid with side panel (attempts, steps, errors, logs, attachments).
-
-![XREPORT Test Explorer](docs/images/test-explorer.png)
-
-Preview the demo locally:
-
-```bash
-npm run sample
-npx xreport open ./examples/sample-report
-```
-
----
-
-## How to use (5 minutes)
-
-```bash
-npm i -D @xqa.io/xreport
-# add reporter to playwright.config.ts (see Quick start)
-npx playwright test
-npx xreport open ./xreport
-```
-
-1. **Install** `@xqa.io/xreport` in your test project.
-2. **Wire the reporter** for your framework ([Quick start](#quick-start) — Playwright · Cypress · Jest · Vitest · Mocha · Jasmine · WebdriverIO).
-3. **Run tests** — HTML (+ optional CSV / CTRF) is written when the run finishes.
-4. **Open the report** with `npx xreport open ./xreport` (recommended for traces & media).
-5. **Triage** — Dashboard → Test Runs (compare) → Test Explorer → full case page.
-6. **Optional history** — `enableHistory: true` + `historyOptions.saveFullResults: true` for stability, compare, and past-run drill-down.
-
----
-
 ## Features
+
+- **Framework-agnostic** — Playwright, Cypress, Jest, Vitest, Mocha, Jasmine, WebdriverIO
+- **Compact triage UI** — Dashboard, Test Runs (compare), Explorer side panel, full case pages
+- **Failures-first** — flaky badges, new-fail filter, soft-assert multi-errors, attempt picker
+- **Power search** — `s:failed` · `p:chromium` · `@smoke` · `file:` · `error:` · `owner:` · `severity:` · `cluster:` · `regression`
+- **Analytics** — slowest tests, by-file, tag health, clickable error clusters, stability score
+- **Media & traces** — screenshots, videos, lightbox; Playwright trace viewer via `xreport open`
+- **History** — local trends, compare two runs, quarantine tips (`enableHistory`)
+- **Exports** — HTML, JSON, CSV, CTRF, optional PDF; WDIO worker auto-merge
+- **Context API** — `attach` / `testContext` (+ Cypress `cy.xreportNote` / `cy.xreportMeta`)
+- **TypeScript & JavaScript** — published types, zero Java, report ready when tests finish
 
 ### Report UI
 
@@ -123,6 +87,53 @@ npx xreport open ./xreport
 | Mocha | `@xqa.io/xreport/mocha` | Context API attach, retries |
 | Jasmine | `@xqa.io/xreport/jasmine` | Specs + failed expectations |
 | WebdriverIO | `@xqa.io/xreport/webdriverio` | Worker auto-merge |
+
+---
+
+## Features Preview
+
+### Dashboard
+
+Pass rate, KPIs, Explorer / Insights / Debug shortcuts, and a clickable test-case list.
+
+![XREPORT Dashboard](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/dashboard.png)
+
+### Test Runs
+
+Local run history with status pills, compare-two-runs, branch & environment filters.
+
+![XREPORT Test Runs](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/test-runs.png)
+
+### Test Explorer
+
+Failures-first triage grid with side panel (attempts, steps, errors, logs, attachments).
+
+![XREPORT Test Explorer](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/test-explorer.png)
+
+Preview the demo locally:
+
+```bash
+npm run sample
+npx xreport open ./examples/sample-report
+```
+
+---
+
+## How to use (5 minutes)
+
+```bash
+npm i -D @xqa.io/xreport
+# add reporter to playwright.config.ts (see Quick start)
+npx playwright test
+npx xreport open ./xreport
+```
+
+1. **Install** `@xqa.io/xreport` in your test project.
+2. **Wire the reporter** for your framework ([Quick start](#quick-start) — Playwright · Cypress · Jest · Vitest · Mocha · Jasmine · WebdriverIO).
+3. **Run tests** — HTML (+ optional CSV / CTRF) is written when the run finishes.
+4. **Open the report** with `npx xreport open ./xreport` (recommended for traces & media).
+5. **Triage** — Dashboard → Test Runs (compare) → Test Explorer → full case page.
+6. **Optional history** — `enableHistory: true` + `historyOptions.saveFullResults: true` for stability, compare, and past-run drill-down.
 
 ---
 
