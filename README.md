@@ -16,12 +16,12 @@
 ## Features
 
 - **Framework-agnostic** — Playwright, Cypress, Jest, Vitest, Mocha, Jasmine, WebdriverIO
-- **Compact triage UI** — Dashboard, Test Runs (compare), Explorer side panel, full case pages
+- **Compact triage UI** — Summary, Run History (diff), Case Triage side panel, full case pages
 - **Failures-first** — flaky badges, new-fail filter, soft-assert multi-errors, attempt picker
 - **Power search** — `s:failed` · `p:chromium` · `@smoke` · `file:` · `error:` · `owner:` · `severity:` · `cluster:` · `regression`
-- **Analytics** — defect kinds, AI Insights, error groups, slowest / by-file, coverage, tag health
+- **Suite Pulse** — defect kinds, AI Insights, error groups, slowest / by-file, coverage, tag health
 - **Media & traces** — screenshots, videos, lightbox; Playwright trace viewer via `xreport open`
-- **History** — local trends, compare two runs, quarantine tips (`enableHistory`)
+- **History** — local trends, diff two reports, quarantine tips (`enableHistory`)
 - **AI (local-first)** — `ai-context.md/json` per run, Copy Prompt, optional OpenAI-compatible analyze, local MCP
 - **CI maturity** — quality gate (`xreport gate`), known-issues mute, quarantine export, shard merge helpers
 - **Exports** — HTML, JSON, CSV, CTRF, optional PDF; WDIO worker auto-merge
@@ -30,21 +30,21 @@
 
 ### Features Preview
 
-**Dashboard** — Pass-rate donut, compact KPIs, Explorer / Insights / Debug shortcuts, charts, and a clickable test-case list.
+**Summary** — Pass-rate donut, compact KPIs, Triage / Signals / Evidence shortcuts, charts, and a clickable case list.
 
-![XREPORT Dashboard](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/dashboard.png)
+![XREPORT Summary](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/dashboard.png)
 
-**Test Runs** — Local run history with status pills, compare-two-runs (newly failed / passed / still failing / slowdowns), branch & environment filters.
+**Run History** — Local report history with status pills, diff-two-reports (newly failed / passed / still failing / slowdowns), branch & environment filters.
 
-![XREPORT Test Runs](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/test-runs.png)
+![XREPORT Run History](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/test-runs.png)
 
-**Test Explorer** — Failures-first triage grid with side panel (attempts, steps, errors, logs, attachments) plus Copy error / Copy AI prompt.
+**Case Triage** — Failures-first grid with side panel (attempts, steps, errors, logs, attachments) plus Copy error / Copy AI prompt.
 
-![XREPORT Test Explorer](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/test-explorer.png)
+![XREPORT Case Triage](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/test-explorer.png)
 
-**Analytics** — Defect kinds, AI Insights, suite-by-file, timing, error categories, and clickable error groups with Copy Prompt.
+**Suite Pulse** — Defect kinds, AI Insights, suite-by-file, timing, error categories, and clickable error groups with Copy Prompt.
 
-![XREPORT Analytics](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/analytics.png)
+![XREPORT Suite Pulse](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/analytics.png)
 
 Preview the demo locally:
 
@@ -57,34 +57,34 @@ npx xreport open ./examples/sample-report
 
 | Area | What you get |
 |------|----------------|
-| **Dashboard** | Pass-rate donut, compact KPIs, Explorer/Insights/Debug shortcuts, charts, test-case table |
-| **Test Runs** | Local history table, status pills, branch/env filters, **compare two runs** |
-| **Run detail** | Per-run filters (All / Failed / Passed / Flaky / Skipped) + clickable cases |
-| **Test Explorer** | Failures-first grid + **side panel** (Attempts · Steps · Error · Logs · Hooks · Attachments · History · Meta) |
+| **Summary** | Pass-rate donut, compact KPIs, Triage/Signals/Evidence shortcuts, charts, case table |
+| **Run History** | Local history table, status pills, branch/env filters, **diff two reports** |
+| **Report detail** | Per-report filters (All / Failed / Passed / Flaky / Skipped) + clickable cases |
+| **Case Triage** | Failures-first grid + **side panel** (Attempts · Steps · Error · Logs · Hooks · Attachments · History · Meta) |
 | **Case page** | Overview · Errors · Steps (nested) · Hooks · Logs · History · Attachments · Meta |
-| **Analytics** | Defect kinds, by-file, slowest, error categories, **AI Insights**, **clickable error groups** + Copy Prompt, coverage, tag health, quarantine tips |
-| **Flaky Tests** | Stability % + failure category |
-| **Gallery / Timeline** | Screenshots & videos · approximate worker lanes |
-| **Config** | Environment + report metadata |
+| **Suite Pulse** | Defect kinds, by-file, slowest, error categories, **AI Insights**, **clickable error groups** + Copy Prompt, coverage, tag health, quarantine tips |
+| **Unstable** | Stability % + failure category |
+| **Screens & Video / Worker Map** | Screenshots & videos · approximate worker lanes |
+| **Run Meta** | Environment + report metadata |
 
 ### Triage & search
 
 - **Power search** — `s:failed` · `p:chromium` · `@smoke` · `file:` · `error:` · `owner:` · `severity:` · `cluster:` · `regression` · `!` negation
 - **New failures** chip — tests that failed this run but not in the previous history point
-- **Sticky Explorer filters** — status / project / tag / sort / query persist in `localStorage`
+- **Sticky Case Triage filters** — status / project / tag / sort / query persist in `localStorage`
 - **Copy `file:line`** + **Open in IDE** (`vscode://file/...`)
-- **Retry attempt picker** — Overview / Errors / Explorer show status & errors per attempt
+- **Retry attempt picker** — Overview / Errors / Case Triage show status & errors per attempt
 - **Step category chips** — focus nested steps by `test.step` / `pw:api` / `expect` / etc.
 - **Soft asserts** — multiple errors listed separately (`Errors · N`)
 - **Owner / severity / tags** — chips in the grid; annotations on Meta
-- **Double-click** Explorer row (or **Enter**) → full case page; **Esc** goes back
+- **Double-click** Case Triage row (or **Enter**) → full case page; **Esc** goes back
 
 ### Analytics & reliability
 
 - Flaky badges when a test fails then passes on retry
 - Per-test **stability score** and failure categories (timing / network / assertion / environment / other)
 - **Defect kinds** (product / automation / environment / flake) + mute via `knownIssuesPath`
-- Error **clusters** (similar signatures) — click in Analytics to filter Explorer
+- Error **clusters** (similar signatures) — click in Suite Pulse to filter Case Triage
 - Pass-rate trends, environment rates, quarantine tips + `xreport quarantine export`
 - **Quality gate** — `xreport gate` for max failed / new / flaky thresholds in CI
 - Rerun helpers — `failed-tests.txt` + copyable CLI command
@@ -133,7 +133,7 @@ npx xreport open ./xreport
 2. **Wire the reporter** for your framework ([Quick start](#quick-start) — Playwright · Cypress · Jest · Vitest · Mocha · Jasmine · WebdriverIO).
 3. **Run tests** — HTML (+ optional CSV / CTRF) is written when the run finishes.
 4. **Open the report** with `npx xreport open ./xreport` (recommended for traces & media).
-5. **Triage** — Dashboard → Test Runs (compare) → Test Explorer → full case page.
+5. **Triage** — Summary → Run History (diff) → Case Triage → full case page.
 6. **Optional history** — `enableHistory: true` + `historyOptions.saveFullResults: true` for stability, compare, and past-run drill-down.
 
 ---
@@ -148,10 +148,10 @@ npx xreport open ./xreport --port 4173
 
 | Page | Typical job |
 |------|-------------|
-| Dashboard | Skim pass rate, open failed cases, copy rerun command |
-| Test Runs | Browse history, **compare** baseline → newer, open a run |
-| Test Explorer | Filter/search failures, inspect side panel, open full case |
-| Analytics | Click an error group → Explorer filtered to that cluster |
+| Summary | Skim pass rate, open failed cases, copy rerun command |
+| Run History | Browse local reports, **diff** baseline → newer, open a report |
+| Case Triage | Filter/search failures, inspect side panel, open full case |
+| Suite Pulse | Click an error group → Case Triage filtered to that cluster |
 | Case page | Deep dive: errors per attempt, nested steps, hooks, attachments, meta |
 
 **Keyboard**
@@ -159,15 +159,15 @@ npx xreport open ./xreport --port 4173
 | Shortcut | Action |
 |----------|--------|
 | `/` or `⌘K` / `Ctrl+K` | Focus search |
-| `f` | Jump to Explorer + Failed filter |
-| `j` / `k` or `↓` / `↑` | Move selection in Explorer |
+| `f` | Jump to Case Triage + Failed filter |
+| `j` / `k` or `↓` / `↑` | Move selection in Case Triage |
 | `Enter` | Open selected case (full page) |
 | `Esc` | Close lightbox, or leave case page |
 | `[` / `]` | Previous / next case tab |
 
 ### Power search examples
 
-Type in the top search box (works on Explorer / Gallery):
+Type in the top search box (works on Case Triage / Screens & Video):
 
 ```text
 s:failed
@@ -184,16 +184,16 @@ regression
 s:failed owner:identity
 ```
 
-### Compare two local runs
+### Diff two local reports
 
-Requires `enableHistory: true` and (for past runs) `historyOptions.saveFullResults: true`.
+Requires `enableHistory: true` and (for past reports) `historyOptions.saveFullResults: true`.
 
-1. Open **Test Runs**.
-2. In **Compare runs**, pick baseline → newer (defaults: previous history → current).
+1. Open **Run History**.
+2. In **Diff two reports**, pick baseline → newer (defaults: previous history → this report).
 3. Review KPIs: **newly failed · newly passed · still failing · slower (≥250ms)**.
 4. Click a row to open that case when it exists in the current report.
 
-### Explorer triage loop
+### Case Triage loop
 
 1. Filter **Failed** or **New failures**.
 2. Click a row → side panel loads Attempts / Error / Logs / Attachments.
@@ -526,7 +526,7 @@ After each run (unless `ai.writeContextPack: false`):
 
 CLI: `npx xreport ai context ./xreport`
 
-In the HTML report: **Copy AI prompt** on the case / Explorer panel, and **Copy Prompt for Cursor** on Analytics error groups.
+In the HTML report: **Copy AI prompt** on the case / Case Triage panel, and **Copy Prompt for Cursor** on Suite Pulse error groups.
 
 ### Optional LLM insights
 
@@ -547,7 +547,7 @@ OpenAI-compatible providers (OpenAI, Azure, OpenRouter, **Ollama**):
 
 Or after a run: `XREPORT_AI_BASE_URL=http://127.0.0.1:11434/v1 npx xreport ai analyze ./xreport`
 
-Insights appear under Analytics → **AI Insights** and are cached by error signature (`ai-insight-cache.json`).
+Insights appear under Suite Pulse → **AI Insights** and are cached by error signature (`ai-insight-cache.json`).
 
 ### Local MCP for Cursor
 
@@ -643,7 +643,7 @@ Heuristic triage (clusters, defect kind: product / automation / environment / fl
 | WDIO parallel → many partials | Auto-merge |
 | Flaky tests look green after retry | Flaky badge, stability score, category |
 | Hard Slack / PR share | CTRF JSON + HTML artifact |
-| Sparse demo UIs | Dashboard + explorer workstation |
+| Sparse demo UIs | Summary + triage workstation |
 | Need spreadsheets / PDF | CSV + optional PDF |
 | Cloud-only analytics | Self-hosted local HTML + history |
 | AI tied to a SaaS account | Local context pack + optional LLM + MCP |
@@ -658,7 +658,7 @@ Heuristic triage (clusters, defect kind: product / automation / environment / fl
 | Vitest | ✅ | limited | ❌ |
 | Mocha / Jasmine / WDIO | ✅ | ✅ | ❌ |
 | No Java / local HTML | ✅ | ❌ | ✅ |
-| Dashboard + run history + compare | ✅ | limited | ❌ |
+| Summary + run history + diff | ✅ | limited | ❌ |
 | Flaky stability + categories | ✅ | limited | ❌ |
 | Filterable explorer + chips | ✅ | ✅ | ✅ |
 | Embedded trace viewer (PW) | ✅ | ✅ | ✅ |

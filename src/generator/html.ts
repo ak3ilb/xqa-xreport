@@ -324,19 +324,19 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       <div class="logo-mark">X</div>
       <div class="logo-text">${esc(project)}<small>by XQA · xqa.io</small></div>
     </div>
-    <div class="navg">Overview</div>
-    <button class="nav" data-page="dashboard" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</button>
-    <div class="navg">Explorer</div>
-    <button class="nav on" data-page="runs" type="button"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Test Runs</button>
-    <button class="nav" data-page="tests" type="button"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12l2 2 4-4"/></svg>Test Explorer</button>
-    <div class="navg">Insights</div>
-    <button class="nav" data-page="analytics" type="button"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M8 17V10M12 17V7M16 17v-4"/></svg>Analytics</button>
-    <button class="nav" data-page="flaky" type="button"><svg viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 10-14h-7l0-6z"/></svg>Flaky Tests</button>
-    <div class="navg">Debug</div>
-    <button class="nav" data-page="gallery" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 16l-5-5-4 4-2-2-5 5"/></svg>Gallery</button>
-    <button class="nav" data-page="timeline" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Timeline</button>
-    <div class="navg">General</div>
-    <button class="nav" data-page="config" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 6.2l1.4 1.4M18.4 16.4l1.4 1.4M3 12h2M19 12h2M4.2 17.8l1.4-1.4M18.4 7.6l1.4-1.4"/></svg>Config</button>
+    <div class="navg">Home</div>
+    <button class="nav on" data-page="dashboard" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Summary</button>
+    <div class="navg">Triage</div>
+    <button class="nav" data-page="runs" type="button"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Run History</button>
+    <button class="nav" data-page="tests" type="button"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12l2 2 4-4"/></svg>Case Triage</button>
+    <div class="navg">Signals</div>
+    <button class="nav" data-page="analytics" type="button"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M8 17V10M12 17V7M16 17v-4"/></svg>Suite Pulse</button>
+    <button class="nav" data-page="flaky" type="button"><svg viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 10-14h-7l0-6z"/></svg>Unstable</button>
+    <div class="navg">Evidence</div>
+    <button class="nav" data-page="gallery" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 16l-5-5-4 4-2-2-5 5"/></svg>Screens &amp; Video</button>
+    <button class="nav" data-page="timeline" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Worker Map</button>
+    <div class="navg">Setup</div>
+    <button class="nav" data-page="config" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 6.2l1.4 1.4M18.4 16.4l1.4 1.4M3 12h2M19 12h2M4.2 17.8l1.4-1.4M18.4 7.6l1.4-1.4"/></svg>Run Meta</button>
   </aside>
   <div class="main">
     <header class="top">
@@ -349,7 +349,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
         </div>
         <div class="search-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
-          <input class="search" id="q" placeholder="Search tests, errors, files…" />
+          <input class="search" id="q" placeholder="Search cases, errors, files…" />
           <span class="kbd">⌘K</span>
         </div>
         <div class="top-actions">
@@ -361,35 +361,35 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     </header>
     <div class="content">
       <div class="content-shell">
-      <section class="page" id="page-dashboard">
-        <div class="page-head"><h1>Dashboard</h1><p class="lead">Pass rate, stability grade, and suite health for this run.</p></div>
+      <section class="page on" id="page-dashboard">
+        <div class="page-head"><h1>Summary</h1><p class="lead">Pass rate, stability grade, and suite health for this local report.</p></div>
         <div class="kpis" id="kpis"></div>
         <div class="dash-sections" id="dashSections"></div>
         <div class="charts">
           <div class="card"><h3>By project</h3><div id="projBars"></div></div>
           <div class="card"><h3>History trend</h3><svg class="spark" id="spark" viewBox="0 0 200 52" preserveAspectRatio="none"></svg><div id="sparkMeta" class="runmeta"></div></div>
-          <div class="card"><h3>Insights</h3><div id="insightsMini"></div></div>
+          <div class="card"><h3>Signals</h3><div id="insightsMini"></div></div>
         </div>
         <div class="card dash-tests">
           <div class="card-head">
-            <h3>Test cases</h3>
-            <button class="btn" type="button" data-goto="tests">Open Explorer</button>
+            <h3>Cases in this report</h3>
+            <button class="btn" type="button" data-goto="tests">Open Case Triage</button>
           </div>
           <div id="dashTests"></div>
         </div>
-        <div class="card" id="rerunCard" style="display:none"><h3>Rerun failed tests</h3><code class="cmd" id="rerunCmd"></code><div class="btns"><button class="btn primary" type="button" id="btnCopyRerun">Copy command</button></div></div>
+        <div class="card" id="rerunCard" style="display:none"><h3>Rerun failed cases</h3><code class="cmd" id="rerunCmd"></code><div class="btns"><button class="btn primary" type="button" id="btnCopyRerun">Copy command</button></div></div>
       </section>
 
-      <section class="page on" id="page-runs">
-        <div class="page-head"><h1>Test Runs</h1><p class="lead">View and manage your test runs. Filter by status, branch, environment and more.</p></div>
+      <section class="page" id="page-runs">
+        <div class="page-head"><h1>Run History</h1><p class="lead">Browse local reports on disk. Filter by status, branch, and environment.</p></div>
         <div class="toolbar">
-          <input class="search-mini" id="runSearch" placeholder="Search commits or test run number…"/>
-          <select class="select" id="runStatus"><option value="all">Test Status</option><option value="failed">Failed</option><option value="passed">Passed</option><option value="flaky">Flaky</option></select>
+          <input class="search-mini" id="runSearch" placeholder="Search title, branch, or report id…"/>
+          <select class="select" id="runStatus"><option value="all">Result</option><option value="failed">Failed</option><option value="passed">Passed</option><option value="flaky">Flaky</option></select>
           <select class="select" id="runBranch"><option value="all">Branch</option></select>
           <select class="select" id="runEnv"><option value="all">Environment</option></select>
         </div>
         <div class="card compare-box">
-          <div class="card-head"><h3>Compare runs</h3><span class="runmeta" id="cmpMeta">Pick baseline vs newer run</span></div>
+          <div class="card-head"><h3>Diff two reports</h3><span class="runmeta" id="cmpMeta">Pick baseline vs newer report</span></div>
           <div class="toolbar" style="margin-bottom:0">
             <select class="select" id="cmpA" style="min-width:220px"></select>
             <span class="meta">→</span>
@@ -402,7 +402,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       </section>
 
       <section class="page" id="page-tests">
-        <div class="page-head"><h1>Test Explorer</h1><p class="lead">Failures-first triage grid with steps, logs, and attachments.</p></div>
+        <div class="page-head"><h1>Case Triage</h1><p class="lead">Failures-first grid with steps, logs, and attachments.</p></div>
         <div class="toolbar" id="testFilters">
           <button class="chip fail on" data-status="failed" type="button">Failed</button>
           <button class="chip" data-status="flaky" type="button">Flaky</button>
@@ -455,34 +455,34 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       </section>
 
       <section class="page" id="page-analytics">
-        <div class="page-head"><h1>Analytics</h1><p class="lead">Suite summary, timing, error categories, AI insights, coverage, and environments.</p></div>
+        <div class="page-head"><h1>Suite Pulse</h1><p class="lead">Suite summary, timing, error categories, AI insights, coverage, and environments.</p></div>
         <div class="grid2" id="analyticsGrid"></div>
       </section>
 
       <section class="page" id="page-flaky">
-        <div class="page-head"><h1>Flaky Tests</h1><p class="lead">Stability score and failure category for unreliable tests.</p></div>
+        <div class="page-head"><h1>Unstable</h1><p class="lead">Stability score and failure category for unreliable cases.</p></div>
         <div id="flakyTable"></div>
       </section>
 
       <section class="page" id="page-gallery">
-        <div class="page-head"><h1>Gallery</h1><p class="lead">Screenshots and videos from the current filter.</p></div>
+        <div class="page-head"><h1>Screens &amp; Video</h1><p class="lead">Screenshots and videos from the current filter.</p></div>
         <div id="galleryBody"></div>
       </section>
 
       <section class="page" id="page-timeline">
-        <div class="page-head"><h1>Timeline</h1><p class="lead">Approximate worker lanes from start time and duration.</p></div>
+        <div class="page-head"><h1>Worker Map</h1><p class="lead">Approximate worker lanes from start time and duration.</p></div>
         <div id="timelineBody"></div>
       </section>
 
       <section class="page" id="page-config">
-        <div class="page-head"><h1>Config</h1><p class="lead">Environment and report metadata for this run.</p></div>
+        <div class="page-head"><h1>Run Meta</h1><p class="lead">Environment and report metadata for this local report.</p></div>
         <div class="card" id="configBody"></div>
       </section>
 
       <section class="page" id="page-run">
-        <div class="back-row"><button class="btn" type="button" id="btnBackRuns">← Back to Test Runs</button></div>
+        <div class="back-row"><button class="btn" type="button" id="btnBackRuns">← Back to Run History</button></div>
         <div class="page-head">
-          <h1 id="runTitle">Test Run</h1>
+          <h1 id="runTitle">Report</h1>
           <p class="lead" id="runLead"></p>
         </div>
         <div class="case-kpi-grid" id="runKpis"></div>
@@ -522,7 +522,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
   var FILTER_KEY='xreport.explorerFilters.v1';
   var state={page:'runs',status:'failed',project:'',tag:'',sort:'status',q:'',sel:null,dtab:'attempts',collapsed:{},idx:0,runStatus:'all',runBranch:'all',runEnv:'all',runQ:'',runId:'current',runFilter:'all',ctab:'overview',caseBack:'runs',clusterId:'',attemptIdx:-1,cmpA:'',cmpB:'current',stepCat:''};
   var maxD=DATA.maxDuration||1;
-  var pageNames={dashboard:'Dashboard',runs:'Test Runs',tests:'Test Explorer',analytics:'Analytics',flaky:'Flaky Tests',gallery:'Gallery',timeline:'Timeline',config:'Config',run:'Test Run',case:'Test Case'};
+  var pageNames={dashboard:'Summary',runs:'Run History',tests:'Case Triage',analytics:'Suite Pulse',flaky:'Unstable',gallery:'Screens & Video',timeline:'Worker Map',config:'Run Meta',run:'Report',case:'Case'};
 
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function fmt(ms){ms=ms||0;if(ms<1000)return Math.round(ms)+'ms';var s=ms/1000;if(s<60)return s.toFixed(2)+'s';return Math.floor(s/60)+'m '+(s%60).toFixed(1)+'s';}
@@ -688,12 +688,12 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     function link(page,label){return '<button class="crumb-link" type="button" data-crumb="'+esc(page)+'">'+esc(label)+'</button>';}
     if(p==='run'){
       var rr=findRun(state.runId);
-      trail.innerHTML=link('runs','Test Runs')+' <span class="sep">›</span> <span class="crumb-current">'+esc((rr&&rr.title)||'Test Run')+'</span>';
+      trail.innerHTML=link('runs','Run History')+' <span class="sep">›</span> <span class="crumb-current">'+esc((rr&&rr.title)||'Report')+'</span>';
     }else if(p==='case'){
       var back=state.caseBack==='run'?'run':(state.caseBack==='dashboard'?'dashboard':(state.caseBack==='flaky'?'flaky':'tests'));
-      var backLabel=pageNames[back]||'Test Explorer';
-      var mid=state.caseBack==='run'?(link('runs','Test Runs')+' <span class="sep">›</span> '+link('run',(findRun(state.runId)||{}).title||'Test Run')):link(back,backLabel);
-      trail.innerHTML=mid+' <span class="sep">›</span> <span class="crumb-current">'+esc(state.sel?state.sel.title:'Test Case')+'</span>';
+      var backLabel=pageNames[back]||'Case Triage';
+      var mid=state.caseBack==='run'?(link('runs','Run History')+' <span class="sep">›</span> '+link('run',(findRun(state.runId)||{}).title||'Report')):link(back,backLabel);
+      trail.innerHTML=mid+' <span class="sep">›</span> <span class="crumb-current">'+esc(state.sel?state.sel.title:'Case')+'</span>';
     }else{
       trail.innerHTML='<span class="crumb-current">'+(pageNames[p]||p)+'</span>';
     }
@@ -834,7 +834,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     var sa=document.getElementById('cmpA'), sb=document.getElementById('cmpB');
     if(sa&&!sa.options.length){
       runs.forEach(function(r,idx){
-        var label=(r.id==='current'?'Current · ':'')+ (r.title||r.id).slice(0,48)+' · '+ago(r.date);
+        var label=(r.id==='current'?'This report · ':'')+ (r.title||r.id).slice(0,48)+' · '+ago(r.date);
         var oa=document.createElement('option');oa.value=r.id;oa.textContent=label;sa.appendChild(oa);
         var ob=document.createElement('option');ob.value=r.id;ob.textContent=label;sb.appendChild(ob);
       });
@@ -900,27 +900,27 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     var flakyN=DATA.tests.filter(function(t){return t.flaky||(t.stabilityPct!=null&&t.stabilityPct<90);}).length;
     var media=0;DATA.tests.forEach(function(t){(t.attachments||[]).forEach(function(x){if(x.type==='screenshot'||x.type==='video'||(x.contentType||'').indexOf('image')===0||(x.contentType||'').indexOf('video')===0)media++;});});
     document.getElementById('dashSections').innerHTML=
-      '<div class="dash-sec"><h3>Explorer</h3><div class="dash-links">'+
-        '<button class="dash-link" type="button" data-goto="runs"><span>Test Runs</span><span class="go">Open →</span></button>'+
-        '<button class="dash-link" type="button" data-goto="tests"><span>Test Explorer</span><span class="go">Open →</span></button>'+
-      '</div><div class="dash-preview"><b>'+s.total+'</b> test cases · <b>'+fail+'</b> failed · <b>'+s.flaky+'</b> flaky in this run</div></div>'+
-      '<div class="dash-sec"><h3>Insights</h3><div class="dash-links">'+
-        '<button class="dash-link" type="button" data-goto="analytics"><span>Analytics</span><span class="go">Open →</span></button>'+
-        '<button class="dash-link" type="button" data-goto="flaky"><span>Flaky Tests</span><span class="go">Open →</span></button>'+
+      '<div class="dash-sec"><h3>Triage</h3><div class="dash-links">'+
+        '<button class="dash-link" type="button" data-goto="runs"><span>Run History</span><span class="go">Open →</span></button>'+
+        '<button class="dash-link" type="button" data-goto="tests"><span>Case Triage</span><span class="go">Open →</span></button>'+
+      '</div><div class="dash-preview"><b>'+s.total+'</b> cases · <b>'+fail+'</b> failed · <b>'+s.flaky+'</b> flaky in this report</div></div>'+
+      '<div class="dash-sec"><h3>Signals</h3><div class="dash-links">'+
+        '<button class="dash-link" type="button" data-goto="analytics"><span>Suite Pulse</span><span class="go">Open →</span></button>'+
+        '<button class="dash-link" type="button" data-goto="flaky"><span>Unstable</span><span class="go">Open →</span></button>'+
       '</div><div class="dash-preview"><b>'+(a.clusters||[]).length+'</b> error groups · <b>'+flakyN+'</b> unstable · grade <b>'+(a.stabilityGrade||'—')+'</b></div></div>'+
-      '<div class="dash-sec"><h3>Debug</h3><div class="dash-links">'+
-        '<button class="dash-link" type="button" data-goto="gallery"><span>Gallery</span><span class="go">Open →</span></button>'+
-        '<button class="dash-link" type="button" data-goto="timeline"><span>Timeline</span><span class="go">Open →</span></button>'+
+      '<div class="dash-sec"><h3>Evidence</h3><div class="dash-links">'+
+        '<button class="dash-link" type="button" data-goto="gallery"><span>Screens &amp; Video</span><span class="go">Open →</span></button>'+
+        '<button class="dash-link" type="button" data-goto="timeline"><span>Worker Map</span><span class="go">Open →</span></button>'+
       '</div><div class="dash-preview"><b>'+media+'</b> screenshots/videos · worker timing map available</div></div>';
 
     var list=DATA.tests.slice().sort(function(a,b){return statusRank(a)-statusRank(b)||(b.duration||0)-(a.duration||0);}).slice(0,12);
-    if(!list.length){document.getElementById('dashTests').innerHTML='<div class="empty" style="padding:16px">No test cases in this run.</div>';return;}
-    document.getElementById('dashTests').innerHTML='<div class="table-wrap"><table class="table"><thead><tr><th>Test case</th><th>Status</th><th>Project</th><th>Duration</th><th>Stability</th></tr></thead><tbody>'+
+    if(!list.length){document.getElementById('dashTests').innerHTML='<div class="empty" style="padding:16px">No cases in this report.</div>';return;}
+    document.getElementById('dashTests').innerHTML='<div class="table-wrap"><table class="table"><thead><tr><th>Case</th><th>Status</th><th>Project</th><th>Duration</th><th>Stability</th></tr></thead><tbody>'+
       list.map(function(t){
         var st=t.flaky?'flaky':t.status;
         return '<tr class="click" data-id="'+esc(t.id)+'"><td><b>'+esc(t.title)+'</b><div class="runmeta">'+esc(t.fullTitle||t.file||'')+'</div></td><td><span class="status-pill '+esc(st)+'">'+esc(st)+'</span></td><td>'+esc(t.project||'—')+'</td><td>'+fmt(t.duration)+'</td><td>'+(t.stabilityPct==null?'—':t.stabilityPct+'%')+'</td></tr>';
       }).join('')+
-      '</tbody></table></div>'+(DATA.tests.length>12?'<div class="runmeta" style="margin-top:10px">Showing 12 of '+DATA.tests.length+' · open Explorer for full list</div>':'');
+      '</tbody></table></div>'+(DATA.tests.length>12?'<div class="runmeta" style="margin-top:10px">Showing 12 of '+DATA.tests.length+' · open Case Triage for full list</div>':'');
   }
 
   function renderCharts(){
@@ -1168,7 +1168,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     var fail=(sum.failed||0)+(sum.timedOut||0);
     var all=runTests(run);
     var list=filterRunTests(all,state.runFilter).sort(function(a,b){return statusRank(a)-statusRank(b);});
-    document.getElementById('runTitle').textContent=run.title||'Test Run';
+    document.getElementById('runTitle').textContent=run.title||'Report';
     document.getElementById('runLead').textContent=fmt(sum.duration)+' · '+(run.env||'Local')+' · '+(run.branch||'—')+' · '+ago(run.date)+(run.id==='current'?' · current run':'');
     document.getElementById('runKpis').innerHTML=
       '<div class="case-kpi"><div class="l">Status</div><div class="v '+(fail?'fail':'pass')+'">'+(fail?'Failed':'Passed')+'</div></div>'+
@@ -1323,9 +1323,9 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     var current=list.find(function(r){return r.id==='current';})||list[0];
     var failC=(current.summary.failed||0)+(current.summary.timedOut||0);
     var passPct=current.summary.total?Math.round((current.summary.passed/current.summary.total)*100):0;
-    var activeHtml='<div class="section-label"><span class="chev">▾</span> 1 Current Test Run</div>'+
+    var activeHtml='<div class="section-label"><span class="chev">▾</span> This report</div>'+
       '<div class="active-card click" data-run="'+esc(current.id)+'" style="cursor:pointer"><div class="row">'+
-      '<div style="flex:1;min-width:200px"><div class="id">#'+ (list.length) +' · '+esc(current.id==='current'?'Current':current.id.slice(0,8))+'</div>'+
+      '<div style="flex:1;min-width:200px"><div class="id">'+esc(current.id==='current'?'Latest local report':('Report · '+current.id.slice(0,8)))+'</div>'+
       '<div class="meta">'+fmt(current.summary.duration)+' · '+esc(current.env||'Local')+' · '+ago(current.date)+'</div>'+
       '<div class="meta" style="margin-top:8px;font-weight:650;color:var(--text)">'+esc(current.title)+'</div>'+
       '<div class="meta"><span class="branch">⎇ '+esc(current.branch||'—')+'</span> <span class="envpill">'+esc(String(current.env||'LOCAL').toUpperCase().slice(0,12))+'</span></div></div>'+
@@ -1336,8 +1336,9 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       var fail=(r.summary.failed||0)+(r.summary.timedOut||0);
       var icon=fail?'<span class="bad">✕</span>':'<span class="ok">✓</span>';
       var initials=(DATA.branding.companyName||'XQ').slice(0,2).toUpperCase();
+      var runLabel=r.id==='current'?'Latest':('XR-'+(list.length-i));
       return '<tr class="click" data-run="'+esc(r.id)+'">'+
-        '<td><div class="runid">'+icon+' #'+(list.length-i)+'</div><div class="runmeta">'+fmt(r.summary.duration)+' · '+esc(r.env||'Local')+'</div></td>'+
+        '<td><div class="runid">'+icon+' '+runLabel+'</div><div class="runmeta">'+fmt(r.summary.duration)+' · '+esc(r.env||'Local')+'</div></td>'+
         '<td><div class="commit-title">'+esc(r.title)+'</div><div class="commit-sub"><span class="avatar">'+esc(initials)+'</span> '+esc(r.framework)+' · '+ago(r.date)+'</div></td>'+
         '<td><div class="branch">⎇ '+esc(r.branch||'—')+'</div>'+(r.env?'<span class="envpill" style="margin-top:6px">'+esc(String(r.env).toUpperCase().slice(0,12))+'</span>':'')+'</td>'+
         '<td>'+resultPills(r.summary,r.id)+'</td>'+
@@ -1345,8 +1346,8 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     }).join('');
 
     document.getElementById('runsTable').innerHTML=activeHtml+
-      '<div class="table-wrap"><div class="table-meta"><span>'+list.length+' total</span><span>Last updated: Just now</span></div>'+
-      '<table class="table"><thead><tr><th>Test Run</th><th>Commit</th><th>Branch & Environment</th><th>Test Results</th><th>Insights</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="table-wrap"><div class="table-meta"><span>'+list.length+' reports</span><span>Last updated: Just now</span></div>'+
+      '<table class="table"><thead><tr><th>Report</th><th>Title</th><th>Branch & Environment</th><th>Results</th><th>Signal</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
     renderCompare();
   }
 
@@ -1365,12 +1366,12 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     html+='<div class="card"><h3>AI Insights</h3>'+(insights.length?insights.slice(0,8).map(function(i){
       return '<div style="padding:8px 0;border-bottom:1px solid var(--soft2)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><b>'+esc((i.summary||'').slice(0,120))+'</b><div class="runmeta">'+esc(i.defectKind||'unknown')+' · conf '+(Math.round((i.confidence||0)*100))+'% · cluster '+esc(i.clusterId||'')+'</div>'+
         ((i.nextSteps||[]).length?'<div class="runmeta" style="margin-top:4px">'+(i.nextSteps||[]).slice(0,3).map(function(s){return esc(s);}).join(' · ')+'</div>':'')+
-        '</div><button class="btn" type="button" data-cluster="'+esc(i.clusterId||'')+'" title="Filter Explorer">Open</button></div></div>';
+        '</div><button class="btn" type="button" data-cluster="'+esc(i.clusterId||'')+'" title="Filter Case Triage">Open</button></div></div>';
     }).join('')+'<div class="btns" style="margin-top:10px"><button class="btn" type="button" id="btnCopyRunAi">Copy run prompt for Cursor</button></div>':'<div class="empty" style="padding:8px">No LLM insights yet. Heuristics are always on. Optional: enable <code>ai.enabled</code> or run <code>xreport ai analyze</code>.</div><div class="btns" style="margin-top:10px"><button class="btn" type="button" id="btnCopyRunAi">Copy run prompt for Cursor</button></div>')+'</div>';
     html+='<div class="card"><h3>Suite / by file</h3><ul style="list-style:none;margin:0;padding:0">'+(a.byFile||[]).slice(0,8).map(function(x){return '<li style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--soft2)"><span>'+esc(x.file.split('/').slice(-2).join('/'))+'</span><span>'+x.failed+'F / '+x.total+'</span></li>';}).join('')+'</ul></div>';
     html+='<div class="card"><h3>Test run timing</h3><ul style="list-style:none;margin:0;padding:0">'+(a.slowest||[]).slice(0,8).map(function(x){return '<li style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--soft2)"><span>'+esc(x.title.slice(0,48))+'</span><span>'+fmt(x.duration)+'</span></li>';}).join('')+'</ul></div>';
     html+='<div class="card"><h3>Error categories</h3>'+((a.byCategory||[]).map(function(x){return '<div class="barrow"><span>'+esc(x.category)+'</span><div class="bartrack"><div class="seg f" style="width:'+Math.min(100,x.count*20)+'%"></div></div><span>'+x.count+'</span></div>';}).join('')||'<div class="empty" style="padding:8px">No categorized failures</div>')+'</div>';
-    html+='<div class="card"><h3>Error groups</h3><ul style="list-style:none;margin:0;padding:0">'+(a.clusters||[]).slice(0,8).map(function(x){return '<li style="padding:6px 0;border-bottom:1px solid var(--soft2)"><button class="cluster-row" type="button" data-cluster="'+esc(x.id)+'" title="Filter Explorer to this group"><span>'+esc((x.sample||'').slice(0,64))+(x.category?' <span class="tag">'+esc(x.category)+'</span>':'')+(x.defectKind?' <span class="tag">'+esc(x.defectKind)+'</span>':'')+'</span><span>×'+x.count+'</span></button><div class="btns" style="margin-top:4px"><button class="btn" type="button" data-copy-cluster="'+esc(x.id)+'">Copy Prompt for Cursor</button></div></li>';}).join('')+'</ul></div>';
+    html+='<div class="card"><h3>Error groups</h3><ul style="list-style:none;margin:0;padding:0">'+(a.clusters||[]).slice(0,8).map(function(x){return '<li style="padding:6px 0;border-bottom:1px solid var(--soft2)"><button class="cluster-row" type="button" data-cluster="'+esc(x.id)+'" title="Filter Case Triage to this group"><span>'+esc((x.sample||'').slice(0,64))+(x.category?' <span class="tag">'+esc(x.category)+'</span>':'')+(x.defectKind?' <span class="tag">'+esc(x.defectKind)+'</span>':'')+'</span><span>×'+x.count+'</span></button><div class="btns" style="margin-top:4px"><button class="btn" type="button" data-copy-cluster="'+esc(x.id)+'">Copy Prompt for Cursor</button></div></li>';}).join('')+'</ul></div>';
     var c=DATA.coverage||a.coverage;
     html+='<div class="card"><h3>Coverage</h3>'+(c?['lines','statements','branches','functions'].map(function(k){return '<div class="barrow"><span>'+k+'</span><div class="bartrack"><div class="seg p" style="width:'+(c[k]||0)+'%"></div></div><span>'+(c[k]==null?'—':c[k]+'%')+'</span></div>';}).join(''):'<div class="empty" style="padding:8px">No coverage summary</div>')+'</div>';
     html+='<div class="card"><h3>Environment pass rates</h3>'+((a.byEnvironment||[]).map(function(x){return '<div class="barrow"><span>'+esc(x.label)+'</span><div class="bartrack"><div class="seg p" style="width:'+x.passRate+'%"></div></div><span>'+x.passRate+'%</span></div>';}).join('')||'<div class="empty" style="padding:8px">Enable history</div>')+'</div>';
@@ -1623,7 +1624,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
 
   renderKpis();renderCharts();renderDashPanels();renderFilterChips();renderGrid();
   if(location.hash.indexOf('#test-')===0){/* already on case */}
-  else{setPage('runs');}
+  else{setPage('dashboard');}
 })();
 </script>
 </body>

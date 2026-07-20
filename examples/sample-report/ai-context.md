@@ -1,10 +1,10 @@
 # XREPORT AI context
 
-Generated: 2026-07-20T20:37:32.895Z
+Generated: 2026-07-20T22:10:12.353Z
 
 You are helping fix failing automated tests. Use only the evidence below.
 
-## Run: XREPORT Sample · Dashboard Demo
+## Run: XREPORT Sample · Local Triage Demo
 - Framework: playwright
 - Summary: 3 passed / 2 failed / 1 flaky / 7 total
 - Branch: main

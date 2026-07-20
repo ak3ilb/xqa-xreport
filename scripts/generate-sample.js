@@ -431,14 +431,14 @@ async function main() {
   const reportDir = path.join(__dirname, '..', 'examples', 'sample-report');
 
   const run = buildRun({
-    title: 'XREPORT Sample · Dashboard Demo',
+    title: 'XREPORT Sample · Local Triage Demo',
     framework: 'playwright',
     startedAt: now - 40000,
     finishedAt: now,
     suites,
     options: {
       reportDir,
-      reportTitle: 'XREPORT Sample · Dashboard Demo',
+      reportTitle: 'XREPORT Sample · Local Triage Demo',
       enableHistory: true,
       historyOptions: { dbPath: historyPath, saveFullResults: true },
       exportCSV: true,
