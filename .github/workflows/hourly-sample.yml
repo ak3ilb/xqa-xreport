@@ -6,30 +6,8 @@ name: Hourly sample
 on:
   schedule:
     - cron: '0 * * * *'
+  # No inputs — Run workflow is one click; count/framework/page are always random.
   workflow_dispatch:
-    inputs:
-      count:
-        description: 'Samples this run (1-10). Use 0 for random 5-10.'
-        required: true
-        default: '0'
-        type: string
-      framework:
-        description: 'Framework for every sample (or random per sample)'
-        required: true
-        default: random
-        type: choice
-        options:
-          - random
-          - playwright
-          - cypress
-          - jest
-          - vitest
-          - mocha
-      page:
-        description: 'Practice page id (e.g. practice-form), or random'
-        required: true
-        default: random
-        type: string
 
 permissions:
   contents: read
@@ -52,12 +30,9 @@ jobs:
 
       - name: Build matrix
         id: gen
-        env:
-          INPUT_COUNT: ${{ github.event_name == 'workflow_dispatch' && inputs.count || '0' }}
-          INPUT_FRAMEWORK: ${{ github.event_name == 'workflow_dispatch' && inputs.framework || 'random' }}
-          INPUT_PAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.page || 'random' }}
         run: |
           set -euo pipefail
+          # Always auto-assign: random 5–10 slots, random framework + page each.
           FRAMEWORKS=(playwright cypress jest vitest mocha)
           PAGES_JSON="scripts/ci/practice-pages.json"
           mapfile -t PAGE_IDS < <(jq -r '.[].id' "${PAGES_JSON}")
@@ -66,34 +41,17 @@ jobs:
             exit 1
           fi
 
-          COUNT_RAW="${INPUT_COUNT:-0}"
-          if [[ "${COUNT_RAW}" =~ ^[1-9]$|^10$ ]]; then
-            COUNT="${COUNT_RAW}"
-          else
-            COUNT=$((5 + RANDOM % 6))
-          fi
-
-          PIN_FW="${INPUT_FRAMEWORK:-random}"
-          PIN_PAGE="${INPUT_PAGE:-random}"
+          COUNT=$((5 + RANDOM % 6))
           ITEMS='[]'
           for ((i=1; i<=COUNT; i++)); do
-            if [[ "${PIN_FW}" == "random" || -z "${PIN_FW}" ]]; then
-              FW="${FRAMEWORKS[$((RANDOM % ${#FRAMEWORKS[@]}))]}"
-            else
-              FW="${PIN_FW}"
-            fi
-            if [[ "${PIN_PAGE}" == "random" || -z "${PIN_PAGE}" ]]; then
-              PAGE="${PAGE_IDS[$((RANDOM % ${#PAGE_IDS[@]}))]}"
-            else
-              PAGE="${PIN_PAGE}"
-            fi
+            FW="${FRAMEWORKS[$((RANDOM % ${#FRAMEWORKS[@]}))]}"
+            PAGE="${PAGE_IDS[$((RANDOM % ${#PAGE_IDS[@]}))]}"
             ITEMS=$(jq -c --argjson slot "$i" --arg fw "$FW" --arg page "$PAGE" \
               '. + [{slot: $slot, framework: $fw, page: $page}]' <<<"${ITEMS}")
           done
 
           MATRIX=$(jq -c '{include: .}' <<<"${ITEMS}")
           echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
-          # Multiline-safe matrix output for fromJson consumers
           {
             echo "matrix<<EOF"
             echo "${MATRIX}"
@@ -103,9 +61,8 @@ jobs:
           {
             echo "### Hourly XQA practice plan"
             echo ""
-            echo "- Samples: **${COUNT}**"
-            echo "- Framework pin: \`${PIN_FW}\`"
-            echo "- Page pin: \`${PIN_PAGE}\`"
+            echo "- Samples (auto): **${COUNT}**"
+            echo "- Framework / page: **random per slot**"
             echo "- Catalog: ${#PAGE_IDS[@]} pages"
             echo ""
             echo '```json'
