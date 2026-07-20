@@ -1,5 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { analyzeRunWithAi, isAiConfigured } from '../core/ai-analyze';
+import { writeAiContextPack } from '../core/ai-context';
 import { enrichRun, historyTrendFromRecords } from '../core/analytics';
 import { toCtrf } from '../core/ctrf';
 import { toCsv } from '../core/csv';
@@ -29,6 +31,8 @@ export interface GenerateResult {
   pdfPath?: string;
   failedRerunPath?: string;
   traceViewerPath?: string;
+  aiContextJsonPath?: string;
+  aiContextMdPath?: string;
 }
 
 export async function generateReport(
@@ -75,24 +79,50 @@ export async function generateReport(
     if (viewer) result.traceViewerPath = path.join(reportDir, viewer);
   }
 
+  // Optional local-first LLM analysis (cluster cache in report dir)
+  const aiOpts = (opts as XReportOptions).ai || run.options?.ai;
+  let withAi = enriched;
+  if (aiOpts?.enabled && isAiConfigured(aiOpts)) {
+    try {
+      const insights = await analyzeRunWithAi(enriched, reportDir, aiOpts);
+      if (insights.length) {
+        withAi = { ...enriched, aiInsights: insights };
+      }
+    } catch (err) {
+      if (!opts.quiet) {
+        console.warn(
+          '[xreport] AI analyze skipped:',
+          err instanceof Error ? err.message : String(err),
+        );
+      }
+    }
+  }
+
+  const writeContext = aiOpts?.writeContextPack !== false;
+  if (writeContext) {
+    const packed = writeAiContextPack(reportDir, withAi);
+    result.aiContextJsonPath = packed.jsonPath;
+    result.aiContextMdPath = packed.mdPath;
+  }
+
   if (opts.saveJson) {
     result.jsonPath = path.join(reportDir, 'xreport.json');
-    writeJson(result.jsonPath, enriched);
+    writeJson(result.jsonPath, withAi);
   }
 
   if (opts.exportCtrf) {
     result.ctrfPath = path.join(reportDir, 'ctrf-report.json');
-    writeJson(result.ctrfPath, toCtrf(enriched));
+    writeJson(result.ctrfPath, toCtrf(withAi));
   }
 
   if (opts.exportCSV) {
     result.csvPath = path.join(reportDir, 'xreport.csv');
-    fs.writeFileSync(result.csvPath, toCsv(enriched), 'utf8');
+    fs.writeFileSync(result.csvPath, toCsv(withAi), 'utf8');
   }
 
   if (opts.saveHtml) {
     const htmlName = base === 'index' ? 'index.html' : `${base}.html`;
-    const forHtml = opts.inlineAssets ? inlineRunAssets(enriched, reportDir) : enriched;
+    const forHtml = opts.inlineAssets ? inlineRunAssets(withAi, reportDir) : withAi;
     const html = renderHtml(forHtml, {
       traceViewer: !!result.traceViewerPath,
     });
@@ -134,6 +164,7 @@ export async function generateReport(
     if (result.pdfPath) console.log(`  PDF:    ${result.pdfPath}`);
     if (result.failedRerunPath) console.log(`  Failed: ${result.failedRerunPath}`);
     if (result.traceViewerPath) console.log(`  Trace:  ${result.traceViewerPath}`);
+    if (result.aiContextMdPath) console.log(`  AI:     ${result.aiContextMdPath}`);
     if (opts.enableHistory) console.log(`  History: saved (${opts.historyOptions.dbPath})`);
     console.log('');
   }

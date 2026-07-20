@@ -22,9 +22,31 @@
 - **Analytics** — slowest tests, by-file, tag health, clickable error clusters, stability score
 - **Media & traces** — screenshots, videos, lightbox; Playwright trace viewer via `xreport open`
 - **History** — local trends, compare two runs, quarantine tips (`enableHistory`)
+- **AI (local-first)** — `ai-context.md/json` per run, Copy Prompt for Cursor, optional OpenAI-compatible analyze, local MCP
 - **Exports** — HTML, JSON, CSV, CTRF, optional PDF; WDIO worker auto-merge
 - **Context API** — `attach` / `testContext` (+ Cypress `cy.xreportNote` / `cy.xreportMeta`)
 - **TypeScript & JavaScript** — published types, zero Java, report ready when tests finish
+
+### Features Preview
+
+**Dashboard** — Pass rate, KPIs, Explorer / Insights / Debug shortcuts, and a clickable test-case list.
+
+![XREPORT Dashboard](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/dashboard.png)
+
+**Test Runs** — Local run history with status pills, compare-two-runs, branch & environment filters.
+
+![XREPORT Test Runs](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/test-runs.png)
+
+**Test Explorer** — Failures-first triage grid with side panel (attempts, steps, errors, logs, attachments).
+
+![XREPORT Test Explorer](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/test-explorer.png)
+
+Preview the demo locally:
+
+```bash
+npm run sample
+npx xreport open ./examples/sample-report
+```
 
 ### Report UI
 
@@ -35,7 +57,7 @@
 | **Run detail** | Per-run filters (All / Failed / Passed / Flaky / Skipped) + clickable cases |
 | **Test Explorer** | Failures-first grid + **side panel** (Attempts · Steps · Error · Logs · Hooks · Attachments · History · Meta) |
 | **Case page** | Overview · Errors · Steps (nested) · Hooks · Logs · History · Attachments · Meta |
-| **Analytics** | By-file, slowest, error categories, **clickable error groups**, coverage, tag health, quarantine tips |
+| **Analytics** | By-file, slowest, error categories, **AI Insights**, **clickable error groups** + Copy Prompt, coverage, tag health, quarantine tips |
 | **Flaky Tests** | Stability % + failure category |
 | **Gallery / Timeline** | Screenshots & videos · approximate worker lanes |
 | **Config** | Environment + report metadata |
@@ -87,35 +109,6 @@
 | Mocha | `@xqa.io/xreport/mocha` | Context API attach, retries |
 | Jasmine | `@xqa.io/xreport/jasmine` | Specs + failed expectations |
 | WebdriverIO | `@xqa.io/xreport/webdriverio` | Worker auto-merge |
-
----
-
-## Features Preview
-
-### Dashboard
-
-Pass rate, KPIs, Explorer / Insights / Debug shortcuts, and a clickable test-case list.
-
-![XREPORT Dashboard](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/dashboard.png)
-
-### Test Runs
-
-Local run history with status pills, compare-two-runs, branch & environment filters.
-
-![XREPORT Test Runs](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/test-runs.png)
-
-### Test Explorer
-
-Failures-first triage grid with side panel (attempts, steps, errors, logs, attachments).
-
-![XREPORT Test Explorer](https://raw.githubusercontent.com/ak3ilb/xqa-xreport/main/docs/images/test-explorer.png)
-
-Preview the demo locally:
-
-```bash
-npm run sample
-npx xreport open ./examples/sample-report
-```
 
 ---
 
@@ -499,7 +492,70 @@ npx xreport history delete --days=60
 npx xreport history cleanup --max=50
 npx xreport history export backup.json
 npx xreport history import backup.json
+
+# AI (local-first — no cloud account required)
+npx xreport ai context ./xreport
+npx xreport ai analyze ./xreport   # needs XREPORT_AI_BASE_URL / optional API key
+npx xreport mcp                    # or: npx xreport-mcp
 ```
+
+---
+
+## AI (local-first)
+
+XREPORT ships **agent fuel** next to every report — no upload, no required API key.
+
+### Context pack (always on)
+
+After each run (unless `ai.writeContextPack: false`):
+
+- `xreport/ai-context.md` — paste into Cursor / ChatGPT
+- `xreport/ai-context.json` — structured clusters, failures, flake tips
+
+CLI: `npx xreport ai context ./xreport`
+
+In the HTML report: **Copy AI prompt** on the case / Explorer panel, and **Copy Prompt for Cursor** on Analytics error groups.
+
+### Optional LLM insights
+
+OpenAI-compatible providers (OpenAI, Azure, OpenRouter, **Ollama**):
+
+```ts
+['@xqa.io/xreport/playwright', {
+  ai: {
+    enabled: true,
+    provider: 'openai-compatible',
+    baseUrl: process.env.XREPORT_AI_BASE_URL || 'http://127.0.0.1:11434/v1',
+    apiKey: process.env.XREPORT_AI_API_KEY, // optional for local Ollama
+    model: process.env.XREPORT_AI_MODEL || 'llama3.2',
+    budget: { maxFailures: 15, maxTokens: 8000 },
+  },
+}]
+```
+
+Or after a run: `XREPORT_AI_BASE_URL=http://127.0.0.1:11434/v1 npx xreport ai analyze ./xreport`
+
+Insights appear under Analytics → **AI Insights** and are cached by error signature (`ai-insight-cache.json`).
+
+### Local MCP for Cursor
+
+```json
+{
+  "mcpServers": {
+    "xreport": {
+      "command": "npx",
+      "args": ["-y", "@xqa.io/xreport-mcp"],
+      "env": {
+        "XREPORT_DIR": "/absolute/path/to/your/xreport"
+      }
+    }
+  }
+}
+```
+
+Or use the bin from this package: `npx xreport-mcp` / `npx xreport mcp`.
+
+Heuristic triage (clusters, defect kind: product / automation / environment / flake) stays free and always on. LLM is an optional enhancement — we explain and prioritize; we do not claim to auto-fix tests.
 
 ---
 
@@ -522,6 +578,15 @@ npx xreport history import backup.json
     retentionDays: 30,
     autoCleanup: true,
     saveFullResults: true,        // compare runs, case History, per-test stability
+  },
+  ai: {
+    enabled: false,               // optional OpenAI-compatible analyze
+    writeContextPack: true,       // ai-context.md + .json (default true)
+    provider: 'openai-compatible',
+    baseUrl: process.env.XREPORT_AI_BASE_URL,
+    apiKey: process.env.XREPORT_AI_API_KEY,
+    model: 'gpt-4.1-mini',
+    budget: { maxFailures: 15, maxTokens: 8000 },
   },
   branding: {
     projectName: 'XREPORT',
@@ -567,6 +632,7 @@ npx xreport history import backup.json
 | Sparse demo UIs | Dashboard + explorer workstation |
 | Need spreadsheets / PDF | CSV + optional PDF |
 | Cloud-only analytics | Self-hosted local HTML + history |
+| AI tied to a SaaS account | Local context pack + optional LLM + MCP |
 
 ### Capability snapshot
 
@@ -592,6 +658,8 @@ npx xreport history import backup.json
 xreport/
 ├── index.html
 ├── xreport.json
+├── ai-context.md        # agent prompt (local-first AI)
+├── ai-context.json
 ├── ctrf-report.json
 ├── failed-tests.txt     # when failures exist
 ├── xreport.csv          # optional

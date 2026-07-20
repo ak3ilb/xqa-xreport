@@ -135,6 +135,7 @@ export function mergeOptions(options: XReportOptions = {}): Required<
   branding: NonNullable<XReportOptions['branding']>;
   reportPageTitle?: string;
   historyOptions: NonNullable<XReportOptions['historyOptions']>;
+  ai?: XReportOptions['ai'];
 } {
   const truthy = (v: unknown, fallback: boolean) => {
     if (v === undefined || v === null || v === '') return fallback;
@@ -180,6 +181,10 @@ export function mergeOptions(options: XReportOptions = {}): Required<
     enableHistory: truthy(o.enableHistory, false),
     inlineAssets: truthy(o.inlineAssets, false),
     historyOptions,
+    ai:
+      typeof o.ai === 'object' && o.ai
+        ? (o.ai as XReportOptions['ai'])
+        : undefined,
   };
 }
 

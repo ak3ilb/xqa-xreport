@@ -12,50 +12,17 @@ import type {
   XReportTestHistoryPoint,
 } from './types';
 import { collectTests } from './utils';
+import {
+  classifyDefectKind,
+  classifyFailure,
+  normalizeErrorSignature,
+} from './ai-classify';
 
-export function normalizeErrorSignature(message?: string): string {
-  if (!message) return 'unknown';
-  return message
-    .replace(/\d+/g, 'N')
-    .replace(/0x[0-9a-f]+/gi, 'HEX')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 160)
-    .toLowerCase();
-}
+export { normalizeErrorSignature, classifyFailure } from './ai-classify';
+export { classifyDefectKind, extractLikelyFixFile } from './ai-classify';
 
 export function errorSignatureHash(message?: string): string {
   return crypto.createHash('sha1').update(normalizeErrorSignature(message)).digest('hex').slice(0, 10);
-}
-
-export function classifyFailure(message?: string, stack?: string): FailureCategory {
-  const text = `${message || ''} ${stack || ''}`.toLowerCase();
-  if (
-    /timeout|timed out|exceeded|waiting for|slow|net::err_timed|etag/i.test(text) ||
-    /retry.*timeout/i.test(text)
-  ) {
-    return 'timing';
-  }
-  if (
-    /econnrefused|enotfound|fetch failed|socket hang up|net::err_|dns|502|503|504|cors|network/i.test(
-      text,
-    )
-  ) {
-    return 'network';
-  }
-  if (
-    /expected|assert|tobe|toequal|tohave|to contain|matcher|expect\(|assertion/i.test(text)
-  ) {
-    return 'assertion';
-  }
-  if (
-    /enoent|permission|env|environment|undefined is not|cannot find module|ci=|browser closed|target closed|crash/i.test(
-      text,
-    )
-  ) {
-    return 'environment';
-  }
-  return 'other';
 }
 
 export function markSlowSteps(steps: XReportStep[]): XReportStep[] {
@@ -170,6 +137,15 @@ export function enrichTest(test: XReportTest, historyRecords: HistoryRecord[] = 
     test.status === 'failed' || test.status === 'timedOut' || test.flaky
       ? classifyFailure(msg, stack)
       : undefined;
+  const defect = failureCategory
+    ? classifyDefectKind({
+        message: msg,
+        stack,
+        failureCategory,
+        flaky: test.flaky,
+        stabilityPct,
+      })
+    : undefined;
   return {
     ...test,
     steps: markSlowSteps(test.steps || []),
@@ -181,6 +157,9 @@ export function enrichTest(test: XReportTest, historyRecords: HistoryRecord[] = 
     labels: { ...meta.labels, ...(test.labels || {}) },
     retries: test.retries ?? retries,
     failureCategory: test.failureCategory || failureCategory,
+    defectKind: test.defectKind || defect?.kind,
+    defectConfidence: test.defectConfidence ?? defect?.confidence,
+    likelyFixFile: test.likelyFixFile || defect?.likelyFixFile,
     stabilityPct,
     testHistory,
   };
@@ -379,7 +358,14 @@ export function buildAnalytics(
 
   const clusterMap = new Map<
     string,
-    { signature: string; count: number; sample: string; testIds: string[]; category?: FailureCategory }
+    {
+      signature: string;
+      count: number;
+      sample: string;
+      testIds: string[];
+      category?: FailureCategory;
+      defectKind?: import('./ai-types').DefectKind;
+    }
   >();
   for (const t of tests) {
     if (!t.clusterId) continue;
@@ -389,9 +375,11 @@ export function buildAnalytics(
       sample: t.errors[0]?.message || t.errorSignature || '',
       testIds: [],
       category: t.failureCategory,
+      defectKind: t.defectKind,
     };
     row.count += 1;
     row.testIds.push(t.id);
+    if (!row.defectKind && t.defectKind) row.defectKind = t.defectKind;
     clusterMap.set(t.clusterId, row);
   }
   const clusters = [...clusterMap.entries()]

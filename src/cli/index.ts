@@ -13,10 +13,13 @@ import {
   resolveHistoryPath,
   saveHistory,
 } from '../core/history';
+import { analyzeRunWithAi, isAiConfigured } from '../core/ai-analyze';
+import { writeAiContextPack } from '../core/ai-context';
 import { flakeStatsFromHistory } from '../core/analytics';
 import { generateReport, mergeRuns } from '../generator';
-import type { XReportRun } from '../core/types';
-import { formatDuration, readJson } from '../core/utils';
+import type { XReportAiOptions, XReportRun } from '../core/types';
+import { formatDuration, readJson, writeJson } from '../core/utils';
+import { runMcpServer } from '../mcp/server';
 
 function help(): void {
   console.log(`
@@ -27,6 +30,9 @@ Usage:
   xreport open [dir] [--port 4173]
   xreport merge <dir-or-files...> [-o <dir>]
   xreport view [port]
+  xreport ai context [dir]
+  xreport ai analyze [dir]
+  xreport mcp
   xreport history list [n]
   xreport history stats
   xreport history trends [days]
@@ -42,10 +48,67 @@ Commands:
   open       Serve a report folder locally (needed for embedded trace viewer)
   merge      Merge multiple xreport.json partials
   view       Open interactive JSON drag-drop viewer
+  ai         Local-first AI context pack / optional LLM analyze
+  mcp        Start local MCP server (stdio) for Cursor / agents
   history    Local run history (list/stats/trends/flakes/failed-rerun/...)
 
 Practice: https://xqa.io/practice
 `);
+}
+
+function resolveReportDir(arg?: string): string {
+  const dir = path.resolve(arg || './xreport');
+  const jsonPath = path.join(dir, 'xreport.json');
+  if (!fs.existsSync(jsonPath)) {
+    console.error(`Missing ${jsonPath}`);
+    process.exit(1);
+  }
+  return dir;
+}
+
+function aiOptionsFromEnv(): XReportAiOptions {
+  return {
+    enabled: true,
+    provider: 'openai-compatible',
+    baseUrl: process.env.XREPORT_AI_BASE_URL,
+    apiKey: process.env.XREPORT_AI_API_KEY,
+    model: process.env.XREPORT_AI_MODEL,
+  };
+}
+
+async function cmdAi(args: string[]): Promise<void> {
+  const sub = args[0];
+  if (sub === 'context') {
+    const dir = resolveReportDir(args[1]);
+    const run = readJson<XReportRun>(path.join(dir, 'xreport.json'));
+    const packed = writeAiContextPack(dir, run);
+    console.log(`\n  AI context written:\n  ${packed.mdPath}\n  ${packed.jsonPath}\n`);
+    return;
+  }
+  if (sub === 'analyze') {
+    const dir = resolveReportDir(args[1]);
+    const jsonPath = path.join(dir, 'xreport.json');
+    const run = readJson<XReportRun>(jsonPath);
+    const opts = { ...aiOptionsFromEnv(), ...(run.options?.ai || {}) };
+    opts.enabled = true;
+    if (!isAiConfigured(opts)) {
+      console.error(
+        'AI not configured. Set XREPORT_AI_BASE_URL (e.g. http://127.0.0.1:11434/v1 for Ollama)\n' +
+          'and XREPORT_AI_API_KEY for cloud providers.',
+      );
+      process.exit(1);
+    }
+    const insights = await analyzeRunWithAi(run, dir, opts);
+    const withAi = { ...run, aiInsights: insights };
+    writeJson(jsonPath, withAi);
+    const packed = writeAiContextPack(dir, withAi);
+    console.log(
+      `\n  AI analyze: ${insights.length} insight(s)\n  ${jsonPath}\n  ${packed.mdPath}\n`,
+    );
+    return;
+  }
+  console.error('Usage: xreport ai context [dir] | xreport ai analyze [dir]');
+  process.exit(1);
 }
 
 function pad(s: string, n: number): string {
@@ -314,6 +377,8 @@ export async function runCli(argv = process.argv.slice(2)): Promise<void> {
   if (cmd === 'open') return cmdOpen(argv.slice(1));
   if (cmd === 'merge') return cmdMerge(argv.slice(1));
   if (cmd === 'view') return cmdView(argv.slice(1));
+  if (cmd === 'ai') return cmdAi(argv.slice(1));
+  if (cmd === 'mcp') return runMcpServer();
   if (cmd === 'history') {
     cmdHistory(argv.slice(1));
     return;

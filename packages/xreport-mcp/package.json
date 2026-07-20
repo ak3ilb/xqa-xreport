@@ -1,0 +1,33 @@
+{
+  "name": "@xqa.io/xreport-mcp",
+  "version": "0.5.0",
+  "description": "Local MCP server for XREPORT — Cursor/agents read your xreport.json + history with no cloud account.",
+  "license": "MIT",
+  "bin": {
+    "xreport-mcp": "bin.js"
+  },
+  "files": [
+    "bin.js",
+    "README.md"
+  ],
+  "dependencies": {
+    "@xqa.io/xreport": ">=0.5.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ak3ilb/xqa-xreport.git",
+    "directory": "packages/xreport-mcp"
+  },
+  "homepage": "https://xqa.io",
+  "keywords": [
+    "mcp",
+    "cursor",
+    "xreport",
+    "xqa",
+    "playwright",
+    "test-reporter"
+  ]
+}

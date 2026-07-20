@@ -1,7 +1,7 @@
 {
   "name": "@xqa.io/xreport",
-  "version": "0.4.1",
-  "description": "XREPORT by XQA — Playwright HTML reporter and test analytics for local CI. Also Cypress, Jest, Vitest, Mocha, Jasmine, WebdriverIO. Flaky detection, run history, error grouping, traces. Zero Java. From xqa.io.",
+  "version": "0.5.0",
+  "description": "XREPORT by XQA — Playwright HTML reporter and test analytics for local CI. Also Cypress, Jest, Vitest, Mocha, Jasmine, WebdriverIO. Local-first AI context + MCP. Flaky detection, run history, error grouping, traces. Zero Java. From xqa.io.",
   "keywords": [
     "xreport",
     "xqa",
@@ -41,7 +41,12 @@
     "zero java",
     "typescript",
     "javascript",
-    "qa"
+    "qa",
+    "mcp",
+    "cursor mcp",
+    "ai test reporting",
+    "ollama",
+    "openai compatible"
   ],
   "author": "XQA <https://xqa.io>",
   "license": "MIT",
@@ -60,12 +65,17 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "xreport": "bin/xreport.js"
+    "xreport": "bin/xreport.js",
+    "xreport-mcp": "bin/xreport-mcp.js"
   },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "default": "./dist/mcp/index.js"
     },
     "./context": {
       "types": "./dist/context/index.d.ts",
@@ -148,7 +158,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "sample": "npm run build && node scripts/generate-sample.js",
     "smoke:reporters": "npm run build && node scripts/smoke-reporters.js",
-    "test:unit": "node --test dist/**/*.test.js 2>/dev/null || node --test test/*.test.js 2>/dev/null || echo 'No unit tests yet'"
+    "test:unit": "npm run build && node --test dist/core/*.test.js"
   },
   "dependencies": {
     "open": "^8.4.2"

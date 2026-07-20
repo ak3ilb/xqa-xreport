@@ -52,6 +52,9 @@ function prepareTests(tests: XReportTest[]) {
     retries: t.retries ?? Math.max(0, (t.attempts?.length || 1) - 1),
     coverageSummary: t.coverageSummary || null,
     failureCategory: t.failureCategory || '',
+    defectKind: t.defectKind || '',
+    defectConfidence: typeof t.defectConfidence === 'number' ? t.defectConfidence : null,
+    likelyFixFile: t.likelyFixFile || '',
     stabilityPct: typeof t.stabilityPct === 'number' ? t.stabilityPct : null,
     testHistory: t.testHistory || [],
   }));
@@ -96,6 +99,7 @@ export function renderHtml(run: XReportRun, opts: RenderHtmlOptions = {}): strin
     brand: run.brand,
     branding: run.branding,
     analytics,
+    aiInsights: run.aiInsights || [],
     coverage: run.coverageSummary || analytics.coverage || null,
     maxDuration: Math.max(1, ...tests.map((t) => t.duration || 0)),
     traceViewer: !!opts.traceViewer,
@@ -448,7 +452,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       </section>
 
       <section class="page" id="page-analytics">
-        <div class="page-head"><h1>Analytics</h1><p class="lead">Suite summary, timing, error categories, coverage, and environments.</p></div>
+        <div class="page-head"><h1>Analytics</h1><p class="lead">Suite summary, timing, error categories, AI insights, coverage, and environments.</p></div>
         <div class="grid2" id="analyticsGrid"></div>
       </section>
 
@@ -524,6 +528,75 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
   function statusRank(t){if(isFail(t))return 0;if(t.flaky)return 1;if(t.status==='passed')return 2;return 3;}
   function ago(ts){var d=Date.now()-ts;if(d<60000)return 'Just now';if(d<3600000)return Math.floor(d/60000)+' mins ago';if(d<86400000)return Math.floor(d/3600000)+' hours ago';return Math.floor(d/86400000)+' days ago';}
   function fileLoc(t){if(!t||!t.file)return '';return t.file+(t.line?':'+t.line:'');}
+  function buildCaseAiPrompt(t){
+    var errs=attemptErrors(t);
+    var e=errs[0]||t.errors[0]||{};
+    var lines=[
+      'Fix this failing automated test. Stay local to the evidence.',
+      '',
+      'Title: '+(t.fullTitle||t.title||''),
+      'File: '+(fileLoc(t)||'—'),
+      'Owner: '+(t.owner||'—')+' · Severity: '+(t.severity||'—'),
+      'Failure category: '+(t.failureCategory||'—')+' · Defect kind: '+(t.defectKind||'unknown'),
+      'Flaky: '+(t.flaky?'yes':'no')+' · Stability: '+(t.stabilityPct==null?'—':t.stabilityPct+'%'),
+      'Cluster: '+(t.clusterId||'—')
+    ];
+    if(t.likelyFixFile)lines.push('Likely fix file: '+t.likelyFixFile);
+    lines.push('','Error:',e.message||'(no message)','',e.stack||'');
+    if(errs.length>1){
+      lines.push('','Additional errors ('+errs.length+'):');
+      errs.forEach(function(x,i){lines.push((i+1)+') '+(x.message||''));});
+    }
+    lines.push('','Propose a concrete fix (test and/or product). If flaky, suggest a stabilization approach.');
+    return lines.join('\\n');
+  }
+  function buildClusterAiPrompt(c){
+    var insight=(DATA.aiInsights||[]).find(function(i){return i.clusterId===c.id;});
+    var sample=(DATA.tests||[]).find(function(t){return t.clusterId===c.id;});
+    var lines=[
+      'Triage this failure cluster from XREPORT. Fix the root cause, not every test.',
+      '',
+      'Cluster: '+(c.id||''),
+      'Signature: '+(c.signature||''),
+      'Count: '+(c.count||0),
+      'Category: '+(c.category||'—')+' · Defect: '+(c.defectKind||(sample&&sample.defectKind)||'unknown'),
+      'Sample: '+(c.sample||'')
+    ];
+    if(sample&&sample.likelyFixFile)lines.push('Likely file: '+sample.likelyFixFile);
+    if(insight&&insight.summary){
+      lines.push('','AI insight: '+insight.summary);
+      if(insight.nextSteps&&insight.nextSteps.length)lines.push('Next steps: '+insight.nextSteps.join('; '));
+    }
+    if(sample){
+      lines.push('','Example test: '+(sample.fullTitle||sample.title));
+      lines.push('Location: '+(fileLoc(sample)||'—'));
+      var e=(sample.errors&&sample.errors[0])||{};
+      if(e.message)lines.push('',e.message);
+      if(e.stack)lines.push(e.stack);
+    }
+    return lines.join('\\n');
+  }
+  function buildRunAiPrompt(){
+    var lines=[
+      'You are helping fix failing automated tests using this XREPORT run.',
+      '',
+      'Title: '+(DATA.title||''),
+      'Framework: '+(DATA.framework||''),
+      'Summary: '+(DATA.summary.passed||0)+' passed / '+(DATA.summary.failed||0)+' failed / '+(DATA.summary.flaky||0)+' flaky / '+(DATA.summary.total||0)+' total',
+      ''
+    ];
+    (DATA.analytics.clusters||[]).slice(0,8).forEach(function(c){
+      lines.push('### Cluster '+c.id+' ×'+c.count);
+      lines.push('- '+(c.sample||'').slice(0,200));
+      lines.push('- category='+(c.category||'—')+' defect='+(c.defectKind||'—'));
+      lines.push('');
+    });
+    (DATA.aiInsights||[]).slice(0,8).forEach(function(i){
+      lines.push('Insight '+i.clusterId+': '+i.summary+' ['+i.defectKind+']');
+    });
+    lines.push('','Identify highest-impact root causes and propose concrete fixes with file paths.');
+    return lines.join('\\n');
+  }
   function pathActionsHtml(t){
     var loc=fileLoc(t);
     if(!loc)return '<span class="meta">No file path</span>';
@@ -865,7 +938,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       document.getElementById('sparkMeta').textContent=trend.length+' runs · last pass '+last.passRate+'% · fails '+last.failed;
     }
     var a=DATA.analytics;
-    document.getElementById('insightsMini').innerHTML='<div style="font-size:12px;line-height:1.7"><div><b>'+(a.regressions||[]).length+'</b> new failures</div><div><b>'+(a.clusters||[]).length+'</b> error groups</div><div><b>'+(a.quarantine||[]).length+'</b> quarantine tips</div><div style="color:var(--muted)">'+(DATA.framework||'')+'</div></div>';
+    document.getElementById('insightsMini').innerHTML='<div style="font-size:12px;line-height:1.7"><div><b>'+(a.regressions||[]).length+'</b> new failures</div><div><b>'+(a.clusters||[]).length+'</b> error groups</div><div><b>'+(DATA.aiInsights||[]).length+'</b> AI insights</div><div><b>'+(a.quarantine||[]).length+'</b> quarantine tips</div><div style="color:var(--muted)">'+(DATA.framework||'')+'</div></div>';
     if(a.failedRerun&&a.failedRerun.count){
       document.getElementById('rerunCard').style.display='block';
       document.getElementById('rerunCmd').textContent=a.failedRerun.command;
@@ -1125,7 +1198,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     if(!t){document.getElementById('caseBody').innerHTML='<div class="empty">Test not found.</div>';return;}
     var st=t.flaky?'flaky':t.status;
     document.getElementById('caseTitle').textContent=t.title;
-    document.getElementById('caseBadges').innerHTML='<span class="status-pill '+esc(st)+'">'+esc(st)+'</span>'+(t.regression?'<span class="badge-reg">new failure</span>':'')+(t.failureCategory?'<span class="tag">'+esc(t.failureCategory)+'</span>':'')+(t.owner?'<span class="tag">owner:'+esc(t.owner)+'</span>':'')+(t.severity?'<span class="tag">'+esc(t.severity)+'</span>':'')+(t.stabilityPct!=null?'<span class="runmeta">Stability '+t.stabilityPct+'%</span>':'');
+    document.getElementById('caseBadges').innerHTML='<span class="status-pill '+esc(st)+'">'+esc(st)+'</span>'+(t.regression?'<span class="badge-reg">new failure</span>':'')+(t.failureCategory?'<span class="tag">'+esc(t.failureCategory)+'</span>':'')+(t.defectKind?'<span class="tag">'+esc(t.defectKind)+'</span>':'')+(t.owner?'<span class="tag">owner:'+esc(t.owner)+'</span>':'')+(t.severity?'<span class="tag">'+esc(t.severity)+'</span>':'')+(t.stabilityPct!=null?'<span class="runmeta">Stability '+t.stabilityPct+'%</span>':'');
     document.getElementById('casePath').innerHTML=pathActionsHtml(t)+'<div class="meta" style="margin-top:6px">'+esc(t.fullTitle||'')+(t.project?' · '+esc(t.project):'')+'</div>';
     document.querySelectorAll('#caseTabs .tab').forEach(function(b){
       var key=b.getAttribute('data-ctab');
@@ -1158,7 +1231,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
           errs.map(function(e,i){return '<div style="margin-bottom:14px"><div class="meta" style="margin-bottom:6px">Error '+(i+1)+(errs.length>1&&i<errs.length-1?' · possible soft assert':'')+'</div><pre class="err">'+esc(e.message||'')+'</pre>'+(e.stack?'<pre class="stack">'+esc(e.stack)+'</pre>':'')+'</div>';}).join('')+
           '<div class="btns"><button class="btn" type="button" id="btnCopyCaseErr">Copy all errors</button><button class="btn" type="button" id="btnCopyCaseAi">Copy AI prompt</button></div></div>'+renderEvidenceStrip(t);
         var ce=document.getElementById('btnCopyCaseErr');if(ce)ce.onclick=function(){navigator.clipboard.writeText(errs.map(function(e,i){return '--- Error '+(i+1)+' ---\\n'+(e.message||'')+'\\n'+(e.stack||'');}).join('\\n\\n'));};
-        var ca=document.getElementById('btnCopyCaseAi');if(ca)ca.onclick=function(){var e=errs[0]||{};navigator.clipboard.writeText('Fix this failing test.\\nTitle: '+t.fullTitle+'\\nOwner: '+(t.owner||'')+'\\nSeverity: '+(t.severity||'')+'\\nCategory: '+(t.failureCategory||'')+'\\nFile: '+(t.file||'')+'\\nAttempt: '+(attemptIndex(t)+1)+'\\nErrors ('+errs.length+'):\\n'+errs.map(function(x,i){return (i+1)+') '+(x.message||'');}).join('\\n')+'\\n'+(e.stack||''));};
+        var ca=document.getElementById('btnCopyCaseAi');if(ca)ca.onclick=function(){navigator.clipboard.writeText(buildCaseAiPrompt(t));};
       }
     }else if(state.ctab==='steps'){
       body.innerHTML=stepCatPickerHtml(t.steps)+'<div class="card">'+stepsTreeHtml(t.steps)+'</div>';
@@ -1188,7 +1261,10 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
         '<b>Owner</b><span>'+esc(t.owner||'—')+'</span>'+
         '<b>Severity</b><span>'+esc(t.severity||'—')+'</span>'+
         '<b>Category</b><span>'+esc(t.failureCategory||'—')+'</span>'+
+        '<b>Defect</b><span>'+esc(t.defectKind||'—')+(t.defectConfidence!=null?' ('+Math.round(t.defectConfidence*100)+'%)':'')+'</span>'+
+        '<b>Likely file</b><span>'+esc(t.likelyFixFile||'—')+'</span>'+
         '<b>Stability</b><span>'+(t.stabilityPct==null?'—':t.stabilityPct+'%')+'</span>'+
+        '<b>Cluster</b><span>'+esc(t.clusterId||'—')+'</span>'+
         '<b>Project</b><span>'+esc(t.project||'—')+'</span>'+
         '<b>Tags</b><span>'+((t.tags||[]).map(function(x){return '<span class="tag">'+esc(x)+'</span>';}).join(' ')||'—')+'</span>'+
         '<b>File</b><span>'+esc((t.file||'')+(t.line?':'+t.line:''))+'</span>'+
@@ -1273,17 +1349,25 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
 
   function renderAnalytics(){
     var a=DATA.analytics;
+    var insights=DATA.aiInsights||[];
     var html='';
+    html+='<div class="card"><h3>AI Insights</h3>'+(insights.length?insights.slice(0,8).map(function(i){
+      return '<div style="padding:8px 0;border-bottom:1px solid var(--soft2)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><b>'+esc((i.summary||'').slice(0,120))+'</b><div class="runmeta">'+esc(i.defectKind||'unknown')+' · conf '+(Math.round((i.confidence||0)*100))+'% · cluster '+esc(i.clusterId||'')+'</div>'+
+        ((i.nextSteps||[]).length?'<div class="runmeta" style="margin-top:4px">'+(i.nextSteps||[]).slice(0,3).map(function(s){return esc(s);}).join(' · ')+'</div>':'')+
+        '</div><button class="btn" type="button" data-cluster="'+esc(i.clusterId||'')+'" title="Filter Explorer">Open</button></div></div>';
+    }).join('')+'<div class="btns" style="margin-top:10px"><button class="btn" type="button" id="btnCopyRunAi">Copy run prompt for Cursor</button></div>':'<div class="empty" style="padding:8px">No LLM insights yet. Heuristics are always on. Optional: enable <code>ai.enabled</code> or run <code>xreport ai analyze</code>.</div><div class="btns" style="margin-top:10px"><button class="btn" type="button" id="btnCopyRunAi">Copy run prompt for Cursor</button></div>')+'</div>';
     html+='<div class="card"><h3>Suite / by file</h3><ul style="list-style:none;margin:0;padding:0">'+(a.byFile||[]).slice(0,8).map(function(x){return '<li style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--soft2)"><span>'+esc(x.file.split('/').slice(-2).join('/'))+'</span><span>'+x.failed+'F / '+x.total+'</span></li>';}).join('')+'</ul></div>';
     html+='<div class="card"><h3>Test run timing</h3><ul style="list-style:none;margin:0;padding:0">'+(a.slowest||[]).slice(0,8).map(function(x){return '<li style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--soft2)"><span>'+esc(x.title.slice(0,48))+'</span><span>'+fmt(x.duration)+'</span></li>';}).join('')+'</ul></div>';
     html+='<div class="card"><h3>Error categories</h3>'+((a.byCategory||[]).map(function(x){return '<div class="barrow"><span>'+esc(x.category)+'</span><div class="bartrack"><div class="seg f" style="width:'+Math.min(100,x.count*20)+'%"></div></div><span>'+x.count+'</span></div>';}).join('')||'<div class="empty" style="padding:8px">No categorized failures</div>')+'</div>';
-    html+='<div class="card"><h3>Error groups</h3><ul style="list-style:none;margin:0;padding:0">'+(a.clusters||[]).slice(0,8).map(function(x){return '<li><button class="cluster-row" type="button" data-cluster="'+esc(x.id)+'" title="Filter Explorer to this group"><span>'+esc((x.sample||'').slice(0,64))+(x.category?' <span class="tag">'+esc(x.category)+'</span>':'')+'</span><span>×'+x.count+'</span></button></li>';}).join('')+'</ul></div>';
+    html+='<div class="card"><h3>Error groups</h3><ul style="list-style:none;margin:0;padding:0">'+(a.clusters||[]).slice(0,8).map(function(x){return '<li style="padding:6px 0;border-bottom:1px solid var(--soft2)"><button class="cluster-row" type="button" data-cluster="'+esc(x.id)+'" title="Filter Explorer to this group"><span>'+esc((x.sample||'').slice(0,64))+(x.category?' <span class="tag">'+esc(x.category)+'</span>':'')+(x.defectKind?' <span class="tag">'+esc(x.defectKind)+'</span>':'')+'</span><span>×'+x.count+'</span></button><div class="btns" style="margin-top:4px"><button class="btn" type="button" data-copy-cluster="'+esc(x.id)+'">Copy Prompt for Cursor</button></div></li>';}).join('')+'</ul></div>';
     var c=DATA.coverage||a.coverage;
     html+='<div class="card"><h3>Coverage</h3>'+(c?['lines','statements','branches','functions'].map(function(k){return '<div class="barrow"><span>'+k+'</span><div class="bartrack"><div class="seg p" style="width:'+(c[k]||0)+'%"></div></div><span>'+(c[k]==null?'—':c[k]+'%')+'</span></div>';}).join(''):'<div class="empty" style="padding:8px">No coverage summary</div>')+'</div>';
     html+='<div class="card"><h3>Environment pass rates</h3>'+((a.byEnvironment||[]).map(function(x){return '<div class="barrow"><span>'+esc(x.label)+'</span><div class="bartrack"><div class="seg p" style="width:'+x.passRate+'%"></div></div><span>'+x.passRate+'%</span></div>';}).join('')||'<div class="empty" style="padding:8px">Enable history</div>')+'</div>';
     html+='<div class="card"><h3>Quarantine recommendations</h3><ul style="list-style:none;margin:0;padding:0">'+(a.quarantine||[]).slice(0,8).map(function(x){return '<li style="padding:5px 0;border-bottom:1px solid var(--soft2)"><b>'+esc(x.title.slice(0,60))+'</b><div class="runmeta">'+x.stabilityPct+'% · '+esc(x.reason)+'</div></li>';}).join('')+'</ul></div>';
     html+='<div class="card"><h3>Tag health</h3><ul style="list-style:none;margin:0;padding:0">'+(a.tagHealth||[]).slice(0,8).map(function(x){return '<li style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--soft2)"><span>'+esc(x.tag)+'</span><span>'+x.passRate+'%</span></li>';}).join('')+'</ul></div>';
     document.getElementById('analyticsGrid').innerHTML=html;
+    var copyRun=document.getElementById('btnCopyRunAi');
+    if(copyRun)copyRun.onclick=function(){navigator.clipboard.writeText(buildRunAiPrompt());};
   }
 
   function renderFlaky(){
@@ -1413,6 +1497,14 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
   });
   document.getElementById('casePath').addEventListener('click',onCopyPath);
   document.getElementById('analyticsGrid').addEventListener('click',function(e){
+    var copyBtn=e.target.closest('[data-copy-cluster]');
+    if(copyBtn){
+      var cid=copyBtn.getAttribute('data-copy-cluster')||'';
+      var cluster=(DATA.analytics.clusters||[]).find(function(x){return x.id===cid;});
+      if(cluster)navigator.clipboard.writeText(buildClusterAiPrompt(cluster));
+      e.stopPropagation();
+      return;
+    }
     var row=e.target.closest('[data-cluster]');
     if(!row)return;
     state.clusterId=row.getAttribute('data-cluster')||'';
@@ -1485,7 +1577,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
   document.getElementById('lbx').addEventListener('click',function(){document.getElementById('lb').classList.remove('on');});
   document.getElementById('lb').addEventListener('click',function(e){if(e.target.id==='lb')e.currentTarget.classList.remove('on');});
   document.getElementById('btnCopyErr').addEventListener('click',function(){var t=state.sel;if(!t||!t.errors[0])return;navigator.clipboard.writeText((t.errors[0].message||'')+'\\n'+(t.errors[0].stack||''));});
-  document.getElementById('btnAi').addEventListener('click',function(){var t=state.sel;if(!t)return;var e=t.errors[0]||{};navigator.clipboard.writeText('Fix this failing test.\\nTitle: '+t.fullTitle+'\\nOwner: '+(t.owner||'')+'\\nCategory: '+(t.failureCategory||'')+'\\nFile: '+fileLoc(t)+'\\nError:\\n'+(e.message||'')+'\\n'+(e.stack||''));});
+  document.getElementById('btnAi').addEventListener('click',function(){var t=state.sel;if(!t)return;navigator.clipboard.writeText(buildCaseAiPrompt(t));});
   document.getElementById('btnCopyRerun').addEventListener('click',function(){var c=DATA.analytics.failedRerun&&DATA.analytics.failedRerun.command;if(c)navigator.clipboard.writeText(c);});
   document.getElementById('btnExport').addEventListener('click',function(){var blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='xreport-export.json';a.click();});
 

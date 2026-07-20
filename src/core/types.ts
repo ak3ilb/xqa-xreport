@@ -1,5 +1,14 @@
 /** XREPORT canonical types — https://xqa.io */
 
+import type {
+  DefectKind,
+  AiInsight,
+  AiContextPack,
+  XReportAiOptions,
+} from './ai-types';
+
+export type { DefectKind, AiInsight, AiContextPack, XReportAiOptions };
+
 export type TestStatus =
   | 'passed'
   | 'failed'
@@ -116,6 +125,10 @@ export interface XReportTest {
   retries?: number;
   coverageSummary?: XReportCoverageSummary;
   failureCategory?: FailureCategory;
+  /** High-level triage kind (product / automation / environment / flake) */
+  defectKind?: DefectKind;
+  defectConfidence?: number;
+  likelyFixFile?: string;
   stabilityPct?: number;
   testHistory?: XReportTestHistoryPoint[];
 }
@@ -189,6 +202,8 @@ export interface XReportOptions {
   enableHistory?: boolean;
   historyOptions?: XReportHistoryOptions;
   inlineAssets?: boolean;
+  /** Local-first optional AI (OpenAI-compatible). Never required. */
+  ai?: XReportAiOptions;
 }
 
 export interface XReportAnalytics {
@@ -202,6 +217,7 @@ export interface XReportAnalytics {
     sample: string;
     testIds: string[];
     category?: FailureCategory;
+    defectKind?: DefectKind;
   }>;
   regressions: Array<{ historyId: string; title: string }>;
   byProject: Array<{
@@ -281,6 +297,8 @@ export interface XReportRun {
   options: Partial<XReportOptions>;
   analytics?: XReportAnalytics;
   coverageSummary?: XReportCoverageSummary;
+  /** Optional LLM insights keyed by cluster (local-first AI) */
+  aiInsights?: AiInsight[];
 }
 
 export interface HistoryRecord {
@@ -295,7 +313,7 @@ export interface HistoryRecord {
   tests?: Array<{ historyId: string; title: string; status: TestStatus; duration: number }>;
 }
 
-export const XREPORT_VERSION = '0.4.0';
+export const XREPORT_VERSION = '0.5.0';
 export const XQA_WEBSITE = 'https://xqa.io';
 export const DEFAULT_BRANDING: XReportBranding = {
   projectName: 'XREPORT',
