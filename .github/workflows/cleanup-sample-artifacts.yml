@@ -1,0 +1,67 @@
+name: Cleanup sample artifacts
+
+# Deletes xreport-hourly-* artifacts older than 15 minutes.
+# GitHub cannot set artifact retention under 1 day, so age-based API delete
+# is how we honour ~15 minute report lifetime.
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup:
+    name: Delete reports older than 15m
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Delete aged xreport-hourly artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MAX_AGE_MINUTES: '15'
+        run: |
+          set -euo pipefail
+          now=$(date -u +%s)
+          cutoff=$((now - MAX_AGE_MINUTES * 60))
+          deleted=0
+          kept=0
+
+          # Paginate all artifacts; filter by name prefix + age
+          mapfile -t rows < <(gh api --paginate \
+            "repos/${{ github.repository }}/actions/artifacts?per_page=100" \
+            --jq '.artifacts[] | select(.name | startswith("xreport-hourly-")) | "\(.id)\t\(.name)\t\(.created_at)"')
+
+          if [[ ${#rows[@]} -eq 0 ]]; then
+            echo "No xreport-hourly artifacts found."
+            echo "Deleted: 0" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          for row in "${rows[@]}"; do
+            id="${row%%$'\t'*}"
+            rest="${row#*$'\t'}"
+            name="${rest%%$'\t'*}"
+            created="${rest##*$'\t'}"
+            created_epoch=$(date -u -d "${created}" +%s)
+
+            if (( created_epoch <= cutoff )); then
+              echo "DELETE id=${id} name=${name} created=${created}"
+              gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/${id}"
+              deleted=$((deleted + 1))
+            else
+              echo "KEEP   id=${id} name=${name} created=${created}"
+              kept=$((kept + 1))
+            fi
+          done
+
+          {
+            echo "### Artifact cleanup"
+            echo ""
+            echo "- Max age: **${MAX_AGE_MINUTES} minutes**"
+            echo "- Deleted: **${deleted}**"
+            echo "- Kept (still fresh): **${kept}**"
+          } >> "$GITHUB_STEP_SUMMARY"

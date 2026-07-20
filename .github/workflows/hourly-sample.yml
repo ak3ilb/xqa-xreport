@@ -1,0 +1,160 @@
+name: Hourly sample
+
+# Every hour for as long as the workflow stays enabled (use for ~1 month of
+# practice coverage, then disable under Settings → Actions → Workflows):
+#   1. Pick random count 5–10
+#   2. For each slot: random framework + ONE random https://xqa.io/practice page
+#   3. Fresh npm i @xqa.io/xreport@latest, run a single small browser test
+#   4. Upload HTML artifact; cleanup-sample-artifacts.yml deletes after ~15 minutes
+#
+# Mocha/Jest/Vitest drive Chromium via Playwright; Cypress uses cy.visit.
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      count:
+        description: 'How many samples (1–10). Leave empty for random 5–10.'
+        required: false
+        default: ''
+        type: string
+      framework:
+        description: 'Framework for every sample (or random per sample)'
+        required: true
+        default: random
+        type: choice
+        options:
+          - random
+          - playwright
+          - cypress
+          - jest
+          - vitest
+          - mocha
+      page:
+        description: 'Practice page id (e.g. practice-form). Leave empty for random per sample.'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: hourly-sample
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Pick slots · frameworks · practice pages
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.gen.outputs.matrix }}
+      count: ${{ steps.gen.outputs.count }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build matrix (random 5–10)
+        id: gen
+        env:
+          INPUT_COUNT: ${{ inputs.count }}
+          INPUT_FRAMEWORK: ${{ inputs.framework }}
+          INPUT_PAGE: ${{ inputs.page }}
+        run: |
+          set -euo pipefail
+          FRAMEWORKS=(playwright cypress jest vitest mocha)
+          PAGES_JSON="scripts/ci/practice-pages.json"
+          mapfile -t PAGE_IDS < <(jq -r '.[].id' "${PAGES_JSON}")
+          if [[ ${#PAGE_IDS[@]} -lt 1 ]]; then
+            echo "No practice pages in catalog" >&2
+            exit 1
+          fi
+
+          if [[ -n "${INPUT_COUNT}" && "${INPUT_COUNT}" =~ ^[0-9]+$ ]]; then
+            COUNT="${INPUT_COUNT}"
+            if (( COUNT < 1 )); then COUNT=1; fi
+            if (( COUNT > 10 )); then COUNT=10; fi
+          else
+            COUNT=$((5 + RANDOM % 6))
+          fi
+
+          PIN_FW="${INPUT_FRAMEWORK:-random}"
+          PIN_PAGE="${INPUT_PAGE:-}"
+          ITEMS='[]'
+          for ((i=1; i<=COUNT; i++)); do
+            if [[ "${PIN_FW}" == "random" || -z "${PIN_FW}" ]]; then
+              FW="${FRAMEWORKS[$((RANDOM % ${#FRAMEWORKS[@]}))]}"
+            else
+              FW="${PIN_FW}"
+            fi
+            if [[ -n "${PIN_PAGE}" ]]; then
+              PAGE="${PIN_PAGE}"
+            else
+              PAGE="${PAGE_IDS[$((RANDOM % ${#PAGE_IDS[@]}))]}"
+            fi
+            ITEMS=$(jq -c --argjson slot "$i" --arg fw "$FW" --arg page "$PAGE" \
+              '. + [{slot: $slot, framework: $fw, page: $page}]' <<<"${ITEMS}")
+          done
+
+          MATRIX=$(jq -c '{include: .}' <<<"${ITEMS}")
+          {
+            echo "count=${COUNT}"
+            echo "matrix=${MATRIX}"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Hourly XQA practice plan"
+            echo ""
+            echo "- Samples this hour: **${COUNT}**"
+            echo "- Framework pin: \`${PIN_FW}\`"
+            echo "- Page pin: \`${PIN_PAGE:-random per slot}\`"
+            echo "- Catalog: ${#PAGE_IDS[@]} pages from [xqa.io/practice](https://xqa.io/practice)"
+            echo ""
+            echo '```json'
+            echo "${MATRIX}" | jq .
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  sample:
+    name: Slot ${{ matrix.slot }} · ${{ matrix.framework }} · ${{ matrix.page }}
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Run single practice page (npm @latest)
+        env:
+          XREPORT_CI_FRAMEWORK: ${{ matrix.framework }}
+          XREPORT_CI_PAGE: ${{ matrix.page }}
+          XREPORT_CI_SLOT: ${{ matrix.slot }}
+          RUNNER_TEMP: ${{ runner.temp }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+        run: node scripts/ci-hourly-sample.js
+
+      - name: Upload HTML report artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xreport-hourly-${{ matrix.slot }}-${{ matrix.framework }}-${{ matrix.page }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/xreport-hourly-${{ matrix.slot }}/xreport/
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Wipe temp workdir
+        if: always()
+        run: rm -rf "${{ runner.temp }}/xreport-hourly-${{ matrix.slot }}"

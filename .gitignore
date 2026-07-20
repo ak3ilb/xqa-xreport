@@ -16,3 +16,4 @@ examples/**/xreport/
 examples/**/node_modules/
 .cursor/
 .xreport/
+.tmp-ci-hourly/
