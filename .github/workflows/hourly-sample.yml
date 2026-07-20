@@ -1,13 +1,7 @@
 name: Hourly sample
 
-# Every hour for as long as the workflow stays enabled (use for ~1 month of
-# practice coverage, then disable under Settings → Actions → Workflows):
-#   1. Pick random count 5–10
-#   2. For each slot: random framework + ONE random https://xqa.io/practice page
-#   3. Fresh npm i @xqa.io/xreport@latest, run a single small browser test
-#   4. Upload HTML artifact; cleanup-sample-artifacts.yml deletes after ~15 minutes
-#
-# Mocha/Jest/Vitest drive Chromium via Playwright; Cypress uses cy.visit.
+# Hourly random practice smokes against https://xqa.io/practice
+# (5–10 parallel slots). Reports cleaned by cleanup-sample-artifacts.yml.
 
 on:
   schedule:
@@ -15,9 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       count:
-        description: 'How many samples (1–10). Leave empty for random 5–10.'
-        required: false
-        default: ''
+        description: 'Samples this run (1-10). Use 0 for random 5-10.'
+        required: true
+        default: '0'
         type: string
       framework:
         description: 'Framework for every sample (or random per sample)'
@@ -32,9 +26,9 @@ on:
           - vitest
           - mocha
       page:
-        description: 'Practice page id (e.g. practice-form). Leave empty for random per sample.'
-        required: false
-        default: ''
+        description: 'Practice page id (e.g. practice-form), or random'
+        required: true
+        default: random
         type: string
 
 permissions:
@@ -47,7 +41,7 @@ concurrency:
 
 jobs:
   plan:
-    name: Pick slots · frameworks · practice pages
+    name: Plan matrix
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.gen.outputs.matrix }}
@@ -56,12 +50,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build matrix (random 5–10)
+      - name: Build matrix
         id: gen
         env:
-          INPUT_COUNT: ${{ inputs.count }}
-          INPUT_FRAMEWORK: ${{ inputs.framework }}
-          INPUT_PAGE: ${{ inputs.page }}
+          INPUT_COUNT: ${{ github.event_name == 'workflow_dispatch' && inputs.count || '0' }}
+          INPUT_FRAMEWORK: ${{ github.event_name == 'workflow_dispatch' && inputs.framework || 'random' }}
+          INPUT_PAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.page || 'random' }}
         run: |
           set -euo pipefail
           FRAMEWORKS=(playwright cypress jest vitest mocha)
@@ -72,16 +66,15 @@ jobs:
             exit 1
           fi
 
-          if [[ -n "${INPUT_COUNT}" && "${INPUT_COUNT}" =~ ^[0-9]+$ ]]; then
-            COUNT="${INPUT_COUNT}"
-            if (( COUNT < 1 )); then COUNT=1; fi
-            if (( COUNT > 10 )); then COUNT=10; fi
+          COUNT_RAW="${INPUT_COUNT:-0}"
+          if [[ "${COUNT_RAW}" =~ ^[1-9]$|^10$ ]]; then
+            COUNT="${COUNT_RAW}"
           else
             COUNT=$((5 + RANDOM % 6))
           fi
 
           PIN_FW="${INPUT_FRAMEWORK:-random}"
-          PIN_PAGE="${INPUT_PAGE:-}"
+          PIN_PAGE="${INPUT_PAGE:-random}"
           ITEMS='[]'
           for ((i=1; i<=COUNT; i++)); do
             if [[ "${PIN_FW}" == "random" || -z "${PIN_FW}" ]]; then
@@ -89,28 +82,31 @@ jobs:
             else
               FW="${PIN_FW}"
             fi
-            if [[ -n "${PIN_PAGE}" ]]; then
-              PAGE="${PIN_PAGE}"
-            else
+            if [[ "${PIN_PAGE}" == "random" || -z "${PIN_PAGE}" ]]; then
               PAGE="${PAGE_IDS[$((RANDOM % ${#PAGE_IDS[@]}))]}"
+            else
+              PAGE="${PIN_PAGE}"
             fi
             ITEMS=$(jq -c --argjson slot "$i" --arg fw "$FW" --arg page "$PAGE" \
               '. + [{slot: $slot, framework: $fw, page: $page}]' <<<"${ITEMS}")
           done
 
           MATRIX=$(jq -c '{include: .}' <<<"${ITEMS}")
+          echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
+          # Multiline-safe matrix output for fromJson consumers
           {
-            echo "count=${COUNT}"
-            echo "matrix=${MATRIX}"
+            echo "matrix<<EOF"
+            echo "${MATRIX}"
+            echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
           {
             echo "### Hourly XQA practice plan"
             echo ""
-            echo "- Samples this hour: **${COUNT}**"
+            echo "- Samples: **${COUNT}**"
             echo "- Framework pin: \`${PIN_FW}\`"
-            echo "- Page pin: \`${PIN_PAGE:-random per slot}\`"
-            echo "- Catalog: ${#PAGE_IDS[@]} pages from [xqa.io/practice](https://xqa.io/practice)"
+            echo "- Page pin: \`${PIN_PAGE}\`"
+            echo "- Catalog: ${#PAGE_IDS[@]} pages"
             echo ""
             echo '```json'
             echo "${MATRIX}" | jq .
@@ -118,7 +114,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   sample:
-    name: Slot ${{ matrix.slot }} · ${{ matrix.framework }} · ${{ matrix.page }}
+    name: 'slot-${{ matrix.slot }}-${{ matrix.framework }}-${{ matrix.page }}'
     needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -126,7 +122,6 @@ jobs:
       fail-fast: false
       max-parallel: 10
       matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -137,7 +132,7 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Run single practice page (npm @latest)
+      - name: Run single practice page
         env:
           XREPORT_CI_FRAMEWORK: ${{ matrix.framework }}
           XREPORT_CI_PAGE: ${{ matrix.page }}
