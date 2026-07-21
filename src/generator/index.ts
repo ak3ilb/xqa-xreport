@@ -224,8 +224,8 @@ export async function generateReport(
 
   if (opts.autoOpen && result.htmlPath && !process.env.CI) {
     try {
-      const open = require('open') as (target: string) => Promise<unknown>;
-      await open(result.htmlPath);
+      const { openPathOrUrl } = await import('../core/open-url');
+      await openPathOrUrl(result.htmlPath);
     } catch {
       // ignore
     }

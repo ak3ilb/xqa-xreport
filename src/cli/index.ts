@@ -314,8 +314,8 @@ async function serveStatic(dir: string, port: number, openBrowser: boolean): Pro
   console.log(`\n  XREPORT · serving ${dir}\n  ${url}\n  by XQA · https://xqa.io\n`);
   if (openBrowser) {
     try {
-      const open = require('open') as (t: string) => Promise<unknown>;
-      await open(url);
+      const { openPathOrUrl } = await import('../core/open-url');
+      await openPathOrUrl(url);
     } catch {
       // ignore
     }

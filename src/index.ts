@@ -12,6 +12,7 @@ export * from './core/enterprise-tags';
 export * from './core/evidence-pack';
 export * from './core/privacy-scrub';
 export * from './core/readiness';
+export * from './core/open-url';
 export { generateReport, mergeRuns } from './generator';
 export { renderHtml } from './generator/html';
 export { runMcpServer } from './mcp/server';
