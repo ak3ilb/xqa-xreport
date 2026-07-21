@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-20T22:10:12.353Z",
-  "generator": "@xqa.io/xreport@0.5.2",
+  "generatedAt": "2026-07-21T16:54:34.559Z",
+  "generator": "@xqa.io/xreport@0.6.0",
   "brand": {
     "name": "XREPORT",
     "website": "https://xqa.io"
@@ -9,8 +9,8 @@
   "run": {
     "title": "XREPORT Sample · Local Triage Demo",
     "framework": "playwright",
-    "startedAt": 1784585372345,
-    "finishedAt": 1784585412345,
+    "startedAt": 1784652834545,
+    "finishedAt": 1784652874545,
     "duration": 40000,
     "summary": {
       "total": 7,
@@ -20,7 +20,8 @@
       "skipped": 1,
       "timedOut": 1
     },
-    "branch": "main"
+    "branch": "main",
+    "commit": "abc123def456"
   },
   "clusters": [
     {
@@ -295,5 +296,5 @@
     ],
     "count": 3
   },
-  "agentPrompt": "You are helping fix failing automated tests. Use only the evidence below.\n\n## Run: XREPORT Sample · Local Triage Demo\n- Framework: playwright\n- Summary: 3 passed / 2 failed / 1 flaky / 7 total\n- Branch: main\n\n\n## Top failure clusters (fix root causes, not every test)\n\n### Cluster 75c2e98605 ×1\n- Signature: timeout nms exceeded. waiting for locator('#pay')\n- Category: timing · Defect: flake\n- Likely file: checkout.spec.ts\n- Sample: Timeout 5000ms exceeded.\nwaiting for locator(\"#pay\")\n- Example test: Checkout › pays with valid card @smoke\n- Example location: tests/checkout.spec.ts:42\n```\nError: Timeout\n    at checkout.spec.ts:48\n```\n\n### Cluster 543e8a6a47 ×1\n- Signature: expected url to contain /dashboard, got /error\n- Category: assertion · Defect: flake\n- Likely file: auth.spec.ts\n- Sample: Expected URL to contain /dashboard, got /error\n- Example test: Auth › SSO redirect @smoke\n- Example location: tests/auth.spec.ts:33\n```\nError: URL\n    at auth.spec.ts:40\n```\n\n### Cluster 9748c9e089 ×1\n- Signature: test timeout of nms exceeded.\n- Category: timing · Defect: flake\n- Sample: Test timeout of 30000ms exceeded.\n- Example test: Catalog › filters by price\n- Example location: tests/catalog.spec.ts:22\n\n## Rerun failed\n```\nnpx playwright test \"tests/checkout.spec.ts\" \"tests/auth.spec.ts\" \"tests/catalog.spec.ts\"\n```\n\n## Your task\n1. Identify the highest-impact root cause(s).\n2. Say whether each is product / automation / environment / flake.\n3. Propose concrete code or test changes with file paths.\n4. If evidence is insufficient, say what to inspect next (trace, network, history)."
+  "agentPrompt": "You are helping fix failing automated tests. Use only the evidence below.\n\n## Run: XREPORT Sample · Local Triage Demo\n- Framework: playwright\n- Summary: 3 passed / 2 failed / 1 flaky / 7 total\n- Branch: main\n- Commit: abc123def456\n\n## Top failure clusters (fix root causes, not every test)\n\n### Cluster 75c2e98605 ×1\n- Signature: timeout nms exceeded. waiting for locator('#pay')\n- Category: timing · Defect: flake\n- Likely file: checkout.spec.ts\n- Sample: Timeout 5000ms exceeded.\nwaiting for locator(\"#pay\")\n- Example test: Checkout › pays with valid card @smoke\n- Example location: tests/checkout.spec.ts:42\n```\nError: Timeout\n    at checkout.spec.ts:48\n```\n\n### Cluster 543e8a6a47 ×1\n- Signature: expected url to contain /dashboard, got /error\n- Category: assertion · Defect: flake\n- Likely file: auth.spec.ts\n- Sample: Expected URL to contain /dashboard, got /error\n- Example test: Auth › SSO redirect @smoke\n- Example location: tests/auth.spec.ts:33\n```\nError: URL\n    at auth.spec.ts:40\n```\n\n### Cluster 9748c9e089 ×1\n- Signature: test timeout of nms exceeded.\n- Category: timing · Defect: flake\n- Sample: Test timeout of 30000ms exceeded.\n- Example test: Catalog › filters by price\n- Example location: tests/catalog.spec.ts:22\n\n## Rerun failed\n```\nnpx playwright test \"tests/checkout.spec.ts\" \"tests/auth.spec.ts\" \"tests/catalog.spec.ts\"\n```\n\n## Your task\n1. Identify the highest-impact root cause(s).\n2. Say whether each is product / automation / environment / flake.\n3. Propose concrete code or test changes with file paths.\n4. If evidence is insufficient, say what to inspect next (trace, network, history)."
 }

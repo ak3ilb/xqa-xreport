@@ -72,7 +72,31 @@ export function appendHistory(
   store.records.unshift(record);
   if (options.autoCleanup !== false) store = cleanupHistory(store, options);
   saveHistory(dbPath, store);
+  if (options.ledger) {
+    appendHistoryLedger(dbPath, run, record.id);
+  }
+  if (options.minRetentionDays != null && (options.retentionDays ?? 30) < options.minRetentionDays) {
+    console.warn(
+      `[xreport] history retentionDays=${options.retentionDays ?? 30} is below enterprise minRetentionDays=${options.minRetentionDays}`,
+    );
+  }
   return store;
+}
+
+function appendHistoryLedger(dbPath: string, run: XReportRun, recordId: string): void {
+  const ledgerPath = dbPath.replace(/\.json$/i, '') + '-ledger.jsonl';
+  const crypto = require('crypto') as typeof import('crypto');
+  const payload = JSON.stringify({
+    id: recordId,
+    date: run.finishedAt || Date.now(),
+    title: run.title,
+    summary: run.summary,
+    commit: run.environment?.commit,
+    changeTicket: run.environment?.changeTicket || run.environment?.changeId,
+  });
+  const hash = crypto.createHash('sha256').update(payload).digest('hex');
+  ensureDir(path.dirname(ledgerPath));
+  fs.appendFileSync(ledgerPath, JSON.stringify({ ...JSON.parse(payload), contentHash: hash }) + '\n', 'utf8');
 }
 
 export function lastFailedIds(options?: XReportHistoryOptions): string[] {

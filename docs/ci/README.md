@@ -77,10 +77,32 @@ Or use any Slack webhook script that reads CTRF summary fields: `results.summary
 ## Quality gate in CI
 
 ```yaml
-- name: XREPORT quality gate
+- name: XREPORT quality gate (finance PR)
   if: always()
-  run: npx xreport gate ./xreport --max-failed=0 --max-new=0
+  env:
+    XREPORT_CHANGE_TICKET: ${{ github.event.pull_request.title }}  # or a real ticket id
+  run: npx xreport gate ./xreport --preset=finance-pr
+
+- name: XREPORT quality gate (custom)
+  if: always()
+  run: npx xreport gate ./xreport --max-failed=0 --max-new=0 --max-critical=0
+
+- name: Evidence pack for auditors
+  if: always()
+  run: npx xreport evidence ./xreport -o ./xreport-evidence.zip
+
+- uses: actions/upload-artifact@v4
+  if: always()
+  with:
+    name: xreport-evidence
+    path: xreport-evidence.zip
 ```
+
+| Preset | Intent |
+|--------|--------|
+| `finance-pr` | maxNewFailures=0, ignore muted, require change ticket, maxCriticalFailed=0 |
+| `finance-release` | maxFailed=0, maxProductDefects=0, failOnUnknownDefect, require ticket + commit |
+| `nightly` | allow muted failures; fail on product defects only |
 
 Mute expected failures with `.xreport/known-issues.json` (see [known-issues.md](./known-issues.md)).
 

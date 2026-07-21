@@ -110,4 +110,25 @@ describe('known-issues + quality-gate', () => {
     assert.strictEqual(gate.ok, false);
     assert.ok(gate.violations.some((v) => v.includes('productDefects')));
   });
+
+  it('finance-pr preset requires change ticket', () => {
+    const run = baseRun();
+    run.suites[0].tests[0].status = 'passed';
+    run.summary = { ...run.summary, failed: 0, passed: 1 };
+    const gate = evaluateQualityGate(run, { preset: 'finance-pr' });
+    assert.strictEqual(gate.ok, false);
+    assert.ok(gate.violations.some((v) => v.includes('changeTicket')));
+    run.environment = { changeTicket: 'CHG-100' };
+    const ok = evaluateQualityGate(run, { preset: 'finance-pr' });
+    assert.strictEqual(ok.ok, true);
+    assert.strictEqual(ok.counts.criticalFailed, 0);
+  });
+
+  it('fails on critical risk failures', () => {
+    const run = baseRun();
+    run.suites[0].tests[0].riskTier = 'critical';
+    const gate = evaluateQualityGate(run, { maxCriticalFailed: 0 });
+    assert.strictEqual(gate.ok, false);
+    assert.ok(gate.violations.some((v) => v.includes('criticalFailed')));
+  });
 });

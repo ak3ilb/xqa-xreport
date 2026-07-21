@@ -68,6 +68,17 @@ export function collectTests(suites: XReportSuite[]): XReportTest[] {
   return out;
 }
 
+export function mapSuites(
+  suites: XReportSuite[],
+  mapTest: (t: XReportTest) => XReportTest,
+): XReportSuite[] {
+  return suites.map((s) => ({
+    ...s,
+    tests: (s.tests || []).map(mapTest),
+    suites: mapSuites(s.suites || [], mapTest),
+  }));
+}
+
 export function summarize(suites: XReportSuite[], runDuration?: number): XReportSummary {
   const tests = collectTests(suites);
   const summary = emptySummary();
@@ -107,7 +118,27 @@ export function detectEnvironment(): XReportRun['environment'] {
       undefined,
     buildUrl: process.env.GITHUB_SERVER_URL
       ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
-      : process.env.BUILD_URL || undefined,
+      : process.env.BUILD_URL || process.env.CI_PIPELINE_URL || undefined,
+    pipelineUrl:
+      process.env.XREPORT_PIPELINE_URL ||
+      process.env.CI_PIPELINE_URL ||
+      undefined,
+    buildId:
+      process.env.GITHUB_RUN_ID ||
+      process.env.CI_PIPELINE_ID ||
+      process.env.BUILD_NUMBER ||
+      undefined,
+    changeTicket:
+      process.env.XREPORT_CHANGE_TICKET ||
+      process.env.CHANGE_TICKET ||
+      process.env.JIRA_TICKET ||
+      undefined,
+    changeId: process.env.XREPORT_CHANGE_ID || process.env.CHANGE_ID || undefined,
+    actor:
+      process.env.GITHUB_ACTOR ||
+      process.env.GITLAB_USER_LOGIN ||
+      process.env.BUILD_USER ||
+      undefined,
   };
 }
 
@@ -138,6 +169,9 @@ export function mergeOptions(options: XReportOptions = {}): Required<
   ai?: XReportOptions['ai'];
   knownIssuesPath?: string;
   qualityGate?: XReportOptions['qualityGate'];
+  evidencePack?: XReportOptions['evidencePack'];
+  privacy?: XReportOptions['privacy'];
+  readiness?: XReportOptions['readiness'];
 } {
   const truthy = (v: unknown, fallback: boolean) => {
     if (v === undefined || v === null || v === '') return fallback;
@@ -191,6 +225,15 @@ export function mergeOptions(options: XReportOptions = {}): Required<
     qualityGate:
       typeof o.qualityGate === 'object' && o.qualityGate
         ? (o.qualityGate as XReportOptions['qualityGate'])
+        : undefined,
+    evidencePack: o.evidencePack as XReportOptions['evidencePack'],
+    privacy:
+      typeof o.privacy === 'object' && o.privacy
+        ? (o.privacy as XReportOptions['privacy'])
+        : undefined,
+    readiness:
+      typeof o.readiness === 'object' && o.readiness
+        ? (o.readiness as XReportOptions['readiness'])
         : undefined,
   };
 }

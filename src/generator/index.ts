@@ -21,6 +21,10 @@ import {
   summarize,
   writeJson,
 } from '../core/utils';
+import { applyPrivacyScrub } from '../core/privacy-scrub';
+import { buildEvidencePack } from '../core/evidence-pack';
+import { evaluateQualityGate } from '../core/quality-gate';
+import { evaluateReadiness } from '../core/readiness';
 import { renderHtml } from './html';
 
 export interface GenerateResult {
@@ -34,6 +38,8 @@ export interface GenerateResult {
   traceViewerPath?: string;
   aiContextJsonPath?: string;
   aiContextMdPath?: string;
+  evidenceZipPath?: string;
+  evidenceManifestPath?: string;
 }
 
 export async function generateReport(
@@ -57,25 +63,45 @@ export async function generateReport(
     historyRecords,
   );
   const withKnown = applyKnownIssues(enriched, opts.knownIssuesPath);
+  const withPrivacy = applyPrivacyScrub(withKnown, opts.privacy || withKnown.options?.privacy);
+
+  let gateResult;
+  if (opts.qualityGate) {
+    gateResult = evaluateQualityGate(withPrivacy, opts.qualityGate);
+    writeJson(path.join(reportDir, 'gate-result.json'), gateResult);
+  }
+
+  const readinessCfg = opts.readiness || withPrivacy.options?.readiness;
+  let withEnterprise: XReportRun = withPrivacy;
+  if (readinessCfg) {
+    withEnterprise = {
+      ...withPrivacy,
+      readiness: evaluateReadiness(withPrivacy, {
+        checklist: readinessCfg,
+        gate: gateResult,
+        reportDir,
+      }),
+    };
+  }
 
   if (opts.enableHistory) {
-    appendHistory(withKnown, opts.historyOptions);
+    appendHistory(withEnterprise, opts.historyOptions);
   }
 
   const status =
-    withKnown.summary.failed + withKnown.summary.timedOut > 0
+    withEnterprise.summary.failed + withEnterprise.summary.timedOut > 0
       ? 'failed'
-      : withKnown.summary.flaky > 0
+      : withEnterprise.summary.flaky > 0
         ? 'flaky'
         : 'passed';
   const base = resolveFilename(opts.reportFilename.replace(/\.html?$/i, ''), status);
 
   const result: GenerateResult = { reportDir };
 
-  const failedPath = writeFailedRerunArtifact(reportDir, withKnown.analytics?.failedRerun);
+  const failedPath = writeFailedRerunArtifact(reportDir, withEnterprise.analytics?.failedRerun);
   if (failedPath) result.failedRerunPath = failedPath;
 
-  const hasTrace = collectHasTrace(withKnown);
+  const hasTrace = collectHasTrace(withEnterprise);
   if (hasTrace) {
     const viewer = copyTraceViewerAssets(reportDir);
     if (viewer) result.traceViewerPath = path.join(reportDir, viewer);
@@ -83,12 +109,12 @@ export async function generateReport(
 
   // Optional local-first LLM analysis (cluster cache in report dir)
   const aiOpts = (opts as XReportOptions).ai || run.options?.ai;
-  let withAi = withKnown;
+  let withAi = withEnterprise;
   if (aiOpts?.enabled && isAiConfigured(aiOpts)) {
     try {
-      const insights = await analyzeRunWithAi(withKnown, reportDir, aiOpts);
+      const insights = await analyzeRunWithAi(withEnterprise, reportDir, aiOpts);
       if (insights.length) {
-        withAi = { ...withKnown, aiInsights: insights };
+        withAi = { ...withEnterprise, aiInsights: insights };
       }
     } catch (err) {
       if (!opts.quiet) {
@@ -135,6 +161,53 @@ export async function generateReport(
     }
   }
 
+  if (opts.evidencePack) {
+    try {
+      const packOpts =
+        typeof opts.evidencePack === 'object' ? opts.evidencePack : {};
+      const pack = buildEvidencePack(reportDir, withAi, {
+        ...packOpts,
+        gateResult,
+      });
+      result.evidenceZipPath = pack.zipPath;
+      result.evidenceManifestPath = path.join(pack.folder, 'evidence-manifest.json');
+      withAi = {
+        ...withAi,
+        evidenceSeal: {
+          contentHash: pack.manifest.contentHash,
+          zipPath: path.basename(pack.zipPath),
+          generatedAt: pack.manifest.generatedAt,
+        },
+      };
+      if (readinessCfg) {
+        withAi = {
+          ...withAi,
+          readiness: evaluateReadiness(withAi, {
+            checklist: { ...readinessCfg, requireEvidencePack: true },
+            gate: gateResult,
+            reportDir,
+          }),
+        };
+      }
+      if (opts.saveJson && result.jsonPath) writeJson(result.jsonPath, withAi);
+      if (opts.saveHtml && result.htmlPath) {
+        const html = renderHtml(
+          opts.inlineAssets ? inlineRunAssets(withAi, reportDir) : withAi,
+          { traceViewer: !!result.traceViewerPath },
+        );
+        fs.writeFileSync(result.htmlPath, html, 'utf8');
+        fs.writeFileSync(path.join(reportDir, 'index.html'), html, 'utf8');
+      }
+    } catch (err) {
+      if (!opts.quiet) {
+        console.warn(
+          '[xreport] Evidence pack skipped:',
+          err instanceof Error ? err.message : String(err),
+        );
+      }
+    }
+  }
+
   if (opts.exportPDF && result.htmlPath) {
     try {
       result.pdfPath = path.join(reportDir, 'xreport.pdf');
@@ -167,6 +240,7 @@ export async function generateReport(
     if (result.failedRerunPath) console.log(`  Failed: ${result.failedRerunPath}`);
     if (result.traceViewerPath) console.log(`  Trace:  ${result.traceViewerPath}`);
     if (result.aiContextMdPath) console.log(`  AI:     ${result.aiContextMdPath}`);
+    if (result.evidenceZipPath) console.log(`  Evidence: ${result.evidenceZipPath}`);
     if (opts.enableHistory) console.log(`  History: saved (${opts.historyOptions.dbPath})`);
     console.log('');
   }

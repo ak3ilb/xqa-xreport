@@ -60,7 +60,7 @@ const suites = [
         file: 'tests/checkout.spec.ts',
         line: 42,
         project: 'chromium',
-        tags: ['@smoke', '@payments'],
+        tags: ['@smoke', '@payments', '@control:PCI-DSS-6.5', '@risk:critical', '@layer:ui', '@req:PAY-01', '@checkout'],
         attempts: [
           {
             status: 'failed',
@@ -151,8 +151,8 @@ const suites = [
           { type: 'severity', description: 'critical' },
           { type: 'tag', description: 'checkout' },
           { type: 'jira', description: 'PAY-1204' },
+          { type: 'control', description: 'PCI-DSS-6.5' },
         ],
-        tags: ['@smoke', '@payments', '@checkout'],
         stdout: '[checkout] starting payment flow\n[checkout] card tokenized\n',
         stderr: 'WARN: slow network simulated\n',
         logs: [
@@ -253,7 +253,7 @@ const suites = [
         file: 'tests/auth.spec.ts',
         line: 33,
         project: 'firefox',
-        tags: ['@smoke', '@sso'],
+        tags: ['@smoke', '@sso', '@control:SOX-404-AC', '@risk:high', '@layer:ui', '@readiness'],
         attempts: [
           {
             status: 'failed',
@@ -341,7 +341,7 @@ const suites = [
         file: 'tests/catalog.spec.ts',
         line: 8,
         project: 'chromium',
-        tags: ['@catalog'],
+        tags: ['@catalog', '@layer:api', '@dr'],
         attempts: [{ status: 'passed', duration: 1100, errors: [], startedAt: now - 4000 }],
         steps: [{ title: 'Type query', status: 'passed', duration: 300 }],
         errors: [],
@@ -363,7 +363,7 @@ const suites = [
         file: 'tests/catalog.spec.ts',
         line: 22,
         project: 'webkit',
-        tags: ['@catalog'],
+        tags: ['@catalog', '@layer:api', '@dr'],
         attempts: [
           {
             status: 'timedOut',
@@ -457,6 +457,10 @@ async function main() {
       baseURL: 'https://xqa.io/practice',
       ci: false,
       branch: 'main',
+      commit: 'abc123def456',
+      changeTicket: 'CHG-DEMO-42',
+      actor: 'xqa-demo',
+      buildId: 'sample-1',
     },
   });
 
@@ -466,9 +470,11 @@ async function main() {
     reportDir,
     reportTitle: run.title,
     enableHistory: true,
-    historyOptions: { dbPath: historyPath, saveFullResults: true },
+    historyOptions: { dbPath: historyPath, saveFullResults: true, ledger: true },
     exportCSV: true,
     exportCtrf: true,
+    evidencePack: true,
+    readiness: { requireCriticalGreen: true, requireTags: ['readiness', 'dr'] },
     autoOpen: false,
     quiet: false,
     branding: run.branding,

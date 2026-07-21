@@ -17,11 +17,12 @@ import { analyzeRunWithAi, isAiConfigured } from '../core/ai-analyze';
 import { writeAiContextPack } from '../core/ai-context';
 import { flakeStatsFromHistory } from '../core/analytics';
 import { applyKnownIssues, listKnownIssueMatches } from '../core/known-issues';
-import { buildQuarantineExport, evaluateQualityGate } from '../core/quality-gate';
+import { buildQuarantineExport, evaluateQualityGate, type GatePresetName } from '../core/quality-gate';
 import { generateReport, mergeRuns } from '../generator';
 import type { XReportAiOptions, XReportRun } from '../core/types';
 import { formatDuration, readJson, writeJson } from '../core/utils';
 import { runMcpServer } from '../mcp/server';
+import { buildEvidencePack } from '../core/evidence-pack';
 
 function help(): void {
   console.log(`
@@ -34,7 +35,10 @@ Usage:
   xreport view [port]
   xreport ai context [dir]
   xreport ai analyze [dir]
-  xreport gate [dir] [--max-failed=N] [--max-new=N] [--max-product=N] [--max-clusters=N] [--fail-unknown]
+  xreport gate [dir] [--preset=finance-pr|finance-release|nightly]
+                 [--max-failed=N] [--max-new=N] [--max-product=N] [--max-clusters=N]
+                 [--max-critical=N] [--fail-unknown] [--require-change-ticket] [--require-commit]
+  xreport evidence [dir] [-o out.zip]
   xreport quarantine export [dir] [-o file]
   xreport mcp
   xreport history list [n]
@@ -53,7 +57,8 @@ Commands:
   merge      Merge multiple xreport.json partials (Playwright shards / WDIO workers)
   view       Open interactive JSON drag-drop viewer
   ai         Local-first AI context pack / optional LLM analyze
-  gate       Quality gate exit codes from xreport.json (muted known issues ignored by default)
+  gate       Quality gate exit codes (enterprise presets + muted known issues)
+  evidence   Build auditor evidence pack (zip + manifest sha256)
   quarantine Export quarantine / muted tips for CI skip lists
   mcp        Start local MCP server (stdio) for Cursor / agents
   history    Local run history (list/stats/trends/flakes/failed-rerun/...)
@@ -126,17 +131,36 @@ function cmdGate(args: string[]): void {
     const hit = args.find((a) => a.startsWith(flag + '='));
     return hit ? Number(hit.split('=')[1]) : undefined;
   };
-  const result = evaluateQualityGate(run, {
-    maxFailed: num('--max-failed'),
-    maxNewFailures: num('--max-new'),
-    maxProductDefects: num('--max-product'),
-    maxClusters: num('--max-clusters'),
-    failOnUnknownDefect: args.includes('--fail-unknown'),
-    ignoreMuted: !args.includes('--count-muted'),
-  });
-  console.log('\nXREPORT quality gate');
+  const str = (flag: string) => {
+    const hit = args.find((a) => a.startsWith(flag + '='));
+    return hit ? hit.slice(flag.length + 1) : undefined;
+  };
+  const presetRaw = str('--preset');
+  const preset = (
+    presetRaw === 'finance-pr' || presetRaw === 'finance-release' || presetRaw === 'nightly'
+      ? presetRaw
+      : undefined
+  ) as GatePresetName | undefined;
+  const rules: Parameters<typeof evaluateQualityGate>[1] = {};
+  if (preset) rules.preset = preset;
+  const maxFailed = num('--max-failed');
+  if (maxFailed != null && !Number.isNaN(maxFailed)) rules.maxFailed = maxFailed;
+  const maxNew = num('--max-new');
+  if (maxNew != null && !Number.isNaN(maxNew)) rules.maxNewFailures = maxNew;
+  const maxProduct = num('--max-product');
+  if (maxProduct != null && !Number.isNaN(maxProduct)) rules.maxProductDefects = maxProduct;
+  const maxClusters = num('--max-clusters');
+  if (maxClusters != null && !Number.isNaN(maxClusters)) rules.maxClusters = maxClusters;
+  const maxCritical = num('--max-critical');
+  if (maxCritical != null && !Number.isNaN(maxCritical)) rules.maxCriticalFailed = maxCritical;
+  if (args.includes('--fail-unknown')) rules.failOnUnknownDefect = true;
+  if (args.includes('--require-change-ticket')) rules.requireChangeTicket = true;
+  if (args.includes('--require-commit')) rules.requireCommit = true;
+  if (args.includes('--count-muted')) rules.ignoreMuted = false;
+  const result = evaluateQualityGate(run, rules);
+  console.log('\nXREPORT quality gate' + (result.preset ? ` (${result.preset})` : ''));
   console.log(
-    `  failed=${result.counts.failed} muted=${result.counts.mutedFailed} new=${result.counts.newFailures} product=${result.counts.productDefects} clusters=${result.counts.clusters}`,
+    `  failed=${result.counts.failed} muted=${result.counts.mutedFailed} new=${result.counts.newFailures} product=${result.counts.productDefects} critical=${result.counts.criticalFailed} clusters=${result.counts.clusters}`,
   );
   if (result.violations.length) {
     for (const v of result.violations) console.log(`  FAIL: ${v}`);
@@ -153,6 +177,32 @@ function cmdGate(args: string[]): void {
     console.log('');
   }
   process.exit(result.exitCode);
+}
+
+function cmdEvidence(args: string[]): void {
+  const dirArg = args.find((a) => !a.startsWith('-'));
+  const dir = resolveReportDir(dirArg);
+  const outIdx = args.indexOf('-o');
+  const output = outIdx >= 0 ? args[outIdx + 1] : undefined;
+  const jsonPath = path.join(dir, 'xreport.json');
+  if (!fs.existsSync(jsonPath)) {
+    console.error(`No xreport.json in ${dir}`);
+    process.exit(1);
+  }
+  let run = readJson<XReportRun>(jsonPath);
+  run = applyKnownIssues(run, run.options?.knownIssuesPath);
+  const gateResult = evaluateQualityGate(run, run.options?.qualityGate || {});
+  const pack = buildEvidencePack(dir, run, {
+    output,
+    includeMedia: !args.includes('--no-media'),
+    gateResult,
+  });
+  console.log('\nXREPORT evidence pack');
+  console.log(`  folder:   ${pack.folder}`);
+  if (pack.zipPath) console.log(`  zip:      ${pack.zipPath}`);
+  console.log(`  manifest: ${path.join(pack.folder, 'evidence-manifest.json')}`);
+  console.log(`  hash:     ${pack.manifest.contentHash}`);
+  console.log('');
 }
 
 function cmdQuarantine(args: string[]): void {
@@ -440,6 +490,10 @@ export async function runCli(argv = process.argv.slice(2)): Promise<void> {
   if (cmd === 'ai') return cmdAi(argv.slice(1));
   if (cmd === 'gate') {
     cmdGate(argv.slice(1));
+    return;
+  }
+  if (cmd === 'evidence') {
+    cmdEvidence(argv.slice(1));
     return;
   }
   if (cmd === 'quarantine') {

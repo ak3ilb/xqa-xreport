@@ -14,6 +14,9 @@ coverage/
 .tgreport/
 examples/**/xreport/
 examples/**/node_modules/
+examples/**/xreport-evidence/
+examples/**/xreport-evidence.zip
+examples/**/evidence-seal.json
 .cursor/
 .xreport/
 .tmp-ci-hourly/

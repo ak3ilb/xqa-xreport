@@ -2,6 +2,8 @@ import type { DefectKind } from './ai-types';
 import type { XReportRun, XReportTest } from './types';
 import { collectTests } from './utils';
 
+export type GatePresetName = 'finance-pr' | 'finance-release' | 'nightly';
+
 export interface QualityGateRules {
   /** Max non-muted failed+timedOut (default unlimited) */
   maxFailed?: number;
@@ -15,6 +17,14 @@ export interface QualityGateRules {
   ignoreMuted?: boolean;
   /** Fail when any non-muted failure has defectKind unknown */
   failOnUnknownDefect?: boolean;
+  /** Require environment.changeTicket or changeId */
+  requireChangeTicket?: boolean;
+  /** Require environment.commit */
+  requireCommit?: boolean;
+  /** Max failures on @risk:critical cases */
+  maxCriticalFailed?: number;
+  /** Named enterprise preset */
+  preset?: GatePresetName;
 }
 
 export interface QualityGateResult {
@@ -28,19 +38,63 @@ export interface QualityGateResult {
     productDefects: number;
     clusters: number;
     unknownDefects: number;
+    criticalFailed: number;
   };
   violations: string[];
+  preset?: GatePresetName;
 }
 
 function isFail(t: XReportTest): boolean {
   return t.status === 'failed' || t.status === 'timedOut';
 }
 
+export function resolveGatePreset(name?: GatePresetName): QualityGateRules {
+  if (name === 'finance-pr') {
+    return {
+      preset: 'finance-pr',
+      maxNewFailures: 0,
+      ignoreMuted: true,
+      requireChangeTicket: true,
+      maxCriticalFailed: 0,
+    };
+  }
+  if (name === 'finance-release') {
+    return {
+      preset: 'finance-release',
+      maxFailed: 0,
+      maxProductDefects: 0,
+      failOnUnknownDefect: true,
+      requireChangeTicket: true,
+      requireCommit: true,
+      maxCriticalFailed: 0,
+      ignoreMuted: true,
+    };
+  }
+  if (name === 'nightly') {
+    return {
+      preset: 'nightly',
+      maxProductDefects: 0,
+      ignoreMuted: true,
+    };
+  }
+  return {};
+}
+
+export function mergeGateRules(rules: QualityGateRules = {}): QualityGateRules {
+  const fromPreset = resolveGatePreset(rules.preset);
+  const cleaned: QualityGateRules = {};
+  for (const [k, v] of Object.entries(rules) as Array<[keyof QualityGateRules, unknown]>) {
+    if (v !== undefined) (cleaned as Record<string, unknown>)[k] = v;
+  }
+  return { ...fromPreset, ...cleaned, preset: cleaned.preset || fromPreset.preset };
+}
+
 export function evaluateQualityGate(
   run: XReportRun,
   rules: QualityGateRules = {},
 ): QualityGateResult {
-  const ignoreMuted = rules.ignoreMuted !== false;
+  const merged = mergeGateRules(rules);
+  const ignoreMuted = merged.ignoreMuted !== false;
   const tests = collectTests(run.suites);
   const failedAll = tests.filter(isFail);
   const failed = ignoreMuted ? failedAll.filter((t) => !t.muted) : failedAll;
@@ -51,31 +105,48 @@ export function evaluateQualityGate(
     (t) => !t.defectKind || t.defectKind === 'unknown',
   ).length;
   const clusters = new Set(failed.map((t) => t.clusterId).filter(Boolean)).size;
+  const criticalFailed = failed.filter((t) => t.riskTier === 'critical').length;
 
   const violations: string[] = [];
-  if (rules.maxFailed != null && failed.length > rules.maxFailed) {
-    violations.push(`failed ${failed.length} > maxFailed ${rules.maxFailed}`);
+  if (merged.maxFailed != null && failed.length > merged.maxFailed) {
+    violations.push(`failed ${failed.length} > maxFailed ${merged.maxFailed}`);
   }
-  if (rules.maxNewFailures != null && newFailures > rules.maxNewFailures) {
-    violations.push(`newFailures ${newFailures} > maxNewFailures ${rules.maxNewFailures}`);
+  if (merged.maxNewFailures != null && newFailures > merged.maxNewFailures) {
+    violations.push(`newFailures ${newFailures} > maxNewFailures ${merged.maxNewFailures}`);
   }
-  if (rules.maxProductDefects != null && productDefects > rules.maxProductDefects) {
+  if (merged.maxProductDefects != null && productDefects > merged.maxProductDefects) {
     violations.push(
-      `productDefects ${productDefects} > maxProductDefects ${rules.maxProductDefects}`,
+      `productDefects ${productDefects} > maxProductDefects ${merged.maxProductDefects}`,
     );
   }
-  if (rules.maxClusters != null && clusters > rules.maxClusters) {
-    violations.push(`clusters ${clusters} > maxClusters ${rules.maxClusters}`);
+  if (merged.maxClusters != null && clusters > merged.maxClusters) {
+    violations.push(`clusters ${clusters} > maxClusters ${merged.maxClusters}`);
   }
-  if (rules.failOnUnknownDefect && unknownDefects > 0) {
+  if (merged.failOnUnknownDefect && unknownDefects > 0) {
     violations.push(`unknownDefects ${unknownDefects} (failOnUnknownDefect)`);
+  }
+  if (merged.maxCriticalFailed != null && criticalFailed > merged.maxCriticalFailed) {
+    violations.push(
+      `criticalFailed ${criticalFailed} > maxCriticalFailed ${merged.maxCriticalFailed}`,
+    );
+  }
+  const env = run.environment || {};
+  const ticket =
+    (typeof env.changeTicket === 'string' && env.changeTicket) ||
+    (typeof env.changeId === 'string' && env.changeId) ||
+    '';
+  if (merged.requireChangeTicket && !ticket) {
+    violations.push('changeTicket missing (requireChangeTicket)');
+  }
+  if (merged.requireCommit && !(typeof env.commit === 'string' && env.commit)) {
+    violations.push('commit missing (requireCommit)');
   }
 
   const ok = violations.length === 0;
   return {
     ok,
     exitCode: ok ? 0 : 2,
-    rules: { ...rules, ignoreMuted },
+    rules: { ...merged, ignoreMuted },
     counts: {
       failed: failed.length,
       mutedFailed,
@@ -83,8 +154,10 @@ export function evaluateQualityGate(
       productDefects,
       clusters,
       unknownDefects,
+      criticalFailed,
     },
     violations,
+    preset: merged.preset,
   };
 }
 

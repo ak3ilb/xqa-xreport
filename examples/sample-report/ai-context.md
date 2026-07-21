@@ -1,6 +1,6 @@
 # XREPORT AI context
 
-Generated: 2026-07-20T22:10:12.353Z
+Generated: 2026-07-21T16:54:34.559Z
 
 You are helping fix failing automated tests. Use only the evidence below.
 
@@ -8,7 +8,7 @@ You are helping fix failing automated tests. Use only the evidence below.
 - Framework: playwright
 - Summary: 3 passed / 2 failed / 1 flaky / 7 total
 - Branch: main
-
+- Commit: abc123def456
 
 ## Top failure clusters (fix root causes, not every test)
 

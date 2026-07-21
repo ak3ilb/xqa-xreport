@@ -10,8 +10,8 @@
       "pending": 0,
       "skipped": 1,
       "other": 0,
-      "start": 1784585372345,
-      "stop": 1784585412345
+      "start": 1784652834545,
+      "stop": 1784652874545
     },
     "tests": [
       {
@@ -95,6 +95,10 @@
       "node": "v22.4.1",
       "ci": false,
       "branch": "main",
+      "commit": "abc123def456",
+      "buildId": "sample-1",
+      "changeTicket": "CHG-DEMO-42",
+      "actor": "xqa-demo",
       "browser": "chromium / firefox / webkit",
       "baseURL": "https://xqa.io/practice",
       "appName": "XREPORT",

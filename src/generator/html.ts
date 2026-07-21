@@ -198,7 +198,7 @@ h1{margin:0 0 6px;font-size:26px;font-weight:800;letter-spacing:-.03em;color:var
 .stat-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .envpill{display:inline-flex;align-items:center;font-size:11px;font-weight:750;padding:3px 8px;border-radius:999px;background:var(--pass-bg);color:#166534;letter-spacing:.02em}
 .branch{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:#374151}.branch svg{width:13px;height:13px;opacity:.7}
-.kpis{display:grid;grid-template-columns:minmax(160px,1.15fr) repeat(6,minmax(72px,1fr));gap:8px;align-items:stretch;margin-bottom:14px}
+.kpis{display:grid;grid-template-columns:minmax(160px,1.15fr) repeat(7,minmax(72px,1fr));gap:8px;align-items:stretch;margin-bottom:14px}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.kpi-rate{grid-column:1/-1}}
 @media(max-width:640px){.kpis{grid-template-columns:1fr 1fr}}
 .kpi-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:center;min-height:58px;min-width:0;overflow:hidden}
@@ -649,6 +649,10 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
         else if(low.indexOf('owner:')===0)ok=(t.owner||'').toLowerCase().indexOf(low.slice(6))>=0;
         else if(low.indexOf('severity:')===0)ok=(t.severity||'').toLowerCase().indexOf(low.slice(9))>=0;
         else if(low.indexOf('cluster:')===0)ok=(t.clusterId||'')===p.slice(8)||(t.clusterId||'').toLowerCase().indexOf(low.slice(8))>=0;
+        else if(low.indexOf('control:')===0){var cid=low.slice(8);ok=(t.controlIds||[]).some(function(x){return String(x).toLowerCase().indexOf(cid)>=0;})||(t.tags||[]).some(function(x){return String(x).toLowerCase().indexOf('control:'+cid)>=0;});}
+        else if(low.indexOf('risk:')===0)ok=(t.riskTier||'')===low.slice(5)||(t.tags||[]).some(function(x){return String(x).toLowerCase().indexOf('risk:'+low.slice(5))>=0;});
+        else if(low.indexOf('req:')===0){var rid=low.slice(4);ok=(t.requirementIds||[]).some(function(x){return String(x).toLowerCase().indexOf(rid)>=0;});}
+        else if(low.indexOf('layer:')===0){var lid=low.slice(6);ok=(t.layers||[]).some(function(x){return String(x).toLowerCase()===lid;});}
         else if(low==='regression'||low==='r:new'||low==='s:regression')ok=!!t.regression;
         else if(p.charAt(0)==='@')ok=(t.tags||[]).some(function(x){return String(x).toLowerCase()===low||String(x).toLowerCase()==='@'+low.slice(1);});
         else{var hay=(t.fullTitle+' '+t.title+' '+(t.file||'')+' '+(t.project||'')+' '+(t.failureCategory||'')+' '+(t.owner||'')+' '+(t.severity||'')).toLowerCase();ok=hay.indexOf(low)>=0;}
@@ -890,7 +894,8 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       '<div class="kpi-card"><div class="l">Flaky</div><div class="v">'+s.flaky+d('flaky',true)+'</div></div>'+
       '<div class="kpi-card"><div class="l">Skipped</div><div class="v">'+(s.skipped||0)+'</div></div>'+
       '<div class="kpi-card"><div class="l">Duration</div><div class="v">'+fmt(s.duration)+'</div></div>'+
-      '<div class="kpi-card"><div class="l">Stability</div><div class="v">Grade '+(a.stabilityGrade||'—')+'</div></div>';
+      '<div class="kpi-card"><div class="l">Stability</div><div class="v">Grade '+(a.stabilityGrade||'—')+'</div></div>'+
+      '<div class="kpi-card'+(a.criticalFailed?' fail':'')+'"><div class="l">Critical risk</div><div class="v">'+(a.criticalFailed||0)+'</div></div>';
     document.getElementById('localMeta').textContent='Local · '+ago(DATA.finishedAt||Date.now());
   }
 
@@ -911,7 +916,8 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       '<div class="dash-sec"><h3>Evidence</h3><div class="dash-links">'+
         '<button class="dash-link" type="button" data-goto="gallery"><span>Screens &amp; Video</span><span class="go">Open →</span></button>'+
         '<button class="dash-link" type="button" data-goto="timeline"><span>Worker Map</span><span class="go">Open →</span></button>'+
-      '</div><div class="dash-preview"><b>'+media+'</b> screenshots/videos · worker timing map available</div></div>';
+      '</div><div class="dash-preview"><b>'+media+'</b> screenshots/videos · worker timing map available</div></div>'+
+      (DATA.readiness?'<div class="dash-sec"><h3>Readiness</h3><div class="dash-preview">Status <b>'+esc(DATA.readiness.status)+'</b> · '+(DATA.readiness.checks||[]).filter(function(c){return c.status==='pass';}).length+'/'+(DATA.readiness.checks||[]).length+' checks pass</div><div class="dash-links"><button class="dash-link" type="button" data-goto="config"><span>Open Run Meta</span><span class="go">Open →</span></button></div></div>':'');
 
     var list=DATA.tests.slice().sort(function(a,b){return statusRank(a)-statusRank(b)||(b.duration||0)-(a.duration||0);}).slice(0,12);
     if(!list.length){document.getElementById('dashTests').innerHTML='<div class="empty" style="padding:16px">No cases in this report.</div>';return;}
@@ -1362,6 +1368,12 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     });
     var mutedN=(DATA.tests||[]).filter(function(t){return t.muted;}).length;
     var html='';
+    html+='<div class="card"><h3>Controls</h3>'+((a.controls||[]).length?(a.controls||[]).slice(0,12).map(function(x){
+      return '<button class="cluster-row" type="button" data-control="'+esc(x.controlId)+'" title="Filter Case Triage" style="width:100%;margin:0 0 6px"><span>'+esc(x.controlId)+'</span><span>'+x.failed+'F / '+x.passed+'P / '+x.total+'</span></button>';
+    }).join('')+'<div class="runmeta">Click a control to filter Case Triage · also in evidence pack CSV</div>':'<div class="empty" style="padding:8px">Tag cases with <code>@control:ID</code></div>')+'</div>';
+    html+='<div class="card"><h3>Layers</h3>'+((a.byLayer||[]).length?(a.byLayer||[]).map(function(x){
+      return '<div class="barrow"><span>'+esc(x.layer)+'</span><div class="bartrack"><div class="seg p" style="width:'+(x.total?Math.round(x.passed/x.total*100):0)+'%"></div><div class="seg f" style="width:'+(x.total?Math.round(x.failed/x.total*100):0)+'%"></div></div><span>'+x.failed+'F / '+x.total+'</span></div>';
+    }).join(''):'<div class="empty" style="padding:8px">Tag with <code>@layer:ui|api|batch|reconcile</code></div>')+'</div>';
     html+='<div class="card"><h3>Defect kinds</h3>'+(Object.keys(defectCounts).length?Object.keys(defectCounts).map(function(k){return '<div class="barrow"><span>'+esc(k)+'</span><div class="bartrack"><div class="seg f" style="width:'+Math.min(100,defectCounts[k]*20)+'%"></div></div><span>'+defectCounts[k]+'</span></div>';}).join('')+'<div class="runmeta" style="margin-top:8px">Muted known issues: <b>'+mutedN+'</b></div>':'<div class="empty" style="padding:8px">No failing tests to classify</div>')+'</div>';
     html+='<div class="card"><h3>AI Insights</h3>'+(insights.length?insights.slice(0,8).map(function(i){
       return '<div style="padding:8px 0;border-bottom:1px solid var(--soft2)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><b>'+esc((i.summary||'').slice(0,120))+'</b><div class="runmeta">'+esc(i.defectKind||'unknown')+' · conf '+(Math.round((i.confidence||0)*100))+'% · cluster '+esc(i.clusterId||'')+'</div>'+
@@ -1426,8 +1438,29 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
 
   function renderConfig(){
     var e=DATA.environment||{};
+    var seal=DATA.evidenceSeal;
+    var gate=null;
+    try{/* embedded seal only */}catch(ex){}
+    var prov=[
+      ['Change ticket', e.changeTicket||e.changeId||'—'],
+      ['Commit', e.commit||'—'],
+      ['Build id', e.buildId||'—'],
+      ['Pipeline', e.buildUrl||e.pipelineUrl||'—'],
+      ['Actor', e.actor||'—'],
+      ['Privacy', e.privacyMode||'off'],
+      ['Evidence', seal?(seal.contentHash||'').slice(0,16)+'… ('+(seal.zipPath||'sealed')+')':'—']
+    ].map(function(r){return '<div><b>'+esc(r[0])+'</b><span>'+esc(String(r[1]))+'</span></div>';}).join('');
     var rows=Object.keys(e).map(function(k){return '<div><b>'+esc(k)+'</b><span>'+esc(String(e[k]))+'</span></div>';}).join('');
-    document.getElementById('configBody').innerHTML='<div class="metagrid"><b>Title</b><span>'+esc(DATA.title)+'</span><b>Framework</b><span>'+esc(DATA.framework)+'</span><b>Finished</b><span>'+esc(new Date(DATA.finishedAt||Date.now()).toLocaleString())+'</span><b>Generator</b><span>'+esc((DATA.brand&&DATA.brand.name)||'XREPORT')+'</span>'+rows+'</div>';
+    var ready='';
+    if(DATA.readiness&&DATA.readiness.checks){
+      ready='<div class="card" style="margin-top:14px"><h3>Readiness</h3><div class="runmeta" style="margin-bottom:8px">Overall: <b>'+esc(DATA.readiness.status)+'</b></div>'+
+        DATA.readiness.checks.map(function(c){
+          return '<div class="cmp-row"><span>'+esc(c.label)+'</span><span class="'+(c.status==='block'?'dur-up':(c.status==='warn'?'delta up':'dur-down'))+'">'+esc(c.status)+(c.detail?' · '+esc(c.detail):'')+'</span></div>';
+        }).join('')+'</div>';
+    }
+    document.getElementById('configBody').innerHTML=
+      '<div class="card" style="margin-bottom:14px"><h3>Provenance</h3><div class="metagrid">'+prov+'</div></div>'+
+      '<div class="metagrid"><b>Title</b><span>'+esc(DATA.title)+'</span><b>Framework</b><span>'+esc(DATA.framework)+'</span><b>Finished</b><span>'+esc(new Date(DATA.finishedAt||Date.now()).toLocaleString())+'</span><b>Generator</b><span>'+esc((DATA.brand&&DATA.brand.name)||'XREPORT')+'</span>'+rows+'</div>'+ready;
   }
 
   function openLb(src,kind){var lb=document.getElementById('lb');document.getElementById('lbbody').innerHTML=kind==='video'?'<video src="'+esc(src)+'" controls autoplay></video>':'<img src="'+esc(src)+'" alt=""/>';lb.classList.add('on');}
@@ -1515,6 +1548,17 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       var cluster=(DATA.analytics.clusters||[]).find(function(x){return x.id===cid;});
       if(cluster)navigator.clipboard.writeText(buildClusterAiPrompt(cluster));
       e.stopPropagation();
+      return;
+    }
+    var ctrl=e.target.closest('[data-control]');
+    if(ctrl){
+      state.clusterId='';
+      state.status='all';
+      state.q='control:'+ctrl.getAttribute('data-control');
+      document.getElementById('q').value=state.q;
+      syncStatusChips();
+      saveFilters();
+      setPage('tests');
       return;
     }
     var row=e.target.closest('[data-cluster]');

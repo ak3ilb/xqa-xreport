@@ -136,6 +136,14 @@ export interface XReportTest {
   muted?: boolean;
   stabilityPct?: number;
   testHistory?: XReportTestHistoryPoint[];
+  /** Enterprise: @control:ID values */
+  controlIds?: string[];
+  /** Enterprise: @req:ID values */
+  requirementIds?: string[];
+  /** Enterprise: @layer:ui|api|batch|reconcile */
+  layers?: string[];
+  /** Enterprise: @risk:critical|high|standard */
+  riskTier?: 'critical' | 'high' | 'standard';
 }
 
 export interface XReportSuite {
@@ -166,6 +174,14 @@ export interface XReportEnvironment {
   branch?: string;
   commit?: string;
   buildUrl?: string;
+  /** Change / ticket id (Jira, ServiceNow, ADO, …) */
+  changeTicket?: string;
+  changeId?: string;
+  buildId?: string;
+  pipelineUrl?: string;
+  actor?: string;
+  riskTier?: string;
+  privacyMode?: string;
   [key: string]: string | boolean | undefined;
 }
 
@@ -185,6 +201,10 @@ export interface XReportHistoryOptions {
   retentionDays?: number;
   autoCleanup?: boolean;
   saveFullResults?: boolean;
+  /** Warn when retentionDays is below this (enterprise profiles) */
+  minRetentionDays?: number;
+  /** Append tamper-evident ledger lines next to history db */
+  ledger?: boolean;
 }
 
 export interface XReportOptions {
@@ -213,6 +233,12 @@ export interface XReportOptions {
   knownIssuesPath?: string;
   /** Quality gate evaluated after generate when set; does not fail generate itself */
   qualityGate?: import('./quality-gate').QualityGateRules;
+  /** Write evidence pack (folder + zip + seal) after generate */
+  evidencePack?: boolean | { output?: string; includeMedia?: boolean };
+  /** Privacy scrubbing (PHI/PII-like patterns) — tooling aid, not a certification */
+  privacy?: import('./privacy-scrub').PrivacyOptions;
+  /** Operational readiness checklist (BlackRock-style pre-prod signals) */
+  readiness?: import('./readiness').ReadinessChecklistConfig;
 }
 
 export interface XReportAnalytics {
@@ -285,6 +311,26 @@ export interface XReportAnalytics {
     files: string[];
     count: number;
   };
+  /** Enterprise control coverage */
+  controls?: Array<{
+    controlId: string;
+    total: number;
+    passed: number;
+    failed: number;
+    skipped: number;
+    flaky: number;
+    testIds: string[];
+  }>;
+  /** Suite topology by @layer */
+  byLayer?: Array<{
+    layer: string;
+    total: number;
+    passed: number;
+    failed: number;
+    flaky: number;
+  }>;
+  /** Critical-risk failure count */
+  criticalFailed?: number;
 }
 
 export interface XReportRun {
@@ -308,6 +354,14 @@ export interface XReportRun {
   coverageSummary?: XReportCoverageSummary;
   /** Optional LLM insights keyed by cluster (local-first AI) */
   aiInsights?: AiInsight[];
+  /** Evidence pack seal summary (set when pack generated) */
+  evidenceSeal?: {
+    contentHash: string;
+    zipPath?: string;
+    generatedAt: string;
+  };
+  /** Operational readiness evaluation */
+  readiness?: import('./readiness').ReadinessResult;
 }
 
 export interface HistoryRecord {
@@ -322,7 +376,7 @@ export interface HistoryRecord {
   tests?: Array<{ historyId: string; title: string; status: TestStatus; duration: number }>;
 }
 
-export const XREPORT_VERSION = '0.5.2';
+export const XREPORT_VERSION = '0.6.0';
 export const XQA_WEBSITE = 'https://xqa.io';
 export const DEFAULT_BRANDING: XReportBranding = {
   projectName: 'XREPORT',

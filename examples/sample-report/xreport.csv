@@ -1,9 +1,9 @@
 suite,title,fullTitle,status,flaky,durationMs,file,error,attempts,tags
 Checkout,pays with valid card @smoke,Checkout › pays with valid card @smoke,failed,false,4200,tests/checkout.spec.ts,"Timeout 5000ms exceeded.
-waiting for locator(""#pay"")",2,@smoke @payments @checkout
+waiting for locator(""#pay"")",2,@smoke @payments @control:PCI-DSS-6.5 @risk:critical @layer:ui @req:PAY-01 @checkout
 Checkout,applies coupon @regression,Checkout › applies coupon @regression,passed,true,1800,tests/checkout.spec.ts,,2,@regression
 Auth,logs in with email @smoke,Auth › logs in with email @smoke,passed,false,650,tests/auth.spec.ts,,1,@smoke
-Auth,SSO redirect @smoke,Auth › SSO redirect @smoke,failed,false,3100,tests/auth.spec.ts,"Expected URL to contain /dashboard, got /error",1,@smoke @sso
+Auth,SSO redirect @smoke,Auth › SSO redirect @smoke,failed,false,3100,tests/auth.spec.ts,"Expected URL to contain /dashboard, got /error",1,@smoke @sso @control:SOX-404-AC @risk:high @layer:ui @readiness
 Auth,logs out,Auth › logs out,skipped,false,0,tests/auth.spec.ts,,1,
-Catalog,search returns products,Catalog › search returns products,passed,false,1100,tests/catalog.spec.ts,,1,@catalog
-Catalog,filters by price,Catalog › filters by price,timedOut,false,30000,tests/catalog.spec.ts,Test timeout of 30000ms exceeded.,1,@catalog
+Catalog,search returns products,Catalog › search returns products,passed,false,1100,tests/catalog.spec.ts,,1,@catalog @layer:api @dr
+Catalog,filters by price,Catalog › filters by price,timedOut,false,30000,tests/catalog.spec.ts,Test timeout of 30000ms exceeded.,1,@catalog @layer:api @dr

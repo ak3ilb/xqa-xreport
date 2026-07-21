@@ -17,6 +17,7 @@ import {
   classifyFailure,
   normalizeErrorSignature,
 } from './ai-classify';
+import { applyEnterpriseTagsToTest, buildControlMatrix, buildLayerSummary } from './enterprise-tags';
 
 export { normalizeErrorSignature, classifyFailure } from './ai-classify';
 export { classifyDefectKind, extractLikelyFixFile } from './ai-classify';
@@ -124,8 +125,12 @@ function stabilityFromPoints(points: XReportTestHistoryPoint[], current?: TestSt
 }
 
 export function enrichTest(test: XReportTest, historyRecords: HistoryRecord[] = []): XReportTest {
-  const msg = test.errors[0]?.message || test.attempts.find((a) => a.errors[0])?.errors[0]?.message;
-  const stack = test.errors[0]?.stack || test.attempts.find((a) => a.errors[0])?.errors[0]?.stack;
+  const msg =
+    test.errors?.[0]?.message ||
+    test.attempts?.find((a) => a.errors?.[0])?.errors?.[0]?.message;
+  const stack =
+    test.errors?.[0]?.stack ||
+    test.attempts?.find((a) => a.errors?.[0])?.errors?.[0]?.stack;
   const signature = normalizeErrorSignature(msg);
   const clusterId =
     test.status === 'failed' || test.status === 'timedOut' ? errorSignatureHash(msg) : undefined;
@@ -146,7 +151,7 @@ export function enrichTest(test: XReportTest, historyRecords: HistoryRecord[] = 
         stabilityPct,
       })
     : undefined;
-  return {
+  return applyEnterpriseTagsToTest({
     ...test,
     steps: markSlowSteps(test.steps || []),
     errorSignature: msg ? signature : undefined,
@@ -162,7 +167,7 @@ export function enrichTest(test: XReportTest, historyRecords: HistoryRecord[] = 
     likelyFixFile: test.likelyFixFile || defect?.likelyFixFile,
     stabilityPct,
     testHistory,
-  };
+  });
 }
 
 export function computeStabilityGrade(summary: XReportSummary, flakyRate: number): {
@@ -536,6 +541,11 @@ export function buildAnalytics(
     byEnvironment,
     historyRuns,
     failedRerun: buildFailedRerun(run),
+    controls: buildControlMatrix(tests),
+    byLayer: buildLayerSummary(tests),
+    criticalFailed: tests.filter(
+      (t) => t.riskTier === 'critical' && (t.status === 'failed' || t.status === 'timedOut'),
+    ).length,
   };
 }
 

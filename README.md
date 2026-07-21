@@ -1,4 +1,4 @@
-# XREPORT by XQA — All-in-One HTML Test Reporter for Playwright, WebdriverIO, Jasmine, Cypress, Jest, Vitest & Mocha
+# XREPORT by XQA — All-in-One Enterprise Test Reporter for Playwright, WebdriverIO, Jasmine, Cypress, Jest, Vitest & Mocha
 
 [![npm version](https://img.shields.io/npm/v/@xqa.io/xreport.svg)](https://www.npmjs.com/package/@xqa.io/xreport)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
@@ -7,7 +7,7 @@
 [![GitHub](https://img.shields.io/badge/GitHub-ak3ilb%2Fxqa--xreport-181717?logo=github)](https://github.com/ak3ilb/xqa-xreport)
 [![XQA](https://img.shields.io/badge/XQA-xqa.io-0071E3)](https://xqa.io)
 
-**XREPORT** by [**XQA**](https://xqa.io) — one local HTML reporter for every major JS test stack. **Playwright HTML reporter**, **WebdriverIO (WDIO) reporter**, **Jasmine reporter**, **Cypress reporter**, **Jest reporter**, **Vitest reporter**, and **Mocha reporter** — same triage UI, flaky detection, run history, error grouping, traces, and local-first AI. Pure Node.js. No upload token.
+**XREPORT** by [**XQA**](https://xqa.io) — one local **enterprise test reporter** for every major JS test stack. **Playwright**, **WebdriverIO (WDIO)**, **Jasmine**, **Cypress**, **Jest**, **Vitest**, and **Mocha** — same triage UI, audit evidence packs, quality gates, control tagging, flaky detection, run history, traces, and local-first AI. Pure Node.js. No upload token.
 
 > Practice automation at [**xqa.io/practice**](https://xqa.io/practice)
 
@@ -16,15 +16,18 @@
 ## Features
 
 - **Framework-agnostic** — Playwright, Cypress, Jest, Vitest, Mocha, Jasmine, WebdriverIO
+- **Enterprise audit evidence** — Evidence Pack zip + sha256 manifest, change-ticket provenance, control matrix
+- **Quality gates** — `xreport gate` with finance presets, critical-risk limits, known-issues mute
 - **Compact triage UI** — Summary, Run History (diff), Case Triage side panel, full case pages
 - **Failures-first** — flaky badges, new-fail filter, soft-assert multi-errors, attempt picker
-- **Power search** — `s:failed` · `p:chromium` · `@smoke` · `file:` · `error:` · `owner:` · `severity:` · `cluster:` · `regression`
-- **Suite Pulse** — defect kinds, AI Insights, error groups, slowest / by-file, coverage, tag health
+- **Power search** — `s:failed` · `p:chromium` · `@smoke` · `control:` · `risk:` · `file:` · `error:` · `owner:` · `severity:` · `cluster:` · `regression`
+- **Suite Pulse** — defect kinds, controls matrix, layers, AI Insights, error groups, slowest / by-file
 - **Media & traces** — screenshots, videos, lightbox; Playwright trace viewer via `xreport open`
-- **History** — local trends, diff two reports, quarantine tips (`enableHistory`)
+- **History** — local trends, optional ledger, retention policy (`enableHistory`)
+- **Privacy helpers** — optional PHI/PII scrub on errors/logs/attachment names (helps keep sensitive data out of artifacts)
 - **AI (local-first)** — `ai-context.md/json` per run, Copy Prompt, optional OpenAI-compatible analyze, local MCP
-- **CI maturity** — quality gate (`xreport gate`), known-issues mute, quarantine export, shard merge helpers
-- **Exports** — HTML, JSON, CSV, CTRF, optional PDF; WDIO worker auto-merge
+- **CI maturity** — gate presets, quarantine export, shard merge helpers, readiness checklist
+- **Exports** — HTML, JSON, CSV, CTRF, evidence zip, optional PDF; WDIO worker auto-merge
 - **Context API** — `attach` / `testContext` (+ Cypress `cy.xreportNote` / `cy.xreportMeta`)
 - **TypeScript & JavaScript** — published types, zero Java, report ready when tests finish
 
@@ -53,6 +56,44 @@ npm run sample
 npx xreport open ./examples/sample-report
 ```
 
+---
+
+## Enterprise
+
+Local/self-hosted **evidence tooling** for finance, banking, and regulated CI — not a cloud TMS and not a compliance certification.
+
+| Capability | How |
+|------------|-----|
+| **Provenance** | `changeTicket` / commit / pipeline / actor (CI env or `XREPORT_CHANGE_TICKET`) on Run Meta |
+| **Evidence Pack** | `npx xreport evidence ./xreport -o ./xreport-evidence.zip` — HTML, JSON, CTRF, gate result, `controls-matrix.csv`, `traceability.csv`, `evidence-manifest.json` (sha256) |
+| **Gate presets** | `finance-pr` · `finance-release` · `nightly` — ticket required, critical-risk limits, product defects |
+| **Control matrix** | Tag `@control:SOX-404-…` / `@risk:critical` / `@req:…` / `@layer:ui` — Suite Pulse + CSV in pack |
+| **Privacy scrub** | `privacy: { scrubAttachments: true }` — redact SSN/MRN/email/phone-like patterns before embed |
+| **Retention / ledger** | `historyOptions.retentionDays`, `minRetentionDays`, optional `ledger: true` → append-only `history-ledger.jsonl` |
+| **Readiness** | Config checklist (critical green, `@dr` / `@reconcile` / `@readiness`, evidence seal) on Summary / Run Meta |
+
+```bash
+# Finance PR gate (requires change ticket in env or report)
+export XREPORT_CHANGE_TICKET=CHG-1234
+npx xreport gate ./xreport --preset=finance-pr
+
+# Release gate + auditor zip
+npx xreport gate ./xreport --preset=finance-release
+npx xreport evidence ./xreport -o ./audit/xreport-evidence.zip
+```
+
+Or enable pack generation in the reporter:
+
+```ts
+['@xqa.io/xreport/playwright', {
+  evidencePack: true, // or { output: './xreport-evidence.zip' }
+  privacy: { scrubAttachments: true },
+  readiness: { requireCriticalGreen: true, requireTags: ['readiness', 'dr'] },
+  qualityGate: { preset: 'finance-pr' },
+  historyOptions: { retentionDays: 365, minRetentionDays: 90, ledger: true },
+}]
+```
+
 ### Report UI
 
 | Area | What you get |
@@ -62,10 +103,10 @@ npx xreport open ./examples/sample-report
 | **Report detail** | Per-report filters (All / Failed / Passed / Flaky / Skipped) + clickable cases |
 | **Case Triage** | Failures-first grid + **side panel** (Attempts · Steps · Error · Logs · Hooks · Attachments · History · Meta) |
 | **Case page** | Overview · Errors · Steps (nested) · Hooks · Logs · History · Attachments · Meta |
-| **Suite Pulse** | Defect kinds, by-file, slowest, error categories, **AI Insights**, **clickable error groups** + Copy Prompt, coverage, tag health, quarantine tips |
+| **Suite Pulse** | Defect kinds, **controls** / **layers**, by-file, slowest, error categories, **AI Insights**, **clickable error groups** + Copy Prompt, coverage, tag health, quarantine tips |
 | **Unstable** | Stability % + failure category |
 | **Screens & Video / Worker Map** | Screenshots & videos · approximate worker lanes |
-| **Run Meta** | Environment + report metadata |
+| **Run Meta** | Environment, **Provenance** (ticket/commit/pipeline), Evidence seal, optional **Readiness** |
 
 ### Triage & search
 
@@ -506,6 +547,8 @@ npx xreport ai context ./xreport
 npx xreport ai analyze ./xreport   # needs XREPORT_AI_BASE_URL / optional API key
 npx xreport mcp                    # or: npx xreport-mcp
 npx xreport gate ./xreport --max-failed=0 --max-new=0
+npx xreport gate ./xreport --preset=finance-pr --require-change-ticket
+npx xreport evidence ./xreport -o ./xreport-evidence.zip
 npx xreport quarantine export ./xreport
 ```
 
@@ -601,7 +644,10 @@ Heuristic triage (clusters, defect kind: product / automation / environment / fl
     budget: { maxFailures: 15, maxTokens: 8000 },
   },
   knownIssuesPath: './.xreport/known-issues.json', // mute expected failures
-  qualityGate: { maxFailed: 0, maxNewFailures: 0 }, // use with: xreport gate
+  qualityGate: { preset: 'finance-pr' }, // or { maxFailed: 0, maxNewFailures: 0 }
+  evidencePack: false,                // true → zip + manifest after generate
+  privacy: { scrubAttachments: false },
+  readiness: { requireCriticalGreen: true, requireTags: ['readiness'] },
   branding: {
     projectName: 'XREPORT',
     companyName: 'XQA',
