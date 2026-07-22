@@ -14,7 +14,7 @@ XREPORT stays on your machine. Use [CTRF](https://ctrf.io) JSON (enabled by defa
       xreport-history-
 
 - run: npx playwright test
-  # reporter options: enableHistory: true, historyOptions.saveFullResults: true
+  # reporter options: enableHistory: true (saveFullResults defaults on)
 
 - uses: actions/upload-artifact@v4
   if: always()
@@ -81,7 +81,7 @@ Or use any Slack webhook script that reads CTRF summary fields: `results.summary
   if: always()
   env:
     XREPORT_CHANGE_TICKET: ${{ github.event.pull_request.title }}  # or a real ticket id
-  run: npx xreport gate ./xreport --preset=finance-pr
+  run: npx xreport gate ./xreport --preset=finance-pr --json
 
 - name: XREPORT quality gate (custom)
   if: always()

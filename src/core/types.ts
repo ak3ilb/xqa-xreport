@@ -360,6 +360,10 @@ export interface XReportRun {
     zipPath?: string;
     generatedAt: string;
   };
+  /** Last quality gate evaluation (when qualityGate option or CLI gate ran) */
+  gateResult?: import('./quality-gate').QualityGateResult;
+  /** Note when this report was merged from shards/workers */
+  mergeNote?: string;
   /** Operational readiness evaluation */
   readiness?: import('./readiness').ReadinessResult;
 }
@@ -376,7 +380,7 @@ export interface HistoryRecord {
   tests?: Array<{ historyId: string; title: string; status: TestStatus; duration: number }>;
 }
 
-export const XREPORT_VERSION = '0.6.1';
+export const XREPORT_VERSION = '0.6.2';
 export const XQA_WEBSITE = 'https://xqa.io';
 export const DEFAULT_BRANDING: XReportBranding = {
   projectName: 'XREPORT',

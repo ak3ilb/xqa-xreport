@@ -181,13 +181,15 @@ export function mergeOptions(options: XReportOptions = {}): Required<
   };
 
   const o = options as Record<string, unknown>;
+  const enableHistory = truthy(o.enableHistory, false);
   const historyOptions = {
     enabled: true,
     dbPath: './.xreport/history.json',
     maxRecords: 100,
     retentionDays: 30,
     autoCleanup: true,
-    saveFullResults: false,
+    // When history is on, keep per-test data so Run History diff / past cases work.
+    saveFullResults: enableHistory,
     ...(typeof o.historyOptions === 'object' && o.historyOptions ? (o.historyOptions as object) : {}),
   };
 
@@ -214,7 +216,7 @@ export function mergeOptions(options: XReportOptions = {}): Required<
     reportStrategy: (o.reportStrategy as XReportOptions['reportStrategy']) || 'unified',
     quiet: truthy(o.quiet, false),
     charts: truthy(o.charts, true),
-    enableHistory: truthy(o.enableHistory, false),
+    enableHistory,
     inlineAssets: truthy(o.inlineAssets, false),
     historyOptions,
     ai:

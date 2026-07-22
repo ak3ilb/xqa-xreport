@@ -76,6 +76,7 @@ Local/self-hosted **evidence tooling** for finance, banking, and regulated CI �
 # Finance PR gate (requires change ticket in env or report)
 export XREPORT_CHANGE_TICKET=CHG-1234
 npx xreport gate ./xreport --preset=finance-pr
+npx xreport gate ./xreport --json   # CI-friendly JSON + exit code
 
 # Release gate + auditor zip
 npx xreport gate ./xreport --preset=finance-release
@@ -147,17 +148,19 @@ Or enable pack generation in the reporter:
 - TypeScript-first published types
 - Allure alternative / Mochawesome alternative — zero Java, report ready when tests finish
 
-### Adapter depth
+### Adapter parity
 
-| Adapter | Entry | Strengths |
-|---------|-------|-----------|
-| Playwright | `@xqa.io/xreport/playwright` | Steps, traces, screenshots/video, annotations → owner/severity/tags |
-| Cypress | `@xqa.io/xreport/cypress` + `/cypress/support` | Specs, attempts, screenshots/video, command-log Steps, `cy.xreportNote` / `cy.xreportMeta` |
-| Jest | `@xqa.io/xreport/jest` | Describe nesting, `attach.note` / `attach.meta`, assertion errors, `@tags` |
-| Vitest | `@xqa.io/xreport/vitest` | Nested suites, `attach.note` / `test.meta`, assertion errors, `@tags` |
-| Mocha | `@xqa.io/xreport/mocha` | Context API attach, retries |
-| Jasmine | `@xqa.io/xreport/jasmine` | Specs + failed expectations |
-| WebdriverIO | `@xqa.io/xreport/webdriverio` | Worker auto-merge |
+| Adapter | Entry | Steps | Media | Traces | Retries / attempts |
+|---------|-------|:-----:|:-----:|:------:|:-------------------:|
+| Playwright | `@xqa.io/xreport/playwright` | ✅ nested `test.step` | ✅ screenshots / video | ✅ embedded via `xreport open` | ✅ |
+| Cypress | `@xqa.io/xreport/cypress` + `/cypress/support` | ✅ command-log Steps | ✅ screenshots / video | — | ✅ attempts |
+| Jest | `@xqa.io/xreport/jest` | — (suite nesting) | attach API | — | limited |
+| Vitest | `@xqa.io/xreport/vitest` | — (suite nesting) | attach API | — | limited |
+| Mocha | `@xqa.io/xreport/mocha` | — | attach API | — | ✅ retries |
+| Jasmine | `@xqa.io/xreport/jasmine` | — | — | — | specs + expectations |
+| WebdriverIO | `@xqa.io/xreport/webdriverio` | framework steps when present | screenshots when attached | — | worker auto-merge → one report |
+
+Playwright is the richest surface; other adapters share the same HTML triage UI with the depth above.
 
 ---
 
@@ -175,7 +178,7 @@ npx xreport open ./xreport
 3. **Run tests** — HTML (+ optional CSV / CTRF) is written when the run finishes.
 4. **Open the report** with `npx xreport open ./xreport` (recommended for traces & media).
 5. **Triage** — Summary → Run History (diff) → Case Triage → full case page.
-6. **Optional history** — `enableHistory: true` + `historyOptions.saveFullResults: true` for stability, compare, and past-run drill-down.
+6. **Optional history** — `enableHistory: true` (defaults `historyOptions.saveFullResults: true` so Run History diff and past cases work without extra flags).
 
 ---
 
@@ -227,7 +230,7 @@ s:failed owner:identity
 
 ### Diff two local reports
 
-Requires `enableHistory: true` and (for past reports) `historyOptions.saveFullResults: true`.
+Requires `enableHistory: true`. Per-test history is saved by default when history is on (`saveFullResults`); set `historyOptions.saveFullResults: false` only if you want summary-only records.
 
 1. Open **Run History**.
 2. In **Diff two reports**, pick baseline → newer (defaults: previous history → this report).
@@ -492,7 +495,7 @@ exports.config = {
 };
 ```
 
-Workers merge automatically into one report.
+Workers merge automatically into one report. When shards/workers were merged, **Run Meta** shows a shard-merge note.
 
 ---
 
@@ -548,11 +551,12 @@ npx xreport ai analyze ./xreport   # needs XREPORT_AI_BASE_URL / optional API ke
 npx xreport mcp                    # or: npx xreport-mcp
 npx xreport gate ./xreport --max-failed=0 --max-new=0
 npx xreport gate ./xreport --preset=finance-pr --require-change-ticket
+npx xreport gate ./xreport --json   # machine-readable for CI annotations / Job Summary
 npx xreport evidence ./xreport -o ./xreport-evidence.zip
 npx xreport quarantine export ./xreport
 ```
 
-CI recipes (CTRF → GitHub summary / PR / Slack), sharding merge, known-issues, and Cursor MCP: see [`docs/ci/README.md`](docs/ci/README.md), [`docs/sharding.md`](docs/sharding.md), [`docs/agents-mcp.md`](docs/agents-mcp.md).
+CI recipes (CTRF → GitHub summary / PR / Slack), sharding merge, known-issues, and agent MCP: see [`docs/ci/README.md`](docs/ci/README.md), [`docs/sharding.md`](docs/sharding.md), [`docs/agents-mcp.md`](docs/agents-mcp.md).
 
 ---
 
@@ -564,12 +568,12 @@ XREPORT ships **agent fuel** next to every report — no upload, no required API
 
 After each run (unless `ai.writeContextPack: false`):
 
-- `xreport/ai-context.md` — paste into Cursor / ChatGPT
+- `xreport/ai-context.md` — paste into your coding agent
 - `xreport/ai-context.json` — structured clusters, failures, flake tips
 
 CLI: `npx xreport ai context ./xreport`
 
-In the HTML report: **Copy AI prompt** on the case / Case Triage panel, and **Copy Prompt for Cursor** on Suite Pulse error groups.
+In the HTML report: **Copy agent prompt** on the case / Case Triage panel, and **Copy Prompt for agent** on Suite Pulse error groups.
 
 ### Optional LLM insights
 
@@ -592,7 +596,7 @@ Or after a run: `XREPORT_AI_BASE_URL=http://127.0.0.1:11434/v1 npx xreport ai an
 
 Insights appear under Suite Pulse → **AI Insights** and are cached by error signature (`ai-insight-cache.json`).
 
-### Local MCP for Cursor
+### Local MCP for agents
 
 ```json
 {
@@ -632,7 +636,7 @@ Heuristic triage (clusters, defect kind: product / automation / environment / fl
     maxRecords: 100,
     retentionDays: 30,
     autoCleanup: true,
-    saveFullResults: true,        // compare runs, case History, per-test stability
+    saveFullResults: true,        // default true when enableHistory is on; compare + History tabs
   },
   ai: {
     enabled: false,               // optional OpenAI-compatible analyze

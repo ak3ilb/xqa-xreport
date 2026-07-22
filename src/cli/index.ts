@@ -38,6 +38,7 @@ Usage:
   xreport gate [dir] [--preset=finance-pr|finance-release|nightly]
                  [--max-failed=N] [--max-new=N] [--max-product=N] [--max-clusters=N]
                  [--max-critical=N] [--fail-unknown] [--require-change-ticket] [--require-commit]
+                 [--json]
   xreport evidence [dir] [-o out.zip]
   xreport quarantine export [dir] [-o file]
   xreport mcp
@@ -60,7 +61,7 @@ Commands:
   gate       Quality gate exit codes (enterprise presets + muted known issues)
   evidence   Build auditor evidence pack (zip + manifest sha256)
   quarantine Export quarantine / muted tips for CI skip lists
-  mcp        Start local MCP server (stdio) for Cursor / agents
+  mcp        Start local MCP server (stdio) for agents
   history    Local run history (list/stats/trends/flakes/failed-rerun/...)
 
 Practice: https://xqa.io/practice
@@ -158,6 +159,17 @@ function cmdGate(args: string[]): void {
   if (args.includes('--require-commit')) rules.requireCommit = true;
   if (args.includes('--count-muted')) rules.ignoreMuted = false;
   const result = evaluateQualityGate(run, rules);
+  writeJson(path.join(dir, 'gate-result.json'), result);
+  try {
+    const withGate = { ...run, gateResult: result };
+    writeJson(path.join(dir, 'xreport.json'), withGate);
+  } catch {
+    // ignore if report dir not writable mid-CI
+  }
+  if (args.includes('--json')) {
+    console.log(JSON.stringify(result, null, 2));
+    process.exit(result.exitCode);
+  }
   console.log('\nXREPORT quality gate' + (result.preset ? ` (${result.preset})` : ''));
   console.log(
     `  failed=${result.counts.failed} muted=${result.counts.mutedFailed} new=${result.counts.newFailures} product=${result.counts.productDefects} critical=${result.counts.criticalFailed} clusters=${result.counts.clusters}`,
@@ -235,12 +247,14 @@ async function cmdGenerate(args: string[]): Promise<void> {
   const outIdx = args.indexOf('-o');
   const outDir = outIdx >= 0 ? args[outIdx + 1] : path.dirname(path.resolve(file));
   const run = readJson<XReportRun>(path.resolve(file));
+  const fromRun = run.options || {};
   await generateReport(run, {
+    ...fromRun,
     reportDir: outDir,
-    autoOpen: !process.env.CI,
-    exportCSV: true,
-    exportCtrf: true,
-    enableHistory: true,
+    autoOpen: fromRun.autoOpen ?? !process.env.CI,
+    exportCSV: fromRun.exportCSV ?? true,
+    exportCtrf: fromRun.exportCtrf ?? true,
+    enableHistory: fromRun.enableHistory ?? true,
   });
 }
 

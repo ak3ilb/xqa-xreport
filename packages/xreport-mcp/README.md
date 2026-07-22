@@ -1,6 +1,6 @@
 # @xqa.io/xreport-mcp
 
-Local [MCP](https://modelcontextprotocol.io) server for **XREPORT**. Gives Cursor / Claude / agents access to your latest `xreport.json` and `.xreport/history.json` — **no cloud account**.
+Local [MCP](https://modelcontextprotocol.io) server for **XREPORT**. Gives coding agents access to your latest `xreport.json` and `.xreport/history.json` — **no cloud account**.
 
 ## Install
 
@@ -15,7 +15,7 @@ npx xreport-mcp
 # same as: npx xreport mcp
 ```
 
-## Cursor `mcp.json`
+## Agent `mcp.json`
 
 ```json
 {
@@ -42,6 +42,8 @@ npx xreport-mcp
 | `xreport_test_history` | Per-test history points |
 | `xreport_get_context` | Full agent prompt / single-test prompt |
 | `xreport_flaky_top` | Quarantine + flaky list |
+| `xreport_gate_status` | Quality gate result / violations |
+| `xreport_known_issues` | Muted / known-issue matches |
 
 Set `XREPORT_DIR` to the folder that contains `xreport.json`.
 

@@ -1,4 +1,4 @@
-# Cursor / agents — local MCP + context pack
+# Agents — local MCP + context pack
 
 XREPORT feeds agents without a cloud login.
 
@@ -10,7 +10,7 @@ After any run:
 npx xreport ai context ./xreport
 ```
 
-Paste `xreport/ai-context.md` into Cursor chat, or use **Copy AI prompt** / **Copy Prompt for Cursor** in the HTML report.
+Paste `xreport/ai-context.md` into your coding agent, or use **Copy agent prompt** / **Copy Prompt for agent** in the HTML report.
 
 ## MCP (`mcp.json`)
 
@@ -41,8 +41,10 @@ Or from this package: `npx xreport mcp` / `npx xreport-mcp`.
 | `xreport_test_history` | Stability for a `historyId` |
 | `xreport_flaky_top` | Quarantine candidates |
 | `xreport_list_runs` | Local history |
+| `xreport_gate_status` | Quality gate result / violations |
+| `xreport_known_issues` | Muted / known-issue matches |
 
-## Suggested agent skill (paste into Cursor rules)
+## Suggested agent skill
 
 ```text
 When fixing failing tests in this repo:

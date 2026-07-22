@@ -60,6 +60,10 @@ function prepareTests(tests: XReportTest[]) {
     muted: !!t.muted,
     stabilityPct: typeof t.stabilityPct === 'number' ? t.stabilityPct : null,
     testHistory: t.testHistory || [],
+    controlIds: t.controlIds || [],
+    riskTier: t.riskTier || '',
+    requirementIds: t.requirementIds || [],
+    layers: t.layers || [],
   }));
 }
 
@@ -107,6 +111,10 @@ export function renderHtml(run: XReportRun, opts: RenderHtmlOptions = {}): strin
     maxDuration: Math.max(1, ...tests.map((t) => t.duration || 0)),
     traceViewer: !!opts.traceViewer,
     tests,
+    readiness: run.readiness || null,
+    evidenceSeal: run.evidenceSeal || null,
+    gateResult: run.gateResult || null,
+    mergeNote: run.mergeNote || null,
   };
 
   const dataJson = JSON.stringify(payload).replace(/</g, '\\u003c');
@@ -409,6 +417,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
           <button class="chip" data-status="passed" type="button">Passed</button>
           <button class="chip" data-status="skipped" type="button">Skipped</button>
           <button class="chip" data-status="regression" type="button">New failures</button>
+          <button class="chip" data-status="muted" type="button">Muted</button>
           <button class="chip" data-status="all" type="button">All</button>
           <span id="projChips"></span>
           <span id="tagChips"></span>
@@ -434,7 +443,8 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
                 <div class="path" id="dPath"></div>
                 <div class="btns">
                   <button class="btn" type="button" id="btnCopyErr">Copy error</button>
-                  <button class="btn" type="button" id="btnAi">Copy AI prompt</button>
+                  <button class="btn" type="button" id="btnAi">Copy agent prompt</button>
+                  <button class="btn" type="button" id="btnKnownIssue">Copy known-issue</button>
                   <a class="btn primary" id="btnTrace" href="#" target="_blank" rel="noopener" style="display:none">Open trace</a>
                 </div>
               </div>
@@ -466,6 +476,10 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
 
       <section class="page" id="page-gallery">
         <div class="page-head"><h1>Screens &amp; Video</h1><p class="lead">Screenshots and videos from the current filter.</p></div>
+        <div class="toolbar" id="galleryFilters">
+          <button class="chip on" data-gallery-filter="all" type="button">All media</button>
+          <button class="chip fail" data-gallery-filter="failed" type="button">Failed only</button>
+        </div>
         <div id="galleryBody"></div>
       </section>
 
@@ -520,7 +534,8 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
 (function(){
   var DATA=JSON.parse(document.getElementById('xreport-data').textContent);
   var FILTER_KEY='xreport.explorerFilters.v1';
-  var state={page:'runs',status:'failed',project:'',tag:'',sort:'status',q:'',sel:null,dtab:'attempts',collapsed:{},idx:0,runStatus:'all',runBranch:'all',runEnv:'all',runQ:'',runId:'current',runFilter:'all',ctab:'overview',caseBack:'runs',clusterId:'',attemptIdx:-1,cmpA:'',cmpB:'current',stepCat:''};
+  var COMPARE_KEY='xreport-compare-v1';
+  var state={page:'runs',status:'failed',project:'',tag:'',sort:'status',q:'',sel:null,dtab:'attempts',collapsed:{},idx:0,runStatus:'all',runBranch:'all',runEnv:'all',runQ:'',runId:'current',runFilter:'all',ctab:'overview',caseBack:'runs',clusterId:'',attemptIdx:-1,cmpA:'',cmpB:'current',stepCat:'',galleryFilter:'all',showAllClusters:false};
   var maxD=DATA.maxDuration||1;
   var pageNames={dashboard:'Summary',runs:'Run History',tests:'Case Triage',analytics:'Suite Pulse',flaky:'Unstable',gallery:'Screens & Video',timeline:'Worker Map',config:'Run Meta',run:'Report',case:'Case'};
 
@@ -615,9 +630,17 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       if(s.sort)state.sort=s.sort;
       if(typeof s.q==='string')state.q=s.q;
     }catch(e){}
+    try{
+      var c=JSON.parse(localStorage.getItem(COMPARE_KEY)||'{}');
+      if(c.cmpA)state.cmpA=c.cmpA;
+      if(c.cmpB)state.cmpB=c.cmpB;
+    }catch(e){}
   }
   function saveFilters(){
     try{localStorage.setItem(FILTER_KEY,JSON.stringify({status:state.status,project:state.project,tag:state.tag,sort:state.sort,q:state.q}));}catch(e){}
+  }
+  function saveCompare(){
+    try{localStorage.setItem(COMPARE_KEY,JSON.stringify({cmpA:state.cmpA,cmpB:state.cmpB}));}catch(e){}
   }
   function syncStatusChips(){
     document.querySelectorAll('#testFilters [data-status]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-status')===state.status);});
@@ -654,6 +677,8 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
         else if(low.indexOf('req:')===0){var rid=low.slice(4);ok=(t.requirementIds||[]).some(function(x){return String(x).toLowerCase().indexOf(rid)>=0;});}
         else if(low.indexOf('layer:')===0){var lid=low.slice(6);ok=(t.layers||[]).some(function(x){return String(x).toLowerCase()===lid;});}
         else if(low==='regression'||low==='r:new'||low==='s:regression')ok=!!t.regression;
+        else if(low==='muted'||low==='s:muted')ok=!!t.muted;
+        else if(low.indexOf('defect:')===0)ok=(t.defectKind||'')===low.slice(7);
         else if(p.charAt(0)==='@')ok=(t.tags||[]).some(function(x){return String(x).toLowerCase()===low||String(x).toLowerCase()==='@'+low.slice(1);});
         else{var hay=(t.fullTitle+' '+t.title+' '+(t.file||'')+' '+(t.project||'')+' '+(t.failureCategory||'')+' '+(t.owner||'')+' '+(t.severity||'')).toLowerCase();ok=hay.indexOf(low)>=0;}
         if(neg?ok:!ok)return false;
@@ -670,6 +695,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       if(state.status==='passed'&&(t.status!=='passed'||t.flaky))return false;
       if(state.status==='skipped'&&t.status!=='skipped'&&t.status!=='pending')return false;
       if(state.status==='regression'&&!t.regression)return false;
+      if(state.status==='muted'&&!t.muted)return false;
       if(state.clusterId&&t.clusterId!==state.clusterId)return false;
       if(state.project&&(t.project||'(default)')!==state.project)return false;
       if(state.tag){var want=state.tag;if(!(t.tags||[]).some(function(x){var v=String(x);return v===want||v==='@'+want.replace(/^@/,'')||'@'+v.replace(/^@/,'')===want;}))return false;}
@@ -694,7 +720,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       var rr=findRun(state.runId);
       trail.innerHTML=link('runs','Run History')+' <span class="sep">›</span> <span class="crumb-current">'+esc((rr&&rr.title)||'Report')+'</span>';
     }else if(p==='case'){
-      var back=state.caseBack==='run'?'run':(state.caseBack==='dashboard'?'dashboard':(state.caseBack==='flaky'?'flaky':'tests'));
+      var back=state.caseBack==='run'?'run':(state.caseBack==='dashboard'?'dashboard':(state.caseBack==='flaky'?'flaky':(state.caseBack==='gallery'?'gallery':(state.caseBack==='timeline'?'timeline':(state.caseBack==='analytics'?'analytics':'tests')))));
       var backLabel=pageNames[back]||'Case Triage';
       var mid=state.caseBack==='run'?(link('runs','Run History')+' <span class="sep">›</span> '+link('run',(findRun(state.runId)||{}).title||'Report')):link(back,backLabel);
       trail.innerHTML=mid+' <span class="sep">›</span> <span class="crumb-current">'+esc(state.sel?state.sel.title:'Case')+'</span>';
@@ -847,13 +873,14 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       sa.value=state.cmpA;sb.value=state.cmpB;
     }
     if(sa)state.cmpA=sa.value;if(sb)state.cmpB=sb.value;
+    saveCompare();
     if(!state.cmpA||!state.cmpB||state.cmpA===state.cmpB){
       body.innerHTML='<div class="meta">Choose two different runs to see newly failed, newly passed, still failing, and duration deltas.</div>';
       return;
     }
     var cmp=compareRuns(state.cmpA,state.cmpB);
     if(!cmp){body.innerHTML='<div class="empty">Runs not found.</div>';return;}
-    if(cmp.empty){body.innerHTML='<div class="empty">No per-test data for one of these runs. Enable <code>historyOptions.saveFullResults</code> for past runs.</div>';return;}
+    if(cmp.empty){body.innerHTML='<div class="empty">No per-test data for one of these runs.<br/>History now defaults to <code>saveFullResults</code> when enabled — re-run with history on to populate past cases.</div>';return;}
     document.getElementById('cmpMeta').textContent=(cmp.base.title||'Baseline').slice(0,28)+' → '+(cmp.next.title||'Newer').slice(0,28);
     function listHtml(items,mode){
       if(!items.length)return '<div class="meta">None</div>';
@@ -903,12 +930,25 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     var s=DATA.summary,a=DATA.analytics||{};
     var fail=s.failed+(s.timedOut||0);
     var flakyN=DATA.tests.filter(function(t){return t.flaky||(t.stabilityPct!=null&&t.stabilityPct<90);}).length;
+    var mutedN=DATA.tests.filter(function(t){return t.muted;}).length;
     var media=0;DATA.tests.forEach(function(t){(t.attachments||[]).forEach(function(x){if(x.type==='screenshot'||x.type==='video'||(x.contentType||'').indexOf('image')===0||(x.contentType||'').indexOf('video')===0)media++;});});
+    var gate=DATA.gateResult;
+    var seal=DATA.evidenceSeal;
+    var privacy=DATA.environment&&DATA.environment.privacyMode;
+    var badges=[];
+    if(gate)badges.push('<span class="tag" style="'+(gate.ok?'background:#DCFCE7;color:#166534':'background:#FEE2E2;color:#991B1B')+'">Gate '+(gate.ok?'OK':'FAIL')+'</span>');
+    if(privacy)badges.push('<span class="tag">Privacy: '+esc(privacy)+'</span>');
+    if(seal)badges.push('<span class="tag" title="'+esc(seal.contentHash||'')+'">Evidence sealed</span>');
+    if(DATA.readiness)badges.push('<span class="tag">Readiness '+esc(DATA.readiness.status)+'</span>');
     document.getElementById('dashSections').innerHTML=
+      (badges.length?'<div class="dash-sec"><h3>Status</h3><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">'+badges.join('')+'</div>'+
+        (gate&&!gate.ok?'<div class="dash-preview">'+(gate.violations||[]).slice(0,3).map(function(v){return esc(v);}).join(' · ')+'</div>':'')+
+        (seal?'<div class="dash-preview">Seal <code style="font-size:11px">'+(seal.contentHash||'').slice(0,16)+'…</code> · <button class="btn" type="button" id="btnCopySeal" style="padding:2px 8px">Copy hash</button> · run <code>xreport evidence</code></div>':'')+
+        '<div class="dash-links"><button class="dash-link" type="button" data-goto="config"><span>Open Run Meta</span><span class="go">Open →</span></button></div></div>':'')+
       '<div class="dash-sec"><h3>Triage</h3><div class="dash-links">'+
         '<button class="dash-link" type="button" data-goto="runs"><span>Run History</span><span class="go">Open →</span></button>'+
         '<button class="dash-link" type="button" data-goto="tests"><span>Case Triage</span><span class="go">Open →</span></button>'+
-      '</div><div class="dash-preview"><b>'+s.total+'</b> cases · <b>'+fail+'</b> failed · <b>'+s.flaky+'</b> flaky in this report</div></div>'+
+      '</div><div class="dash-preview"><b>'+s.total+'</b> cases · <b>'+fail+'</b> failed · <b>'+s.flaky+'</b> flaky · <b>'+mutedN+'</b> muted</div></div>'+
       '<div class="dash-sec"><h3>Signals</h3><div class="dash-links">'+
         '<button class="dash-link" type="button" data-goto="analytics"><span>Suite Pulse</span><span class="go">Open →</span></button>'+
         '<button class="dash-link" type="button" data-goto="flaky"><span>Unstable</span><span class="go">Open →</span></button>'+
@@ -919,12 +959,15 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       '</div><div class="dash-preview"><b>'+media+'</b> screenshots/videos · worker timing map available</div></div>'+
       (DATA.readiness?'<div class="dash-sec"><h3>Readiness</h3><div class="dash-preview">Status <b>'+esc(DATA.readiness.status)+'</b> · '+(DATA.readiness.checks||[]).filter(function(c){return c.status==='pass';}).length+'/'+(DATA.readiness.checks||[]).length+' checks pass</div><div class="dash-links"><button class="dash-link" type="button" data-goto="config"><span>Open Run Meta</span><span class="go">Open →</span></button></div></div>':'');
 
+    var copySeal=document.getElementById('btnCopySeal');
+    if(copySeal&&seal)copySeal.onclick=function(){navigator.clipboard.writeText(seal.contentHash||'');};
+
     var list=DATA.tests.slice().sort(function(a,b){return statusRank(a)-statusRank(b)||(b.duration||0)-(a.duration||0);}).slice(0,12);
     if(!list.length){document.getElementById('dashTests').innerHTML='<div class="empty" style="padding:16px">No cases in this report.</div>';return;}
     document.getElementById('dashTests').innerHTML='<div class="table-wrap"><table class="table"><thead><tr><th>Case</th><th>Status</th><th>Project</th><th>Duration</th><th>Stability</th></tr></thead><tbody>'+
       list.map(function(t){
         var st=t.flaky?'flaky':t.status;
-        return '<tr class="click" data-id="'+esc(t.id)+'"><td><b>'+esc(t.title)+'</b><div class="runmeta">'+esc(t.fullTitle||t.file||'')+'</div></td><td><span class="status-pill '+esc(st)+'">'+esc(st)+'</span></td><td>'+esc(t.project||'—')+'</td><td>'+fmt(t.duration)+'</td><td>'+(t.stabilityPct==null?'—':t.stabilityPct+'%')+'</td></tr>';
+        return '<tr class="click" data-id="'+esc(t.id)+'"><td><b>'+esc(t.title)+'</b><div class="runmeta">'+esc(t.fullTitle||t.file||'')+'</div></td><td><span class="status-pill '+esc(st)+'">'+esc(st)+'</span>'+(t.muted?' <span class="tag">muted</span>':'')+'</td><td>'+esc(t.project||'—')+'</td><td>'+fmt(t.duration)+'</td><td>'+(t.stabilityPct==null?'—':t.stabilityPct+'%')+'</td></tr>';
       }).join('')+
       '</tbody></table></div>'+(DATA.tests.length>12?'<div class="runmeta" style="margin-top:10px">Showing 12 of '+DATA.tests.length+' · open Case Triage for full list</div>':'');
   }
@@ -966,9 +1009,21 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
   function groupKey(t){return t.file||'(no file)';}
   function buildTree(list){var map={},order=[];for(var i=0;i<list.length;i++){var k=groupKey(list[i]);if(!map[k]){map[k]=[];order.push(k);}map[k].push(list[i]);}return{map:map,order:order};}
 
+  function knownIssueSnippet(t){
+    var match={};
+    if(t.historyId)match.historyId=t.historyId;
+    else if(t.clusterId)match.clusterId=t.clusterId;
+    else if(t.errorSignature)match.signatureContains=String(t.errorSignature).slice(0,80);
+    else match.titleContains=t.title;
+    return JSON.stringify({id:t.knownIssueId||('KI-'+String(t.historyId||t.id).slice(0,8)),mute:true,reason:'muted from report',match:match},null,2);
+  }
+
   function rowHtml(t,active){
     var chips=[];
     if(t.regression)chips.push('<span class="badge-reg">new</span>');
+    if(t.muted)chips.push('<span class="tag">muted</span>');
+    if(t.knownIssueId)chips.push('<span class="tag">'+esc(t.knownIssueId)+'</span>');
+    if(t.defectKind)chips.push('<span class="tag">'+esc(t.defectKind)+'</span>');
     if(t.owner)chips.push('<span class="tag">'+esc(t.owner)+'</span>');
     if(t.severity)chips.push('<span class="tag">'+esc(t.severity)+'</span>');
     (t.tags||[]).slice(0,2).forEach(function(x){chips.push('<span class="tag">'+esc(String(x).replace(/^@/,''))+'</span>');});
@@ -1119,7 +1174,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     var st=t.flaky?'flaky':t.status;
     document.getElementById('dTitle').textContent=t.title+(t.failureCategory?' · '+t.failureCategory:'');
     document.getElementById('dPath').innerHTML=pathActionsHtml(t)+
-      '<div class="meta" style="margin-top:6px">'+esc(st)+(t.regression?' · new failure':'')+(t.owner?' · owner:'+esc(t.owner):'')+(t.severity?' · '+esc(t.severity):'')+' · stab '+(t.stabilityPct==null?'—':t.stabilityPct+'%')+'</div>';
+      '<div class="meta" style="margin-top:6px">'+esc(st)+(t.muted?' · <span class="tag">muted</span>':'')+(t.knownIssueId?' · <span class="tag">'+esc(t.knownIssueId)+'</span>':'')+(t.defectKind?' · '+esc(t.defectKind):'')+(t.regression?' · new failure':'')+(t.owner?' · owner:'+esc(t.owner):'')+(t.severity?' · '+esc(t.severity):'')+' · stab '+(t.stabilityPct==null?'—':t.stabilityPct+'%')+'</div>';
     document.querySelectorAll('.dtab').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-dtab')===state.dtab);});
     var trace=(t.attachments||[]).find(attIsTrace);
     var btnTrace=document.getElementById('btnTrace');
@@ -1186,9 +1241,9 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       return '<button class="chip'+(c[0]==='failed'?' fail':'')+(state.runFilter===c[0]?' on':'')+'" data-run-filter="'+c[0]+'" type="button">'+c[1]+' <b style="margin-left:4px">'+c[2]+'</b></button>';
     }).join('');
     document.getElementById('runTestsCount').textContent=list.length?'Showing '+list.length+' of '+all.length+' tests':'No tests for this filter';
-    document.getElementById('runTestsUpdated').textContent=run.id==='current'?'Full results available':(all.length?'From history':'Summary only · enable history saveFullResults for past run cases');
+    document.getElementById('runTestsUpdated').textContent=run.id==='current'?'Full results available':(all.length?'From history':'Summary only · history saveFullResults is on by default when enableHistory is set');
     if(!all.length){
-      document.getElementById('runTestsTable').innerHTML='<div class="empty">No per-test results stored for this run.<br/>Open the <b>current</b> run, or enable <code>historyOptions.saveFullResults</code>.</div>';
+      document.getElementById('runTestsTable').innerHTML='<div class="empty">No per-test results stored for this run.<br/>Open the <b>current</b> run, or re-run with <code>enableHistory</code> (saveFullResults defaults on).</div>';
       return;
     }
     if(!list.length){
@@ -1238,7 +1293,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       else{
         body.innerHTML=attemptPickerHtml(t)+'<div class="card"><div class="runmeta" style="margin-bottom:12px">'+errs.length+' error'+(errs.length===1?'':'s')+(attsN>1?' · attempt '+(attemptIndex(t)+1):'')+(errs.length>1?' · soft asserts listed separately':'')+'</div>'+
           errs.map(function(e,i){return '<div style="margin-bottom:14px"><div class="meta" style="margin-bottom:6px">Error '+(i+1)+(errs.length>1&&i<errs.length-1?' · possible soft assert':'')+'</div><pre class="err">'+esc(e.message||'')+'</pre>'+(e.stack?'<pre class="stack">'+esc(e.stack)+'</pre>':'')+'</div>';}).join('')+
-          '<div class="btns"><button class="btn" type="button" id="btnCopyCaseErr">Copy all errors</button><button class="btn" type="button" id="btnCopyCaseAi">Copy AI prompt</button></div></div>'+renderEvidenceStrip(t);
+          '<div class="btns"><button class="btn" type="button" id="btnCopyCaseErr">Copy all errors</button><button class="btn" type="button" id="btnCopyCaseAi">Copy agent prompt</button></div></div>'+renderEvidenceStrip(t);
         var ce=document.getElementById('btnCopyCaseErr');if(ce)ce.onclick=function(){navigator.clipboard.writeText(errs.map(function(e,i){return '--- Error '+(i+1)+' ---\\n'+(e.message||'')+'\\n'+(e.stack||'');}).join('\\n\\n'));};
         var ca=document.getElementById('btnCopyCaseAi');if(ca)ca.onclick=function(){navigator.clipboard.writeText(buildCaseAiPrompt(t));};
       }
@@ -1257,7 +1312,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       body.innerHTML=logsHtml?'<div class="card">'+logsHtml+'</div>':'<div class="empty">No stdout / stderr / console logs for this test.</div>';
     }else if(state.ctab==='history'){
       var th=t.testHistory||[];
-      body.innerHTML='<div class="card">'+ (th.length?th.map(function(h){return '<div class="history-row"><span class="status-pill '+esc(h.status||'')+'">'+esc(h.status||'—')+'</span><span class="runmeta">'+ago(h.date||Date.now())+'</span><span>'+fmt(h.duration||0)+'</span></div>';}).join(''):'<div class="empty" style="padding:8px">No prior history points. Enable history with saveFullResults.</div>')+'</div>';
+      body.innerHTML='<div class="card">'+ (th.length?th.map(function(h){return '<div class="history-row"><span class="status-pill '+esc(h.status||'')+'">'+esc(h.status||'—')+'</span><span class="runmeta">'+ago(h.date||Date.now())+'</span><span>'+fmt(h.duration||0)+'</span></div>';}).join(''):'<div class="empty" style="padding:8px">No prior history points yet. Keep <code>enableHistory</code> on across runs.</div>')+'</div>';
     }else if(state.ctab==='attachments'){
       body.innerHTML=renderAttachmentsHtml(t.attachments||[]);
     }else if(state.ctab==='meta'){
@@ -1379,15 +1434,17 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       return '<div style="padding:8px 0;border-bottom:1px solid var(--soft2)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><b>'+esc((i.summary||'').slice(0,120))+'</b><div class="runmeta">'+esc(i.defectKind||'unknown')+' · conf '+(Math.round((i.confidence||0)*100))+'% · cluster '+esc(i.clusterId||'')+'</div>'+
         ((i.nextSteps||[]).length?'<div class="runmeta" style="margin-top:4px">'+(i.nextSteps||[]).slice(0,3).map(function(s){return esc(s);}).join(' · ')+'</div>':'')+
         '</div><button class="btn" type="button" data-cluster="'+esc(i.clusterId||'')+'" title="Filter Case Triage">Open</button></div></div>';
-    }).join('')+'<div class="btns" style="margin-top:10px"><button class="btn" type="button" id="btnCopyRunAi">Copy run prompt for Cursor</button></div>':'<div class="empty" style="padding:8px">No LLM insights yet. Heuristics are always on. Optional: enable <code>ai.enabled</code> or run <code>xreport ai analyze</code>.</div><div class="btns" style="margin-top:10px"><button class="btn" type="button" id="btnCopyRunAi">Copy run prompt for Cursor</button></div>')+'</div>';
+    }).join('')+'<div class="btns" style="margin-top:10px"><button class="btn" type="button" id="btnCopyRunAi">Copy run prompt for agent</button></div>':'<div class="empty" style="padding:8px">No LLM insights yet. Heuristics are always on. Optional: enable <code>ai.enabled</code> or run <code>xreport ai analyze</code>.</div><div class="btns" style="margin-top:10px"><button class="btn" type="button" id="btnCopyRunAi">Copy run prompt for agent</button></div>')+'</div>';
     html+='<div class="card"><h3>Suite / by file</h3><ul style="list-style:none;margin:0;padding:0">'+(a.byFile||[]).slice(0,8).map(function(x){return '<li style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--soft2)"><span>'+esc(x.file.split('/').slice(-2).join('/'))+'</span><span>'+x.failed+'F / '+x.total+'</span></li>';}).join('')+'</ul></div>';
     html+='<div class="card"><h3>Test run timing</h3><ul style="list-style:none;margin:0;padding:0">'+(a.slowest||[]).slice(0,8).map(function(x){return '<li style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--soft2)"><span>'+esc(x.title.slice(0,48))+'</span><span>'+fmt(x.duration)+'</span></li>';}).join('')+'</ul></div>';
     html+='<div class="card"><h3>Error categories</h3>'+((a.byCategory||[]).map(function(x){return '<div class="barrow"><span>'+esc(x.category)+'</span><div class="bartrack"><div class="seg f" style="width:'+Math.min(100,x.count*20)+'%"></div></div><span>'+x.count+'</span></div>';}).join('')||'<div class="empty" style="padding:8px">No categorized failures</div>')+'</div>';
-    html+='<div class="card"><h3>Error groups</h3><ul style="list-style:none;margin:0;padding:0">'+(a.clusters||[]).slice(0,8).map(function(x){return '<li style="padding:6px 0;border-bottom:1px solid var(--soft2)"><button class="cluster-row" type="button" data-cluster="'+esc(x.id)+'" title="Filter Case Triage to this group"><span>'+esc((x.sample||'').slice(0,64))+(x.category?' <span class="tag">'+esc(x.category)+'</span>':'')+(x.defectKind?' <span class="tag">'+esc(x.defectKind)+'</span>':'')+'</span><span>×'+x.count+'</span></button><div class="btns" style="margin-top:4px"><button class="btn" type="button" data-copy-cluster="'+esc(x.id)+'">Copy Prompt for Cursor</button></div></li>';}).join('')+'</ul></div>';
+    var clusters=(a.clusters||[]);
+    var clusterLimit=state.showAllClusters?clusters.length:8;
+    html+='<div class="card"><h3>Error groups</h3><ul style="list-style:none;margin:0;padding:0">'+clusters.slice(0,clusterLimit).map(function(x){return '<li style="padding:6px 0;border-bottom:1px solid var(--soft2)"><button class="cluster-row" type="button" data-cluster="'+esc(x.id)+'" title="Filter Case Triage to this group"><span>'+esc((x.sample||'').slice(0,64))+(x.category?' <span class="tag">'+esc(x.category)+'</span>':'')+(x.defectKind?' <span class="tag">'+esc(x.defectKind)+'</span>':'')+'</span><span>×'+x.count+'</span></button><div class="btns" style="margin-top:4px"><button class="btn" type="button" data-copy-cluster="'+esc(x.id)+'">Copy Prompt for agent</button><button class="btn" type="button" data-copy-ki-cluster="'+esc(x.id)+'">Copy known-issue</button></div></li>';}).join('')+'</ul>'+(clusters.length>8?'<div class="btns" style="margin-top:8px"><button class="btn" type="button" id="btnToggleClusters">'+(state.showAllClusters?'Show fewer':'Show all '+clusters.length)+'</button></div>':'')+'</div>';
     var c=DATA.coverage||a.coverage;
     html+='<div class="card"><h3>Coverage</h3>'+(c?['lines','statements','branches','functions'].map(function(k){return '<div class="barrow"><span>'+k+'</span><div class="bartrack"><div class="seg p" style="width:'+(c[k]||0)+'%"></div></div><span>'+(c[k]==null?'—':c[k]+'%')+'</span></div>';}).join(''):'<div class="empty" style="padding:8px">No coverage summary</div>')+'</div>';
     html+='<div class="card"><h3>Environment pass rates</h3>'+((a.byEnvironment||[]).map(function(x){return '<div class="barrow"><span>'+esc(x.label)+'</span><div class="bartrack"><div class="seg p" style="width:'+x.passRate+'%"></div></div><span>'+x.passRate+'%</span></div>';}).join('')||'<div class="empty" style="padding:8px">Enable history</div>')+'</div>';
-    html+='<div class="card"><h3>Quarantine recommendations</h3><ul style="list-style:none;margin:0;padding:0">'+(a.quarantine||[]).slice(0,8).map(function(x){return '<li style="padding:5px 0;border-bottom:1px solid var(--soft2)"><b>'+esc(x.title.slice(0,60))+'</b><div class="runmeta">'+x.stabilityPct+'% · '+esc(x.reason)+'</div></li>';}).join('')+'</ul></div>';
+    html+='<div class="card"><h3>Quarantine recommendations</h3><ul style="list-style:none;margin:0;padding:0">'+(a.quarantine||[]).slice(0,8).map(function(x){return '<li style="padding:5px 0;border-bottom:1px solid var(--soft2)"><button class="cluster-row" type="button" data-quarantine-hid="'+esc(x.historyId||'')+'" style="width:100%;text-align:left"><b>'+esc(x.title.slice(0,60))+'</b><div class="runmeta">'+x.stabilityPct+'% · '+esc(x.reason)+'</div></button></li>';}).join('')+'</ul><div class="runmeta" style="margin-top:8px">Click a tip to open Case Triage · <code>npx xreport quarantine export</code></div></div>';
     html+='<div class="card"><h3>Tag health</h3><ul style="list-style:none;margin:0;padding:0">'+(a.tagHealth||[]).slice(0,8).map(function(x){return '<li style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--soft2)"><span>'+esc(x.tag)+'</span><span>'+x.passRate+'%</span></li>';}).join('')+'</ul></div>';
     document.getElementById('analyticsGrid').innerHTML=html;
     var copyRun=document.getElementById('btnCopyRunAi');
@@ -1398,15 +1455,17 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     var list=DATA.tests.filter(function(t){return t.flaky||(t.stabilityPct!=null&&t.stabilityPct<90);})
       .sort(function(a,b){return (a.stabilityPct||100)-(b.stabilityPct||100);});
     if(!list.length){document.getElementById('flakyTable').innerHTML='<div class="empty">No flaky or unstable tests in this run.</div>';return;}
-    document.getElementById('flakyTable').innerHTML='<table class="table"><thead><tr><th>Test</th><th>Stability</th><th>Category</th><th>Project</th><th>Status</th></tr></thead><tbody>'+
-      list.map(function(t){return '<tr class="click" data-id="'+esc(t.id)+'"><td><b>'+esc(t.title)+'</b><div class="runmeta">'+esc(t.fullTitle)+'</div></td><td>'+(t.stabilityPct==null?'—':t.stabilityPct+'%')+'</td><td>'+esc(t.failureCategory||'—')+'</td><td>'+esc(t.project||'—')+'</td><td>'+(t.flaky?'flaky':esc(t.status))+'</td></tr>';}).join('')+
+    document.getElementById('flakyTable').innerHTML='<table class="table"><thead><tr><th>Test</th><th>Stability</th><th>Category</th><th>Project</th><th>Status</th><th></th></tr></thead><tbody>'+
+      list.map(function(t){return '<tr class="click" data-id="'+esc(t.id)+'"><td><b>'+esc(t.title)+'</b><div class="runmeta">'+esc(t.fullTitle)+'</div></td><td>'+(t.stabilityPct==null?'—':t.stabilityPct+'%')+'</td><td>'+esc(t.failureCategory||'—')+'</td><td>'+esc(t.project||'—')+'</td><td>'+(t.flaky?'flaky':esc(t.status))+'</td><td><button class="btn" type="button" data-copy-ai="'+esc(t.id)+'">Copy agent prompt</button></td></tr>';}).join('')+
       '</tbody></table>';
   }
 
   function renderGallery(){
     var items=[];
     var list=DATA.tests.slice();
-    list.forEach(function(t){(t.attachments||[]).forEach(function(a){
+    list.forEach(function(t){
+      if(state.galleryFilter==='failed'&&!isFail(t)&&!t.flaky)return;
+      (t.attachments||[]).forEach(function(a){
       if(attIsTrace(a))return;
       if(attIsVid(a)&&!attHasSrc(a))return;
       if(!(attIsImg(a)||attIsVid(a)))return;
@@ -1414,33 +1473,41 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       if(state.q){var hay=(t.title+' '+a.name).toLowerCase();if(hay.indexOf(state.q.toLowerCase())<0)return;}
       items.push({t:t,a:a});
     });});
+    document.querySelectorAll('#galleryFilters [data-gallery-filter]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-gallery-filter')===state.galleryFilter);});
     document.getElementById('galleryBody').innerHTML=items.length?
-      '<div class="run-tests-meta"><span>'+items.length+' media items</span><span>Click to enlarge</span></div>'+
-      '<div class="attg" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">'+items.map(function(x){var src=attSrc(x.a);var kind=attIsVid(x.a)?'video':'img';var media=kind==='video'?'<video src="'+esc(src)+'" muted></video>':'<img src="'+esc(src)+'" alt=""/>';return '<div class="att" data-src="'+esc(src)+'" data-kind="'+kind+'" data-case-id="'+esc(x.t.id)+'">'+media+'<div class="cap">'+esc(x.t.title)+' · '+esc(x.a.name)+'</div></div>';}).join('')+'</div>':
+      '<div class="run-tests-meta"><span>'+items.length+' media items</span><span>Click media to enlarge · caption opens case</span></div>'+
+      '<div class="attg" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">'+items.map(function(x){var src=attSrc(x.a);var kind=attIsVid(x.a)?'video':'img';var media=kind==='video'?'<video src="'+esc(src)+'" muted></video>':'<img src="'+esc(src)+'" alt=""/>';return '<div class="att" data-src="'+esc(src)+'" data-kind="'+kind+'">'+media+'<div class="cap" data-case-id="'+esc(x.t.id)+'" style="cursor:pointer">'+esc(x.t.title)+' · '+esc(x.a.name)+'</div></div>';}).join('')+'</div>':
       '<div class="empty">No screenshots or videos in this report.<br/>Enable Playwright <code>screenshot: \"only-on-failure\"</code> / <code>video: \"retain-on-failure\"</code>.</div>';
   }
 
   function renderTimeline(){
     var list=filtered().slice().sort(function(a,b){return (a.startTime||0)-(b.startTime||0);});
     var hasW=list.some(function(t){return t.workerIndex!=null;});
+    if(!list.length){document.getElementById('timelineBody').innerHTML='<div class="empty">No timing data for the current Case Triage filter.</div>';return;}
+    if(!hasW){
+      document.getElementById('timelineBody').innerHTML='<div class="empty">No <code>workerIndex</code> on these cases (common for unit runners).<br/>Showing run-order bars — click a bar to open the case.</div>'+timelineBars(list,false);
+      return;
+    }
+    document.getElementById('timelineBody').innerHTML=timelineBars(list,true);
+  }
+  function timelineBars(list,hasW){
     var lanes={};list.forEach(function(t){var k=hasW?('Worker '+(t.workerIndex==null?'?':t.workerIndex)):'Run order';if(!lanes[k])lanes[k]=[];lanes[k].push(t);});
     var t0=Math.min.apply(null,list.map(function(t){return t.startTime||0}).concat([Date.now()]));
     var t1=Math.max.apply(null,list.map(function(t){return (t.startTime||0)+(t.duration||0)}).concat([t0+1]));
     var span=Math.max(1,t1-t0);
-    var html='<p class="lead" style="margin-top:0">Approximate timeline'+(hasW?' · worker lanes':'')+'.</p>';
+    var html='<p class="lead" style="margin-top:0">Approximate timeline'+(hasW?' · worker lanes':'')+' · click a bar to open Case Triage.</p>';
     Object.keys(lanes).forEach(function(lane){
       html+='<div class="tlane"><div class="l">'+esc(lane)+'</div><div class="ttrack">';
-      lanes[lane].forEach(function(t){var left=((t.startTime||t0)-t0)/span*100;var width=Math.max(0.3,(t.duration||1)/span*100);var cls=isFail(t)?'failed':(t.flaky?'flaky':t.status);html+='<div class="tbar '+cls+'" style="left:'+left+'%;width:'+width+'%" title="'+esc(t.title)+'"></div>';});
+      lanes[lane].forEach(function(t){var left=((t.startTime||t0)-t0)/span*100;var width=Math.max(0.3,(t.duration||1)/span*100);var cls=isFail(t)?'failed':(t.flaky?'flaky':t.status);html+='<div class="tbar '+cls+'" style="left:'+left+'%;width:'+width+'%;cursor:pointer" title="'+esc(t.title)+'" data-id="'+esc(t.id)+'"></div>';});
       html+='</div></div>';
     });
-    document.getElementById('timelineBody').innerHTML=html||'<div class="empty">No timing data</div>';
+    return html;
   }
 
   function renderConfig(){
     var e=DATA.environment||{};
     var seal=DATA.evidenceSeal;
-    var gate=null;
-    try{/* embedded seal only */}catch(ex){}
+    var gate=DATA.gateResult;
     var prov=[
       ['Change ticket', e.changeTicket||e.changeId||'—'],
       ['Commit', e.commit||'—'],
@@ -1448,6 +1515,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       ['Pipeline', e.buildUrl||e.pipelineUrl||'—'],
       ['Actor', e.actor||'—'],
       ['Privacy', e.privacyMode||'off'],
+      ['Gate', gate?(gate.ok?'OK':'FAIL')+(gate.preset?' · '+gate.preset:''):'—'],
       ['Evidence', seal?(seal.contentHash||'').slice(0,16)+'… ('+(seal.zipPath||'sealed')+')':'—']
     ].map(function(r){return '<div><b>'+esc(r[0])+'</b><span>'+esc(String(r[1]))+'</span></div>';}).join('');
     var rows=Object.keys(e).map(function(k){return '<div><b>'+esc(k)+'</b><span>'+esc(String(e[k]))+'</span></div>';}).join('');
@@ -1458,9 +1526,20 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
           return '<div class="cmp-row"><span>'+esc(c.label)+'</span><span class="'+(c.status==='block'?'dur-up':(c.status==='warn'?'delta up':'dur-down'))+'">'+esc(c.status)+(c.detail?' · '+esc(c.detail):'')+'</span></div>';
         }).join('')+'</div>';
     }
+    var gateCard='';
+    if(gate){
+      gateCard='<div class="card" style="margin-bottom:14px"><h3>Quality gate</h3><div class="runmeta" style="margin-bottom:8px">'+(gate.ok?'<b style="color:var(--pass)">OK</b>':'<b style="color:var(--fail)">FAIL</b>')+(gate.preset?' · '+esc(gate.preset):'')+'</div>'+
+        ((gate.violations||[]).length?(gate.violations||[]).map(function(v){return '<div class="cmp-row"><span>'+esc(v)+'</span></div>';}).join(''):'<div class="runmeta">No violations</div>')+
+        '</div>';
+    }
+    var sealCard=seal?'<div class="card" style="margin-bottom:14px"><h3>Evidence seal</h3><div class="runmeta">Hash <code>'+esc(seal.contentHash||'')+'</code></div><div class="btns" style="margin-top:8px"><button class="btn" type="button" id="btnCopySealMeta">Copy hash</button></div><div class="runmeta" style="margin-top:8px">CLI: <code>npx xreport evidence ./xreport</code>'+(seal.zipPath?' · '+esc(seal.zipPath):'')+'</div></div>':'';
+    var mergeCard=DATA.mergeNote?'<div class="card" style="margin-bottom:14px"><h3>Shard merge</h3><div class="runmeta">'+esc(DATA.mergeNote)+'</div></div>':'';
     document.getElementById('configBody').innerHTML=
       '<div class="card" style="margin-bottom:14px"><h3>Provenance</h3><div class="metagrid">'+prov+'</div></div>'+
+      gateCard+sealCard+mergeCard+
       '<div class="metagrid"><b>Title</b><span>'+esc(DATA.title)+'</span><b>Framework</b><span>'+esc(DATA.framework)+'</span><b>Finished</b><span>'+esc(new Date(DATA.finishedAt||Date.now()).toLocaleString())+'</span><b>Generator</b><span>'+esc((DATA.brand&&DATA.brand.name)||'XREPORT')+'</span>'+rows+'</div>'+ready;
+    var cs=document.getElementById('btnCopySealMeta');
+    if(cs&&seal)cs.onclick=function(){navigator.clipboard.writeText(seal.contentHash||'');};
   }
 
   function openLb(src,kind){var lb=document.getElementById('lb');document.getElementById('lbbody').innerHTML=kind==='video'?'<video src="'+esc(src)+'" controls autoplay></video>':'<img src="'+esc(src)+'" alt=""/>';lb.classList.add('on');}
@@ -1484,6 +1563,9 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     if(state.caseBack==='run')setPage('run');
     else if(state.caseBack==='flaky')setPage('flaky');
     else if(state.caseBack==='dashboard')setPage('dashboard');
+    else if(state.caseBack==='gallery')setPage('gallery');
+    else if(state.caseBack==='timeline')setPage('timeline');
+    else if(state.caseBack==='analytics')setPage('analytics');
     else setPage(state.caseBack==='tests'?'tests':'runs');
   });
   document.getElementById('runsTable').addEventListener('click',function(e){
@@ -1542,12 +1624,34 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
   });
   document.getElementById('casePath').addEventListener('click',onCopyPath);
   document.getElementById('analyticsGrid').addEventListener('click',function(e){
+    var toggle=e.target.closest('#btnToggleClusters');
+    if(toggle){state.showAllClusters=!state.showAllClusters;renderAnalytics();return;}
     var copyBtn=e.target.closest('[data-copy-cluster]');
     if(copyBtn){
       var cid=copyBtn.getAttribute('data-copy-cluster')||'';
       var cluster=(DATA.analytics.clusters||[]).find(function(x){return x.id===cid;});
       if(cluster)navigator.clipboard.writeText(buildClusterAiPrompt(cluster));
       e.stopPropagation();
+      return;
+    }
+    var kiBtn=e.target.closest('[data-copy-ki-cluster]');
+    if(kiBtn){
+      var kid=kiBtn.getAttribute('data-copy-ki-cluster')||'';
+      var sample=(DATA.tests||[]).find(function(t){return t.clusterId===kid;});
+      if(sample)navigator.clipboard.writeText(knownIssueSnippet(sample));
+      else navigator.clipboard.writeText(JSON.stringify({id:'KI-'+kid.slice(0,8),mute:true,reason:'muted from cluster',match:{clusterId:kid}},null,2));
+      e.stopPropagation();
+      return;
+    }
+    var qrow=e.target.closest('[data-quarantine-hid]');
+    if(qrow){
+      var hid=qrow.getAttribute('data-quarantine-hid')||'';
+      var qt=(DATA.tests||[]).find(function(t){return t.historyId===hid;});
+      state.clusterId='';
+      state.status='all';
+      if(qt){state.q=qt.title;document.getElementById('q').value=state.q;selectTest(qt,true);}
+      else{state.q='';document.getElementById('q').value='';}
+      syncStatusChips();saveFilters();setPage('tests');
       return;
     }
     var ctrl=e.target.closest('[data-control]');
@@ -1586,7 +1690,12 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
   document.getElementById('runEnv').addEventListener('change',function(e){state.runEnv=e.target.value;renderRuns();});
   document.getElementById('rows').addEventListener('click',function(e){var el=e.target.closest('[data-id]');if(el){selectTest(findTest(el.getAttribute('data-id')),false);return;}var s=e.target.closest('[data-suite]');if(s){var k=s.getAttribute('data-suite');state.collapsed[k]=!state.collapsed[k];renderGrid();}});
   document.getElementById('rows').addEventListener('dblclick',function(e){var el=e.target.closest('[data-id]');if(el){var t=findTest(el.getAttribute('data-id'));if(t)openCase(t,'tests');}});
-  document.getElementById('flakyTable').addEventListener('click',function(e){var el=e.target.closest('[data-id]');if(el)selectTest(findTest(el.getAttribute('data-id')),true);});
+  document.getElementById('flakyTable').addEventListener('click',function(e){
+    var copy=e.target.closest('[data-copy-ai]');
+    if(copy){e.stopPropagation();var t=findTest(copy.getAttribute('data-copy-ai'));if(t)navigator.clipboard.writeText(buildCaseAiPrompt(t));return;}
+    var el=e.target.closest('[data-id]');
+    if(el){var ft=findTest(el.getAttribute('data-id'));if(ft)openCase(ft,'flaky');}
+  });
   document.querySelectorAll('.dtab').forEach(function(b){b.addEventListener('click',function(){state.dtab=b.getAttribute('data-dtab');renderDetail();});});
   document.getElementById('detail').addEventListener('click',function(e){
     onCopyPath(e);
@@ -1613,10 +1722,11 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
   document.getElementById('btnCompare').addEventListener('click',function(){
     state.cmpA=document.getElementById('cmpA').value;
     state.cmpB=document.getElementById('cmpB').value;
+    saveCompare();
     renderCompare();
   });
-  document.getElementById('cmpA').addEventListener('change',function(e){state.cmpA=e.target.value;renderCompare();});
-  document.getElementById('cmpB').addEventListener('change',function(e){state.cmpB=e.target.value;renderCompare();});
+  document.getElementById('cmpA').addEventListener('change',function(e){state.cmpA=e.target.value;saveCompare();renderCompare();});
+  document.getElementById('cmpB').addEventListener('change',function(e){state.cmpB=e.target.value;saveCompare();renderCompare();});
   document.getElementById('compareBody').addEventListener('click',function(e){
     var row=e.target.closest('[data-cmp-hid]');
     if(!row)return;
@@ -1625,15 +1735,30 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     for(var i=0;i<DATA.tests.length;i++)if(DATA.tests[i].historyId===hid){t=DATA.tests[i];break;}
     if(t)openCase(t,'runs');
   });
+  document.getElementById('galleryFilters').addEventListener('click',function(e){
+    var chip=e.target.closest('[data-gallery-filter]');
+    if(!chip)return;
+    state.galleryFilter=chip.getAttribute('data-gallery-filter')||'all';
+    renderGallery();
+  });
   document.getElementById('galleryBody').addEventListener('click',function(e){
+    var cap=e.target.closest('[data-case-id]');
+    if(cap){var ct=findTest(cap.getAttribute('data-case-id'));if(ct){openCase(ct,'gallery');return;}}
     var el=e.target.closest('[data-src]');
     if(!el)return;
     openLb(el.getAttribute('data-src'),el.getAttribute('data-kind')||'img');
+  });
+  document.getElementById('timelineBody').addEventListener('click',function(e){
+    var bar=e.target.closest('[data-id]');
+    if(!bar)return;
+    var tt=findTest(bar.getAttribute('data-id'));
+    if(tt)openCase(tt,'timeline');
   });
   document.getElementById('lbx').addEventListener('click',function(){document.getElementById('lb').classList.remove('on');});
   document.getElementById('lb').addEventListener('click',function(e){if(e.target.id==='lb')e.currentTarget.classList.remove('on');});
   document.getElementById('btnCopyErr').addEventListener('click',function(){var t=state.sel;if(!t||!t.errors[0])return;navigator.clipboard.writeText((t.errors[0].message||'')+'\\n'+(t.errors[0].stack||''));});
   document.getElementById('btnAi').addEventListener('click',function(){var t=state.sel;if(!t)return;navigator.clipboard.writeText(buildCaseAiPrompt(t));});
+  document.getElementById('btnKnownIssue').addEventListener('click',function(){var t=state.sel;if(!t)return;navigator.clipboard.writeText(knownIssueSnippet(t));});
   document.getElementById('btnCopyRerun').addEventListener('click',function(){var c=DATA.analytics.failedRerun&&DATA.analytics.failedRerun.command;if(c)navigator.clipboard.writeText(c);});
   document.getElementById('btnExport').addEventListener('click',function(){var blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='xreport-export.json';a.click();});
 

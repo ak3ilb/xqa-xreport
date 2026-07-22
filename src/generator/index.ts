@@ -72,11 +72,14 @@ export async function generateReport(
   }
 
   const readinessCfg = opts.readiness || withPrivacy.options?.readiness;
-  let withEnterprise: XReportRun = withPrivacy;
+  let withEnterprise: XReportRun = {
+    ...withPrivacy,
+    ...(gateResult ? { gateResult } : {}),
+  };
   if (readinessCfg) {
     withEnterprise = {
-      ...withPrivacy,
-      readiness: evaluateReadiness(withPrivacy, {
+      ...withEnterprise,
+      readiness: evaluateReadiness(withEnterprise, {
         checklist: readinessCfg,
         gate: gateResult,
         reportDir,
@@ -346,5 +349,6 @@ export function mergeRuns(runs: XReportRun[]): XReportRun {
   base.duration = Math.max(0, base.finishedAt - base.startedAt);
   base.summary = summarize(base.suites, base.duration);
   base.title = base.title || 'Merged XREPORT';
+  base.mergeNote = `Merged ${runs.length} shard/worker partials into one report`;
   return enrichRun(base);
 }

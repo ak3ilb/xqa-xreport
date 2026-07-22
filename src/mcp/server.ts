@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Minimal stdio MCP server for local XREPORT data (no cloud account).
- * Protocol: JSON-RPC 2.0 over stdin/stdout (MCP subset sufficient for Cursor tools/list + tools/call).
+ * Protocol: JSON-RPC 2.0 over stdin/stdout (MCP subset for tools/list + tools/call).
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -102,6 +102,16 @@ const TOOLS = [
     name: 'xreport_flaky_top',
     description: 'Top flaky / quarantine tips from the latest report',
     inputSchema: { type: 'object', properties: { reportDir: { type: 'string' }, limit: { type: 'number' } } },
+  },
+  {
+    name: 'xreport_gate_status',
+    description: 'Quality gate result from gate-result.json or embedded run.gateResult',
+    inputSchema: { type: 'object', properties: { reportDir: { type: 'string' } } },
+  },
+  {
+    name: 'xreport_known_issues',
+    description: 'Muted / known-issue matches from the latest report',
+    inputSchema: { type: 'object', properties: { reportDir: { type: 'string' } } },
   },
 ];
 
@@ -228,6 +238,31 @@ function handleTool(name: string, args: Json): ReturnType<typeof textContent> {
         2,
       ),
     );
+  }
+
+  if (name === 'xreport_gate_status') {
+    const gatePath = path.join(reportDir, 'gate-result.json');
+    let gate = run.gateResult || null;
+    if (!gate && fs.existsSync(gatePath)) {
+      gate = JSON.parse(fs.readFileSync(gatePath, 'utf8'));
+    }
+    return textContent(JSON.stringify({ reportDir, gate }, null, 2));
+  }
+
+  if (name === 'xreport_known_issues') {
+    const matches = collectTests(run.suites)
+      .filter((t) => t.muted || t.knownIssueId)
+      .map((t) => ({
+        id: t.id,
+        historyId: t.historyId,
+        title: t.fullTitle,
+        muted: !!t.muted,
+        knownIssueId: t.knownIssueId,
+        knownIssueReason: t.knownIssueReason,
+        clusterId: t.clusterId,
+        status: t.status,
+      }));
+    return textContent(JSON.stringify({ reportDir, matches }, null, 2));
   }
 
   return textContent(JSON.stringify({ error: `Unknown tool: ${name}` }));
