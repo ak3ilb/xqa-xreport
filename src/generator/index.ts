@@ -252,9 +252,9 @@ export async function generateReport(
 }
 
 function collectHasTrace(run: XReportRun): boolean {
-  const walk = (suites: XReportRun['suites']): boolean => {
-    for (const s of suites) {
-      for (const t of s.tests) {
+  const walk = (suites: XReportRun['suites'] | undefined): boolean => {
+    for (const s of suites || []) {
+      for (const t of s.tests || []) {
         if ((t.attachments || []).some((a) => a.type === 'trace' || /\.zip$/i.test(a.path || a.name || ''))) {
           return true;
         }
@@ -269,8 +269,8 @@ function collectHasTrace(run: XReportRun): boolean {
 /** Embed local attachment files as data URIs for a single self-contained HTML file. */
 function inlineRunAssets(run: XReportRun, reportDir: string): XReportRun {
   const clone = structuredClone(run) as XReportRun;
-  const walk = (tests: XReportTest[]) => {
-    for (const t of tests) {
+  const walk = (tests: XReportTest[] | undefined) => {
+    for (const t of tests || []) {
       for (const a of t.attachments || []) {
         if (a.body) continue;
         if (!a.path) continue;
@@ -292,8 +292,8 @@ function inlineRunAssets(run: XReportRun, reportDir: string): XReportRun {
       }
     }
   };
-  const suites = (s: typeof clone.suites): void => {
-    for (const suite of s) {
+  const suites = (s: typeof clone.suites | undefined): void => {
+    for (const suite of s || []) {
       walk(suite.tests);
       suites(suite.suites);
     }

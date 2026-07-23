@@ -58,9 +58,9 @@ export function emptySummary(): XReportSummary {
 
 export function collectTests(suites: XReportSuite[]): XReportTest[] {
   const out: XReportTest[] = [];
-  const walk = (list: XReportSuite[]) => {
-    for (const s of list) {
-      out.push(...s.tests);
+  const walk = (list: XReportSuite[] | undefined) => {
+    for (const s of list || []) {
+      out.push(...(s.tests || []));
       walk(s.suites);
     }
   };
@@ -69,10 +69,10 @@ export function collectTests(suites: XReportSuite[]): XReportTest[] {
 }
 
 export function mapSuites(
-  suites: XReportSuite[],
+  suites: XReportSuite[] | undefined,
   mapTest: (t: XReportTest) => XReportTest,
 ): XReportSuite[] {
-  return suites.map((s) => ({
+  return (suites || []).map((s) => ({
     ...s,
     tests: (s.tests || []).map(mapTest),
     suites: mapSuites(s.suites || [], mapTest),

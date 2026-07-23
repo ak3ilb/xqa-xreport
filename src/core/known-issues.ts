@@ -10,6 +10,8 @@ export interface KnownIssueMatch {
   clusterId?: string;
   /** Substring match on normalized or raw errorSignature / message */
   signatureContains?: string;
+  /** Substring match on fullTitle / title */
+  titleContains?: string;
   /** RegExp source matched against fullTitle */
   titleRegex?: string;
 }
@@ -61,6 +63,10 @@ export function matchesKnownIssue(test: XReportTest, rule: KnownIssueRule): bool
   if (m.signatureContains) {
     const hay = `${test.errorSignature || ''} ${test.errors[0]?.message || ''}`.toLowerCase();
     if (hay.includes(m.signatureContains.toLowerCase())) return true;
+  }
+  if (m.titleContains) {
+    const hay = `${test.fullTitle || ''} ${test.title || ''}`.toLowerCase();
+    if (hay.includes(String(m.titleContains).toLowerCase())) return true;
   }
   if (m.titleRegex) {
     try {
@@ -114,11 +120,11 @@ export function applyKnownIssues(
   }
   if (!issues.length) return run;
 
-  const walk = (suites: XReportRun['suites']): XReportRun['suites'] =>
-    suites.map((s) => ({
+  const walk = (suites: XReportRun['suites'] | undefined): XReportRun['suites'] =>
+    (suites || []).map((s) => ({
       ...s,
       suites: walk(s.suites),
-      tests: s.tests.map((t) => {
+      tests: (s.tests || []).map((t) => {
         const isFail = t.status === 'failed' || t.status === 'timedOut';
         if (!isFail && !t.flaky) return t;
         const hit = findKnownIssue(t, issues);

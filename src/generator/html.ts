@@ -960,7 +960,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       (DATA.readiness?'<div class="dash-sec"><h3>Readiness</h3><div class="dash-preview">Status <b>'+esc(DATA.readiness.status)+'</b> · '+(DATA.readiness.checks||[]).filter(function(c){return c.status==='pass';}).length+'/'+(DATA.readiness.checks||[]).length+' checks pass</div><div class="dash-links"><button class="dash-link" type="button" data-goto="config"><span>Open Run Meta</span><span class="go">Open →</span></button></div></div>':'');
 
     var copySeal=document.getElementById('btnCopySeal');
-    if(copySeal&&seal)copySeal.onclick=function(){navigator.clipboard.writeText(seal.contentHash||'');};
+    if(copySeal&&seal)copySeal.onclick=function(){copyText(seal.contentHash||'');};
 
     var list=DATA.tests.slice().sort(function(a,b){return statusRank(a)-statusRank(b)||(b.duration||0)-(a.duration||0);}).slice(0,12);
     if(!list.length){document.getElementById('dashTests').innerHTML='<div class="empty" style="padding:16px">No cases in this report.</div>';return;}
@@ -1014,8 +1014,16 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     if(t.historyId)match.historyId=t.historyId;
     else if(t.clusterId)match.clusterId=t.clusterId;
     else if(t.errorSignature)match.signatureContains=String(t.errorSignature).slice(0,80);
-    else match.titleContains=t.title;
+    else match.titleContains=String(t.fullTitle||t.title||'').slice(0,120)||'untitled';
     return JSON.stringify({id:t.knownIssueId||('KI-'+String(t.historyId||t.id).slice(0,8)),mute:true,reason:'muted from report',match:match},null,2);
+  }
+  function copyText(s){
+    try{
+      if(navigator.clipboard&&typeof navigator.clipboard.writeText==='function'){
+        return navigator.clipboard['writeText'](String(s||''));
+      }
+    }catch(e){}
+    return Promise.resolve();
   }
 
   function rowHtml(t,active){
@@ -1294,8 +1302,8 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
         body.innerHTML=attemptPickerHtml(t)+'<div class="card"><div class="runmeta" style="margin-bottom:12px">'+errs.length+' error'+(errs.length===1?'':'s')+(attsN>1?' · attempt '+(attemptIndex(t)+1):'')+(errs.length>1?' · soft asserts listed separately':'')+'</div>'+
           errs.map(function(e,i){return '<div style="margin-bottom:14px"><div class="meta" style="margin-bottom:6px">Error '+(i+1)+(errs.length>1&&i<errs.length-1?' · possible soft assert':'')+'</div><pre class="err">'+esc(e.message||'')+'</pre>'+(e.stack?'<pre class="stack">'+esc(e.stack)+'</pre>':'')+'</div>';}).join('')+
           '<div class="btns"><button class="btn" type="button" id="btnCopyCaseErr">Copy all errors</button><button class="btn" type="button" id="btnCopyCaseAi">Copy agent prompt</button></div></div>'+renderEvidenceStrip(t);
-        var ce=document.getElementById('btnCopyCaseErr');if(ce)ce.onclick=function(){navigator.clipboard.writeText(errs.map(function(e,i){return '--- Error '+(i+1)+' ---\\n'+(e.message||'')+'\\n'+(e.stack||'');}).join('\\n\\n'));};
-        var ca=document.getElementById('btnCopyCaseAi');if(ca)ca.onclick=function(){navigator.clipboard.writeText(buildCaseAiPrompt(t));};
+        var ce=document.getElementById('btnCopyCaseErr');if(ce)ce.onclick=function(){copyText(errs.map(function(e,i){return '--- Error '+(i+1)+' ---\\n'+(e.message||'')+'\\n'+(e.stack||'');}).join('\\n\\n'));};
+        var ca=document.getElementById('btnCopyCaseAi');if(ca)ca.onclick=function(){copyText(buildCaseAiPrompt(t));};
       }
     }else if(state.ctab==='steps'){
       body.innerHTML=stepCatPickerHtml(t.steps)+'<div class="card">'+stepsTreeHtml(t.steps)+'</div>';
@@ -1448,7 +1456,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     html+='<div class="card"><h3>Tag health</h3><ul style="list-style:none;margin:0;padding:0">'+(a.tagHealth||[]).slice(0,8).map(function(x){return '<li style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--soft2)"><span>'+esc(x.tag)+'</span><span>'+x.passRate+'%</span></li>';}).join('')+'</ul></div>';
     document.getElementById('analyticsGrid').innerHTML=html;
     var copyRun=document.getElementById('btnCopyRunAi');
-    if(copyRun)copyRun.onclick=function(){navigator.clipboard.writeText(buildRunAiPrompt());};
+    if(copyRun)copyRun.onclick=function(){copyText(buildRunAiPrompt());};
   }
 
   function renderFlaky(){
@@ -1539,7 +1547,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
       gateCard+sealCard+mergeCard+
       '<div class="metagrid"><b>Title</b><span>'+esc(DATA.title)+'</span><b>Framework</b><span>'+esc(DATA.framework)+'</span><b>Finished</b><span>'+esc(new Date(DATA.finishedAt||Date.now()).toLocaleString())+'</span><b>Generator</b><span>'+esc((DATA.brand&&DATA.brand.name)||'XREPORT')+'</span>'+rows+'</div>'+ready;
     var cs=document.getElementById('btnCopySealMeta');
-    if(cs&&seal)cs.onclick=function(){navigator.clipboard.writeText(seal.contentHash||'');};
+    if(cs&&seal)cs.onclick=function(){copyText(seal.contentHash||'');};
   }
 
   function openLb(src,kind){var lb=document.getElementById('lb');document.getElementById('lbbody').innerHTML=kind==='video'?'<video src="'+esc(src)+'" controls autoplay></video>':'<img src="'+esc(src)+'" alt=""/>';lb.classList.add('on');}
@@ -1596,7 +1604,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     var btn=e.target.closest('[data-copy-path]');
     if(!btn)return;
     e.preventDefault();
-    navigator.clipboard.writeText(btn.getAttribute('data-copy-path')||'');
+    copyText(btn.getAttribute('data-copy-path')||'');
   }
   document.getElementById('caseBody').addEventListener('click',function(e){
     onCopyPath(e);
@@ -1630,7 +1638,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     if(copyBtn){
       var cid=copyBtn.getAttribute('data-copy-cluster')||'';
       var cluster=(DATA.analytics.clusters||[]).find(function(x){return x.id===cid;});
-      if(cluster)navigator.clipboard.writeText(buildClusterAiPrompt(cluster));
+      if(cluster)copyText(buildClusterAiPrompt(cluster));
       e.stopPropagation();
       return;
     }
@@ -1638,8 +1646,8 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     if(kiBtn){
       var kid=kiBtn.getAttribute('data-copy-ki-cluster')||'';
       var sample=(DATA.tests||[]).find(function(t){return t.clusterId===kid;});
-      if(sample)navigator.clipboard.writeText(knownIssueSnippet(sample));
-      else navigator.clipboard.writeText(JSON.stringify({id:'KI-'+kid.slice(0,8),mute:true,reason:'muted from cluster',match:{clusterId:kid}},null,2));
+      if(sample)copyText(knownIssueSnippet(sample));
+      else copyText(JSON.stringify({id:'KI-'+kid.slice(0,8),mute:true,reason:'muted from cluster',match:{clusterId:kid}},null,2));
       e.stopPropagation();
       return;
     }
@@ -1692,7 +1700,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
   document.getElementById('rows').addEventListener('dblclick',function(e){var el=e.target.closest('[data-id]');if(el){var t=findTest(el.getAttribute('data-id'));if(t)openCase(t,'tests');}});
   document.getElementById('flakyTable').addEventListener('click',function(e){
     var copy=e.target.closest('[data-copy-ai]');
-    if(copy){e.stopPropagation();var t=findTest(copy.getAttribute('data-copy-ai'));if(t)navigator.clipboard.writeText(buildCaseAiPrompt(t));return;}
+    if(copy){e.stopPropagation();var t=findTest(copy.getAttribute('data-copy-ai'));if(t)copyText(buildCaseAiPrompt(t));return;}
     var el=e.target.closest('[data-id]');
     if(el){var ft=findTest(el.getAttribute('data-id'));if(ft)openCase(ft,'flaky');}
   });
@@ -1756,10 +1764,10 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
   });
   document.getElementById('lbx').addEventListener('click',function(){document.getElementById('lb').classList.remove('on');});
   document.getElementById('lb').addEventListener('click',function(e){if(e.target.id==='lb')e.currentTarget.classList.remove('on');});
-  document.getElementById('btnCopyErr').addEventListener('click',function(){var t=state.sel;if(!t||!t.errors[0])return;navigator.clipboard.writeText((t.errors[0].message||'')+'\\n'+(t.errors[0].stack||''));});
-  document.getElementById('btnAi').addEventListener('click',function(){var t=state.sel;if(!t)return;navigator.clipboard.writeText(buildCaseAiPrompt(t));});
-  document.getElementById('btnKnownIssue').addEventListener('click',function(){var t=state.sel;if(!t)return;navigator.clipboard.writeText(knownIssueSnippet(t));});
-  document.getElementById('btnCopyRerun').addEventListener('click',function(){var c=DATA.analytics.failedRerun&&DATA.analytics.failedRerun.command;if(c)navigator.clipboard.writeText(c);});
+  document.getElementById('btnCopyErr').addEventListener('click',function(){var t=state.sel;if(!t||!t.errors[0])return;copyText((t.errors[0].message||'')+'\\n'+(t.errors[0].stack||''));});
+  document.getElementById('btnAi').addEventListener('click',function(){var t=state.sel;if(!t)return;copyText(buildCaseAiPrompt(t));});
+  document.getElementById('btnKnownIssue').addEventListener('click',function(){var t=state.sel;if(!t)return;copyText(knownIssueSnippet(t));});
+  document.getElementById('btnCopyRerun').addEventListener('click',function(){var c=DATA.analytics.failedRerun&&DATA.analytics.failedRerun.command;if(c)copyText(c);});
   document.getElementById('btnExport').addEventListener('click',function(){var blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='xreport-export.json';a.click();});
 
   document.addEventListener('keydown',function(e){

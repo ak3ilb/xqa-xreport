@@ -19,7 +19,12 @@ Place at `.xreport/known-issues.json`, `./xreport-known-issues.json`, or pass `k
     {
       "id": "KI-TITLE",
       "mute": true,
-      "match": { "titleRegex": "flaky checkout" }
+      "match": { "titleContains": "flaky checkout" }
+    },
+    {
+      "id": "KI-REGEX",
+      "mute": true,
+      "match": { "titleRegex": "checkout.*(timeout|flake)" }
     },
     {
       "id": "KI-CLUSTER",
@@ -30,7 +35,7 @@ Place at `.xreport/known-issues.json`, `./xreport-known-issues.json`, or pass `k
 }
 ```
 
-Match fields (any one is enough): `historyId`, `clusterId`, `signatureContains`, `titleRegex`.
+Match fields (any one is enough): `historyId`, `clusterId`, `signatureContains`, `titleContains`, `titleRegex`.
 
 Muted tests show a **muted** / **known:** badge in the HTML report and are ignored by `xreport gate` unless you pass `--count-muted`.
 

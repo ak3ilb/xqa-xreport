@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-21T16:54:34.559Z",
-  "generator": "@xqa.io/xreport@0.6.0",
+  "generatedAt": "2026-07-23T01:23:44.582Z",
+  "generator": "@xqa.io/xreport@0.6.3",
   "brand": {
     "name": "XREPORT",
     "website": "https://xqa.io"
@@ -9,8 +9,8 @@
   "run": {
     "title": "XREPORT Sample · Local Triage Demo",
     "framework": "playwright",
-    "startedAt": 1784652834545,
-    "finishedAt": 1784652874545,
+    "startedAt": 1784769784567,
+    "finishedAt": 1784769824567,
     "duration": 40000,
     "summary": {
       "total": 7,

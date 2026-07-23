@@ -195,11 +195,11 @@ export function enrichRun(
   historyTrend: XReportAnalytics['historyTrend'] = [],
   historyRecords: HistoryRecord[] = [],
 ): XReportRun {
-  const walkSuites = (suites: typeof run.suites): typeof run.suites =>
-    suites.map((s) => ({
+  const walkSuites = (suites: typeof run.suites | undefined): typeof run.suites =>
+    (suites || []).map((s) => ({
       ...s,
       suites: walkSuites(s.suites),
-      tests: s.tests.map((t) => {
+      tests: (s.tests || []).map((t) => {
         const enriched = enrichTest(t, historyRecords);
         const isFail = enriched.status === 'failed' || enriched.status === 'timedOut';
         return {
@@ -582,13 +582,13 @@ export function flakeStatsFromHistory(records: HistoryRecord[], limit = 40): Arr
         map.set(t.historyId, row);
       }
     } else {
-      for (const id of r.failedIds) {
+      for (const id of r.failedIds || []) {
         const row = map.get(id) || { title: id, runs: 0, fails: 0 };
         row.runs += 1;
         row.fails += 1;
         map.set(id, row);
       }
-      for (const id of r.passedIds) {
+      for (const id of r.passedIds || []) {
         const row = map.get(id) || { title: id, runs: 0, fails: 0 };
         row.runs += 1;
         map.set(id, row);

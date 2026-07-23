@@ -102,6 +102,41 @@ describe('known-issues + quality-gate', () => {
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
+  it('mutes via titleContains match field', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'xreport-ki-'));
+    const ki = path.join(dir, 'known-issues.json');
+    fs.writeFileSync(
+      ki,
+      JSON.stringify({
+        version: 1,
+        issues: [{ id: 'KI-TITLE', mute: true, match: { titleContains: 'fails' } }],
+      }),
+      'utf8',
+    );
+    const run = applyKnownIssues(baseRun(), ki);
+    assert.strictEqual(run.suites[0].tests[0].muted, true);
+    assert.strictEqual(run.suites[0].tests[0].knownIssueId, 'KI-TITLE');
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('applyKnownIssues tolerates suites without nested suites array', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'xreport-ki-'));
+    const ki = path.join(dir, 'known-issues.json');
+    fs.writeFileSync(
+      ki,
+      JSON.stringify({
+        version: 1,
+        issues: [{ id: 'KI-2', mute: true, match: { titleContains: 'fails' } }],
+      }),
+      'utf8',
+    );
+    const run = baseRun();
+    delete (run.suites[0] as { suites?: unknown }).suites;
+    const out = applyKnownIssues(run, ki);
+    assert.strictEqual(out.suites[0].tests[0].muted, true);
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
   it('fails gate on product defects', () => {
     const run = baseRun();
     run.suites[0].tests[0].defectKind = 'product';
