@@ -556,7 +556,7 @@ npx xreport evidence ./xreport -o ./xreport-evidence.zip
 npx xreport quarantine export ./xreport
 ```
 
-CI recipes (CTRF → GitHub summary / PR / Slack), sharding merge, known-issues, and agent MCP: see [`docs/ci/README.md`](docs/ci/README.md), [`docs/sharding.md`](docs/sharding.md), [`docs/agents-mcp.md`](docs/agents-mcp.md).
+CI recipes (CTRF → GitHub summary / PR / Slack), sharding merge, known-issues, and agent MCP: see [`docs/ci/README.md`](docs/ci/README.md), [`docs/ci/github-actions.example.yml`](docs/ci/github-actions.example.yml), [`docs/sharding.md`](docs/sharding.md), [`docs/agents-mcp.md`](docs/agents-mcp.md).
 
 ---
 

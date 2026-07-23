@@ -170,7 +170,9 @@
     "sample": "npm run build && node scripts/generate-sample.js",
     "smoke:reporters": "npm run build && node scripts/smoke-reporters.js",
     "test:unit": "npm run build && node --test dist/core/*.test.js",
-    "test": "npm run typecheck && npm run test:unit && npm run smoke:reporters"
+    "test": "npm run typecheck && npm run test:unit && npm run smoke:reporters",
+    "verify:enterprise": "npm run build && node scripts/enterprise-e2e-verify.js",
+    "test:ci": "npm test && npm run verify:enterprise"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",

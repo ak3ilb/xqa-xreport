@@ -1,6 +1,6 @@
 # XREPORT AI context
 
-Generated: 2026-07-23T01:23:44.582Z
+Generated: 2026-07-23T01:38:09.943Z
 
 You are helping fix failing automated tests. Use only the evidence below.
 

@@ -5,16 +5,75 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   verify:
+    name: Verify
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
-      - run: npm ci || npm install
-      - run: npm run typecheck
-      - run: npm run test:unit
-      - run: npm run smoke:reporters
+
+      - name: Install
+        run: npm ci || npm install
+
+      - name: Typecheck, unit tests, reporter smoke
+        run: npm test
+
+      - name: Enterprise E2E (gate, evidence, privacy, readiness)
+        run: npm run verify:enterprise
+
+      - name: Generate sample report
+        run: npm run sample
+
+      - name: Quality gate --json (sample)
+        id: gate
+        run: |
+          set -euo pipefail
+          # Sample intentionally contains failures — assert CLI JSON shape, not a green suite.
+          set +e
+          node dist/cli/index.js gate examples/sample-report --json --max-failed=999 > gate-result.json
+          code=$?
+          set -e
+          if [[ ! -s gate-result.json ]]; then
+            echo "gate --json produced empty output" >&2
+            exit 1
+          fi
+          node -e "
+            const g = require('./gate-result.json');
+            if (typeof g.ok !== 'boolean') throw new Error('missing ok');
+            if (typeof g.exitCode !== 'number') throw new Error('missing exitCode');
+            if (!Array.isArray(g.violations)) throw new Error('missing violations');
+            if (!g.counts || typeof g.counts.failed !== 'number') throw new Error('missing counts');
+            console.log('gate JSON ok=' + g.ok + ' exitCode=' + g.exitCode + ' failed=' + g.counts.failed);
+          "
+          {
+            echo "### XREPORT quality gate (\`gate --json\`)"
+            echo ""
+            echo "CLI exit: \`${code}\` (sample may fail intentionally)"
+            echo ""
+            echo '```json'
+            cat gate-result.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload sample report + gate result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xreport-ci-sample-${{ github.run_id }}
+          path: |
+            examples/sample-report/index.html
+            examples/sample-report/xreport.json
+            examples/sample-report/ctrf-report.json
+            examples/sample-report/ai-context.md
+            gate-result.json
+          retention-days: 7
+          if-no-files-found: warn

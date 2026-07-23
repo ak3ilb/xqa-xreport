@@ -2,6 +2,26 @@
 
 XREPORT stays on your machine. Use [CTRF](https://ctrf.io) JSON (enabled by default via `exportCtrf: true`) to plug into GitHub summaries, PR comments, and Slack — without a hosted reporter account.
 
+## This repository’s workflows
+
+| Workflow | Purpose |
+|----------|---------|
+| [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) | `npm test` + enterprise E2E + sample `gate --json` + artifact upload |
+| [`.github/workflows/hourly-sample.yml`](../../.github/workflows/hourly-sample.yml) | Hourly practice smokes + gate JSON in the job summary |
+| [`.github/workflows/cleanup-sample-artifacts.yml`](../../.github/workflows/cleanup-sample-artifacts.yml) | Delete aged hourly artifacts |
+
+Local equivalents:
+
+```bash
+npm test                  # typecheck + unit + reporter smoke
+npm run verify:enterprise # gate / evidence / privacy / readiness
+npm run test:ci           # both
+npm run sample            # regenerate examples/sample-report
+npx xreport gate ./examples/sample-report --json --max-failed=999
+```
+
+Copy-paste consumer template: [`github-actions.example.yml`](./github-actions.example.yml).
+
 ## Persist history across CI jobs
 
 ```yaml
@@ -76,16 +96,26 @@ Or use any Slack webhook script that reads CTRF summary fields: `results.summary
 
 ## Quality gate in CI
 
+Prefer `--json` so Job Summaries and annotations can parse the result without scraping stdout:
+
 ```yaml
 - name: XREPORT quality gate (finance PR)
   if: always()
   env:
     XREPORT_CHANGE_TICKET: ${{ github.event.pull_request.title }}  # or a real ticket id
-  run: npx xreport gate ./xreport --preset=finance-pr --json
+  run: |
+    npx xreport gate ./xreport --preset=finance-pr --json | tee gate-result.json
+    {
+      echo "### XREPORT quality gate"
+      echo ""
+      echo '```json'
+      cat gate-result.json
+      echo '```'
+    } >> "$GITHUB_STEP_SUMMARY"
 
 - name: XREPORT quality gate (custom)
   if: always()
-  run: npx xreport gate ./xreport --max-failed=0 --max-new=0 --max-critical=0
+  run: npx xreport gate ./xreport --max-failed=0 --max-new=0 --max-critical=0 --json
 
 - name: Evidence pack for auditors
   if: always()
@@ -95,7 +125,9 @@ Or use any Slack webhook script that reads CTRF summary fields: `results.summary
   if: always()
   with:
     name: xreport-evidence
-    path: xreport-evidence.zip
+    path: |
+      xreport-evidence.zip
+      gate-result.json
 ```
 
 | Preset | Intent |
@@ -118,6 +150,7 @@ Mute expected failures with `.xreport/known-issues.json` (see [known-issues.md](
       xreport/xreport.json
       xreport/ai-context.md
       xreport/ctrf-report.json
+      xreport/gate-result.json
 ```
 
 Open locally with `npx xreport open ./xreport` after download (needed for embedded traces).

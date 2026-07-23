@@ -98,6 +98,32 @@ jobs:
           GITHUB_WORKSPACE: ${{ github.workspace }}
         run: node scripts/ci-hourly-sample.js
 
+      - name: Quality gate summary (JSON)
+        if: success()
+        working-directory: ${{ runner.temp }}/xreport-hourly-${{ matrix.slot }}
+        run: |
+          set -euo pipefail
+          if [[ ! -f xreport/xreport.json ]]; then
+            echo "No xreport.json — skip gate summary"
+            exit 0
+          fi
+          set +e
+          npx xreport gate ./xreport --json --max-failed=999 > xreport/gate-result.json
+          code=$?
+          set -e
+          {
+            echo "### Slot ${{ matrix.slot }} · ${{ matrix.framework }} · ${{ matrix.page }}"
+            echo ""
+            echo "Gate CLI exit: \`${code}\`"
+            echo ""
+            if [[ -s xreport/gate-result.json ]]; then
+              echo '```json'
+              head -c 4000 xreport/gate-result.json
+              echo ""
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload HTML report artifact
         if: success()
         uses: actions/upload-artifact@v4
