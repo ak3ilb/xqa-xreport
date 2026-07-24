@@ -44,6 +44,11 @@ npx xreport-mcp
 | `xreport_flaky_top` | Quarantine + flaky list |
 | `xreport_gate_status` | Quality gate result / violations |
 | `xreport_known_issues` | Muted / known-issue matches |
+| `xreport_flaky_stats` | History-ranked flaky tests |
+| `xreport_flakiness_trend` | Trend for one historyId |
+| `xreport_slowest` | Slowest tests (report or history) |
+| `xreport_failure_patterns` | Fail rates by project/branch |
+| `xreport_history_trend` | Pass-rate trend |
 
 Set `XREPORT_DIR` to the folder that contains `xreport.json`.
 

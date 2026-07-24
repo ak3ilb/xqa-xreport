@@ -377,10 +377,17 @@ export interface HistoryRecord {
   environment?: XReportEnvironment;
   failedIds: string[];
   passedIds: string[];
-  tests?: Array<{ historyId: string; title: string; status: TestStatus; duration: number }>;
+  tests?: Array<{
+    historyId: string;
+    title: string;
+    status: TestStatus;
+    duration: number;
+    project?: string;
+    file?: string;
+  }>;
 }
 
-export const XREPORT_VERSION = '0.6.3';
+export const XREPORT_VERSION = '0.7.0';
 export const XQA_WEBSITE = 'https://xqa.io';
 export const DEFAULT_BRANDING: XReportBranding = {
   projectName: 'XREPORT',

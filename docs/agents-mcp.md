@@ -43,6 +43,11 @@ Or from this package: `npx xreport mcp` / `npx xreport-mcp`.
 | `xreport_list_runs` | Local history |
 | `xreport_gate_status` | Quality gate result / violations |
 | `xreport_known_issues` | Muted / known-issue matches |
+| `xreport_flaky_stats` | History-ranked flaky / unstable tests |
+| `xreport_flakiness_trend` | Pass/fail points for one `historyId` |
+| `xreport_slowest` | Slowest from report or `fromHistory: true` |
+| `xreport_failure_patterns` | Fail rates by project · branch · ci/local |
+| `xreport_history_trend` | Pass-rate trend from local history |
 
 ## Suggested agent skill
 

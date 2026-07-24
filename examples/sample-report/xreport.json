@@ -1,14 +1,14 @@
 {
-  "version": "0.6.3",
-  "generator": "@xqa.io/xreport@0.6.3",
+  "version": "0.7.0",
+  "generator": "@xqa.io/xreport@0.7.0",
   "brand": {
     "name": "XREPORT",
     "website": "https://xqa.io"
   },
   "title": "XREPORT Sample · Local Triage Demo",
   "framework": "playwright",
-  "startedAt": 1784770649928,
-  "finishedAt": 1784770689928,
+  "startedAt": 1784852401666,
+  "finishedAt": 1784852441666,
   "duration": 40000,
   "summary": {
     "total": 7,
@@ -57,7 +57,7 @@
                   "stack": "Error: Timeout\n    at checkout.spec.ts:48"
                 }
               ],
-              "startedAt": 1784770677928
+              "startedAt": 1784852429666
             },
             {
               "status": "failed",
@@ -68,7 +68,7 @@
                   "stack": "Error: Timeout\n    at checkout.spec.ts:48"
                 }
               ],
-              "startedAt": 1784770680928
+              "startedAt": 1784852432666
             }
           ],
           "steps": [
@@ -238,7 +238,7 @@
             }
           ],
           "workerIndex": 0,
-          "startTime": 1784770677928,
+          "startTime": 1784852429666,
           "retries": 1,
           "errorSignature": "timeout nms exceeded. waiting for locator('#pay')",
           "clusterId": "75c2e98605",
@@ -249,32 +249,32 @@
           "stabilityPct": 43,
           "testHistory": [
             {
-              "date": 1784684289928,
+              "date": 1784766041666,
               "status": "failed",
               "duration": 4000
             },
             {
-              "date": 1784597889928,
+              "date": 1784679641666,
               "status": "failed",
               "duration": 4000
             },
             {
-              "date": 1784511489928,
+              "date": 1784593241666,
               "status": "failed",
               "duration": 4000
             },
             {
-              "date": 1784425089928,
+              "date": 1784506841666,
               "status": "passed",
               "duration": 4000
             },
             {
-              "date": 1784338689928,
+              "date": 1784420441666,
               "status": "passed",
               "duration": 4000
             },
             {
-              "date": 1784252289928,
+              "date": 1784334041666,
               "status": "passed",
               "duration": 4000
             }
@@ -314,13 +314,13 @@
                   "message": "Expected discount 10%, got 0%"
                 }
               ],
-              "startedAt": 1784770681928
+              "startedAt": 1784852433666
             },
             {
               "status": "passed",
               "duration": 900,
               "errors": [],
-              "startedAt": 1784770682928
+              "startedAt": 1784852434666
             }
           ],
           "steps": [
@@ -360,7 +360,7 @@
           "owner": "growth",
           "severity": "normal",
           "workerIndex": 0,
-          "startTime": 1784770681928,
+          "startTime": 1784852433666,
           "retries": 1,
           "stdout": "coupon applied\n",
           "errorSignature": "expected discount n%, got n%",
@@ -371,32 +371,32 @@
           "stabilityPct": 71,
           "testHistory": [
             {
-              "date": 1784684289928,
+              "date": 1784766041666,
               "status": "passed",
               "duration": 1800
             },
             {
-              "date": 1784597889928,
+              "date": 1784679641666,
               "status": "passed",
               "duration": 1800
             },
             {
-              "date": 1784511489928,
+              "date": 1784593241666,
               "status": "failed",
               "duration": 1800
             },
             {
-              "date": 1784425089928,
+              "date": 1784506841666,
               "status": "passed",
               "duration": 1800
             },
             {
-              "date": 1784338689928,
+              "date": 1784420441666,
               "status": "passed",
               "duration": 1800
             },
             {
-              "date": 1784252289928,
+              "date": 1784334041666,
               "status": "failed",
               "duration": 1800
             }
@@ -430,7 +430,7 @@
               "status": "passed",
               "duration": 650,
               "errors": [],
-              "startedAt": 1784770683928
+              "startedAt": 1784852435666
             }
           ],
           "steps": [
@@ -458,38 +458,38 @@
           "owner": "identity",
           "severity": "critical",
           "workerIndex": 1,
-          "startTime": 1784770683928,
+          "startTime": 1784852435666,
           "retries": 0,
           "labels": {},
           "stabilityPct": 100,
           "testHistory": [
             {
-              "date": 1784684289928,
+              "date": 1784766041666,
               "status": "passed",
               "duration": 650
             },
             {
-              "date": 1784597889928,
+              "date": 1784679641666,
               "status": "passed",
               "duration": 650
             },
             {
-              "date": 1784511489928,
+              "date": 1784593241666,
               "status": "passed",
               "duration": 650
             },
             {
-              "date": 1784425089928,
+              "date": 1784506841666,
               "status": "passed",
               "duration": 650
             },
             {
-              "date": 1784338689928,
+              "date": 1784420441666,
               "status": "passed",
               "duration": 650
             },
             {
-              "date": 1784252289928,
+              "date": 1784334041666,
               "status": "passed",
               "duration": 650
             }
@@ -525,7 +525,7 @@
                   "stack": "Error: URL\n    at auth.spec.ts:40"
                 }
               ],
-              "startedAt": 1784770684928
+              "startedAt": 1784852436666
             }
           ],
           "steps": [
@@ -594,7 +594,7 @@
             }
           ],
           "workerIndex": 1,
-          "startTime": 1784770684928,
+          "startTime": 1784852436666,
           "retries": 0,
           "stderr": "oauth provider returned 502\n",
           "errorSignature": "expected url to contain /dashboard, got /error",
@@ -606,32 +606,32 @@
           "stabilityPct": 71,
           "testHistory": [
             {
-              "date": 1784684289928,
+              "date": 1784766041666,
               "status": "failed",
               "duration": 3000
             },
             {
-              "date": 1784597889928,
+              "date": 1784679641666,
               "status": "passed",
               "duration": 3000
             },
             {
-              "date": 1784511489928,
+              "date": 1784593241666,
               "status": "passed",
               "duration": 3000
             },
             {
-              "date": 1784425089928,
+              "date": 1784506841666,
               "status": "passed",
               "duration": 3000
             },
             {
-              "date": 1784338689928,
+              "date": 1784420441666,
               "status": "passed",
               "duration": 3000
             },
             {
-              "date": 1784252289928,
+              "date": 1784334041666,
               "status": "passed",
               "duration": 3000
             }
@@ -669,38 +669,38 @@
           "attachments": [],
           "annotations": [],
           "workerIndex": 2,
-          "startTime": 1784770687928,
+          "startTime": 1784852439666,
           "retries": 0,
           "labels": {},
           "stabilityPct": 0,
           "testHistory": [
             {
-              "date": 1784684289928,
+              "date": 1784766041666,
               "status": "skipped",
               "duration": 0
             },
             {
-              "date": 1784597889928,
+              "date": 1784679641666,
               "status": "skipped",
               "duration": 0
             },
             {
-              "date": 1784511489928,
+              "date": 1784593241666,
               "status": "skipped",
               "duration": 0
             },
             {
-              "date": 1784425089928,
+              "date": 1784506841666,
               "status": "skipped",
               "duration": 0
             },
             {
-              "date": 1784338689928,
+              "date": 1784420441666,
               "status": "skipped",
               "duration": 0
             },
             {
-              "date": 1784252289928,
+              "date": 1784334041666,
               "status": "skipped",
               "duration": 0
             }
@@ -736,7 +736,7 @@
               "status": "passed",
               "duration": 1100,
               "errors": [],
-              "startedAt": 1784770685928
+              "startedAt": 1784852437666
             }
           ],
           "steps": [
@@ -751,7 +751,7 @@
           "attachments": [],
           "annotations": [],
           "workerIndex": 0,
-          "startTime": 1784770685928,
+          "startTime": 1784852437666,
           "retries": 0,
           "coverageSummary": {
             "lines": 82,
@@ -763,32 +763,32 @@
           "stabilityPct": 100,
           "testHistory": [
             {
-              "date": 1784684289928,
+              "date": 1784766041666,
               "status": "passed",
               "duration": 1100
             },
             {
-              "date": 1784597889928,
+              "date": 1784679641666,
               "status": "passed",
               "duration": 1100
             },
             {
-              "date": 1784511489928,
+              "date": 1784593241666,
               "status": "passed",
               "duration": 1100
             },
             {
-              "date": 1784425089928,
+              "date": 1784506841666,
               "status": "passed",
               "duration": 1100
             },
             {
-              "date": 1784338689928,
+              "date": 1784420441666,
               "status": "passed",
               "duration": 1100
             },
             {
-              "date": 1784252289928,
+              "date": 1784334041666,
               "status": "passed",
               "duration": 1100
             }
@@ -823,7 +823,7 @@
                   "message": "Test timeout of 30000ms exceeded."
                 }
               ],
-              "startedAt": 1784770654928
+              "startedAt": 1784852406666
             }
           ],
           "steps": [
@@ -862,7 +862,7 @@
           ],
           "severity": "minor",
           "workerIndex": 2,
-          "startTime": 1784770654928,
+          "startTime": 1784852406666,
           "retries": 0,
           "stdout": "filter panel opened\n",
           "errorSignature": "test timeout of nms exceeded.",
@@ -874,32 +874,32 @@
           "stabilityPct": 57,
           "testHistory": [
             {
-              "date": 1784684289928,
+              "date": 1784766041666,
               "status": "timedOut",
               "duration": 28000
             },
             {
-              "date": 1784597889928,
+              "date": 1784679641666,
               "status": "timedOut",
               "duration": 28000
             },
             {
-              "date": 1784511489928,
+              "date": 1784593241666,
               "status": "passed",
               "duration": 28000
             },
             {
-              "date": 1784425089928,
+              "date": 1784506841666,
               "status": "passed",
               "duration": 28000
             },
             {
-              "date": 1784338689928,
+              "date": 1784420441666,
               "status": "passed",
               "duration": 28000
             },
             {
-              "date": 1784252289928,
+              "date": 1784334041666,
               "status": "passed",
               "duration": 28000
             }
@@ -1232,42 +1232,42 @@
     "stabilityScore": 37,
     "historyTrend": [
       {
-        "date": 1784252289928,
+        "date": 1784334041666,
         "passRate": 57,
         "failed": 1,
         "total": 7,
         "duration": 45000
       },
       {
-        "date": 1784338689928,
+        "date": 1784420441666,
         "passRate": 71,
         "failed": 2,
         "total": 7,
         "duration": 44000
       },
       {
-        "date": 1784425089928,
+        "date": 1784506841666,
         "passRate": 57,
         "failed": 1,
         "total": 7,
         "duration": 43000
       },
       {
-        "date": 1784511489928,
+        "date": 1784593241666,
         "passRate": 71,
         "failed": 2,
         "total": 7,
         "duration": 42000
       },
       {
-        "date": 1784597889928,
+        "date": 1784679641666,
         "passRate": 57,
         "failed": 1,
         "total": 7,
         "duration": 41000
       },
       {
-        "date": 1784684289928,
+        "date": 1784766041666,
         "passRate": 71,
         "failed": 2,
         "total": 7,
@@ -1373,7 +1373,7 @@
     "historyRuns": [
       {
         "id": "current",
-        "date": 1784770689928,
+        "date": 1784852441666,
         "title": "XREPORT Sample · Local Triage Demo",
         "framework": "playwright",
         "summary": {
@@ -1450,7 +1450,7 @@
       },
       {
         "id": "h5",
-        "date": 1784684289928,
+        "date": 1784766041666,
         "title": "CI run · staging",
         "framework": "playwright",
         "summary": {
@@ -1527,7 +1527,7 @@
       },
       {
         "id": "h4",
-        "date": 1784597889928,
+        "date": 1784679641666,
         "title": "Local sample run",
         "framework": "playwright",
         "summary": {
@@ -1604,7 +1604,7 @@
       },
       {
         "id": "h3",
-        "date": 1784511489928,
+        "date": 1784593241666,
         "title": "CI run · staging",
         "framework": "playwright",
         "summary": {
@@ -1681,7 +1681,7 @@
       },
       {
         "id": "h2",
-        "date": 1784425089928,
+        "date": 1784506841666,
         "title": "Local sample run",
         "framework": "playwright",
         "summary": {
@@ -1758,7 +1758,7 @@
       },
       {
         "id": "h1",
-        "date": 1784338689928,
+        "date": 1784420441666,
         "title": "CI run · staging",
         "framework": "playwright",
         "summary": {
@@ -1835,7 +1835,7 @@
       },
       {
         "id": "h0",
-        "date": 1784252289928,
+        "date": 1784334041666,
         "title": "Local sample run",
         "framework": "playwright",
         "summary": {
@@ -2005,26 +2005,8 @@
     ]
   },
   "evidenceSeal": {
-    "contentHash": "b0b90bec89b7a98fca69383f1cab6668c6871e5ad834a2c668dfc5c69d195e8e",
+    "contentHash": "19a9465a399e221f7f40bad712ecd12d7e98dc035cbf87d5a33f44fd97dda4f4",
     "zipPath": "xreport-evidence.zip",
-    "generatedAt": "2026-07-23T01:38:09.950Z"
-  },
-  "gateResult": {
-    "ok": true,
-    "exitCode": 0,
-    "rules": {
-      "maxFailed": 999,
-      "ignoreMuted": true
-    },
-    "counts": {
-      "failed": 3,
-      "mutedFailed": 0,
-      "newFailures": 1,
-      "productDefects": 0,
-      "clusters": 3,
-      "unknownDefects": 0,
-      "criticalFailed": 1
-    },
-    "violations": []
+    "generatedAt": "2026-07-24T00:20:41.688Z"
   }
 }

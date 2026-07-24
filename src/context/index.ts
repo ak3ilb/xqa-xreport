@@ -60,6 +60,17 @@ function toAttachment(context: ContextValue): Omit<XReportAttachment, 'id'> {
     };
   }
   if (type === 'screenshot' || type === 'video' || type === 'file' || type === 'trace') {
+    if (Buffer.isBuffer(context.body)) {
+      const mime =
+        context.contentType ||
+        (type === 'screenshot' ? 'image/png' : type === 'video' ? 'video/webm' : 'application/octet-stream');
+      return {
+        name,
+        type,
+        body: `data:${mime};base64,${context.body.toString('base64')}`,
+        contentType: mime,
+      };
+    }
     return {
       name,
       type,
@@ -152,11 +163,34 @@ attach.steps = function attachSteps(key: string, steps: XReportStep[]): void {
 };
 
 attach.screenshot = async function screenshot(
-  testObj: any,
-  source: string | Buffer,
+  testObjOrSource: any,
+  sourceOrTitle?: string | Buffer,
   title = 'Screenshot',
 ): Promise<void> {
-  const target = testObj?.test || testObj;
+  // Jest/Vitest: attach.screenshot(buf) or attach.screenshot('/path.png', 'title')
+  if (
+    typeof testObjOrSource === 'string' ||
+    Buffer.isBuffer(testObjOrSource) ||
+    testObjOrSource == null
+  ) {
+    const key = detectCurrentTestKey();
+    if (!key) return;
+    const source = testObjOrSource as string | Buffer;
+    const name = typeof sourceOrTitle === 'string' ? sourceOrTitle : title;
+    if (Buffer.isBuffer(source)) {
+      pushKeyed(key, {
+        name,
+        type: 'screenshot',
+        body: `data:image/png;base64,${source.toString('base64')}`,
+        contentType: 'image/png',
+      });
+      return;
+    }
+    if (typeof source === 'string') pushKeyed(key, { name, type: 'screenshot', path: source });
+    return;
+  }
+  const target = testObjOrSource?.test || testObjOrSource;
+  const source = sourceOrTitle as string | Buffer;
   if (Buffer.isBuffer(source)) {
     push(target, {
       name: title,
@@ -170,13 +204,41 @@ attach.screenshot = async function screenshot(
 };
 
 attach.video = async function video(
-  testObj: any,
-  source: string,
+  testObjOrSource: any,
+  sourceOrTitle?: string,
   title = 'Video',
 ): Promise<void> {
-  const target = testObj?.test || testObj;
-  push(target, { name: title, type: 'video', path: source });
+  if (typeof testObjOrSource === 'string' || testObjOrSource == null) {
+    const key = detectCurrentTestKey();
+    if (!key) return;
+    const source = String(testObjOrSource || sourceOrTitle || '');
+    const name = typeof sourceOrTitle === 'string' && testObjOrSource ? sourceOrTitle : title;
+    if (source) pushKeyed(key, { name, type: 'video', path: source });
+    return;
+  }
+  const target = testObjOrSource?.test || testObjOrSource;
+  push(target, { name: title, type: 'video', path: String(sourceOrTitle || '') });
 };
+
+/** Attach a local file (screenshot/video/trace/json) to the current Jest/Vitest test. */
+attach.file = function attachFile(
+  filePath: string,
+  opts?: { title?: string; type?: 'screenshot' | 'video' | 'trace' | 'file' | 'json' },
+): void {
+  const key = detectCurrentTestKey();
+  if (!key || !filePath) return;
+  const type = opts?.type || 'file';
+  pushKeyed(key, {
+    name: opts?.title || pathBasename(filePath),
+    type,
+    path: filePath,
+  });
+};
+
+function pathBasename(p: string): string {
+  const parts = String(p).split(/[/\\]/);
+  return parts[parts.length - 1] || 'file';
+}
 
 /** @deprecated Prefer `attach` — alias for familiarity */
 export const testContext = attach;

@@ -142,7 +142,7 @@ Or enable pack generation in the reporter:
 
 - Reporters: **Playwright**, **Cypress**, **Jest**, **Vitest**, Mocha, Jasmine, WebdriverIO (WDIO workers auto-merge)
 - Same HTML UI / triage / history / CTRF across adapters
-- Exports: HTML, JSON, CSV, CTRF, optional PDF; `inlineAssets` for a single HTML file
+- Exports: HTML, JSON, CSV, CTRF, optional PDF; `inlineAssets` / `--share` for a single self-contained HTML file
 - Self-hosted history: `.xreport/history.json` + CLI
 - Branding + Context API (`attach` / `testContext`) where the framework supports it
 - TypeScript-first published types
@@ -412,6 +412,15 @@ npx xreport open ./xreport
 
 Guide + sample: [`examples/jest/README.md`](./examples/jest/README.md)
 
+In specs, attach screenshots/files without Playwright:
+
+```js
+const { attach } = require('@xqa.io/xreport/context');
+attach.note({ type: 'json', title: 'payload', value: { ok: true } });
+attach.file('./shots/fail.png', { type: 'screenshot', title: 'fail' });
+// or: await attach.screenshot(fs.readFileSync('./shots/fail.png'), 'fail');
+```
+
 ### Vitest
 
 ```ts
@@ -556,7 +565,7 @@ npx xreport evidence ./xreport -o ./xreport-evidence.zip
 npx xreport quarantine export ./xreport
 ```
 
-CI recipes (CTRF → GitHub summary / PR / Slack), sharding merge, known-issues, and agent MCP: see [`docs/ci/README.md`](docs/ci/README.md), [`docs/ci/github-actions.example.yml`](docs/ci/github-actions.example.yml), [`docs/sharding.md`](docs/sharding.md), [`docs/agents-mcp.md`](docs/agents-mcp.md).
+CI recipes (CTRF → GitHub summary / PR / Slack), **official Action**, sharding merge, known-issues, and agent MCP: see [`docs/ci/README.md`](docs/ci/README.md), [`docs/ci/action.md`](docs/ci/action.md), [`docs/ci/github-actions.example.yml`](docs/ci/github-actions.example.yml), [`docs/sharding.md`](docs/sharding.md), [`docs/agents-mcp.md`](docs/agents-mcp.md).
 
 ---
 
@@ -630,7 +639,7 @@ Heuristic triage (clusters, defect kind: product / automation / environment / fl
   exportPDF: false,               // needs playwright or puppeteer
   exportCtrf: true,
   enableHistory: false,
-  inlineAssets: false,            // embed media into HTML when true
+  inlineAssets: false,            // true / CLI --share → embed media (Share file badge)
   historyOptions: {
     dbPath: './.xreport/history.json',
     maxRecords: 100,

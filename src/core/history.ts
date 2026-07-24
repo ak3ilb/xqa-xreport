@@ -66,6 +66,8 @@ export function appendHistory(
           title: t.fullTitle || t.title,
           status: t.status,
           duration: t.duration,
+          project: t.project,
+          file: t.file,
         }))
       : undefined,
   };

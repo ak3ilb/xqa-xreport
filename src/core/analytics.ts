@@ -607,6 +607,91 @@ export function flakeStatsFromHistory(records: HistoryRecord[], limit = 40): Arr
     .sort((a, b) => a.stabilityPct - b.stabilityPct);
 }
 
+/** Daily-ish flakiness trend for one historyId across retained runs. */
+export function flakinessTrendForTest(
+  records: HistoryRecord[],
+  historyId: string,
+  days = 30,
+): Array<{ date: number; status: string; duration: number; failed: boolean }> {
+  const cutoff = Date.now() - days * 86400000;
+  const points: Array<{ date: number; status: string; duration: number; failed: boolean }> = [];
+  for (const r of [...records].sort((a, b) => a.date - b.date)) {
+    if (r.date < cutoff) continue;
+    const t = (r.tests || []).find((x) => x.historyId === historyId);
+    if (t) {
+      points.push({
+        date: r.date,
+        status: t.status,
+        duration: t.duration,
+        failed: t.status === 'failed' || t.status === 'timedOut',
+      });
+      continue;
+    }
+    if ((r.failedIds || []).includes(historyId)) {
+      points.push({ date: r.date, status: 'failed', duration: 0, failed: true });
+    } else if ((r.passedIds || []).includes(historyId)) {
+      points.push({ date: r.date, status: 'passed', duration: 0, failed: false });
+    }
+  }
+  return points;
+}
+
+/** Slowest tests from full-results history (avg duration). */
+export function slowestFromHistory(
+  records: HistoryRecord[],
+  limit = 15,
+): Array<{ historyId: string; title: string; avgDuration: number; runs: number }> {
+  const map = new Map<string, { title: string; total: number; runs: number }>();
+  for (const r of records) {
+    for (const t of r.tests || []) {
+      const row = map.get(t.historyId) || { title: t.title, total: 0, runs: 0 };
+      row.total += t.duration || 0;
+      row.runs += 1;
+      map.set(t.historyId, row);
+    }
+  }
+  return [...map.entries()]
+    .map(([historyId, v]) => ({
+      historyId,
+      title: v.title,
+      avgDuration: v.runs ? Math.round(v.total / v.runs) : 0,
+      runs: v.runs,
+    }))
+    .filter((x) => x.runs >= 1 && x.avgDuration > 0)
+    .sort((a, b) => b.avgDuration - a.avgDuration)
+    .slice(0, limit);
+}
+
+/** Failure rates by project (and optional env key) from history full results. */
+export function failurePatternsFromHistory(
+  records: HistoryRecord[],
+  limit = 20,
+): Array<{ key: string; runs: number; fails: number; failRate: number }> {
+  const map = new Map<string, { runs: number; fails: number }>();
+  for (const r of records) {
+    const env = r.environment?.ci ? 'ci' : 'local';
+    const branch = r.environment?.branch || 'unknown-branch';
+    for (const t of r.tests || []) {
+      const project = t.project || '(default)';
+      const key = `${project} · ${branch} · ${env}`;
+      const row = map.get(key) || { runs: 0, fails: 0 };
+      row.runs += 1;
+      if (t.status === 'failed' || t.status === 'timedOut') row.fails += 1;
+      map.set(key, row);
+    }
+  }
+  return [...map.entries()]
+    .map(([key, v]) => ({
+      key,
+      runs: v.runs,
+      fails: v.fails,
+      failRate: v.runs ? Math.round((v.fails / v.runs) * 100) : 0,
+    }))
+    .filter((x) => x.fails > 0)
+    .sort((a, b) => b.failRate - a.failRate || b.fails - a.fails)
+    .slice(0, limit);
+}
+
 export function failedHistoryIds(run: XReportRun): string[] {
   return collectTests(run.suites)
     .filter((t) => t.status === 'failed' || t.status === 'timedOut')

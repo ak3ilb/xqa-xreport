@@ -1,5 +1,4 @@
-# Example consumer workflow for projects that use @xqa.io/xreport
-# Copy into your app repo as .github/workflows/xreport.yml and adjust paths.
+# Example consumer workflow using the XREPORT Action
 
 name: Tests + XREPORT
 
@@ -18,14 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
 
-      - name: Restore XREPORT history
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: .xreport
           key: xreport-history-${{ github.ref_name }}-${{ github.run_id }}
@@ -34,58 +31,20 @@ jobs:
             xreport-history-
 
       - run: npm ci
-
-      # Reporter options: enableHistory: true (saveFullResults defaults on)
       - name: Run tests
-        run: npx playwright test
-        continue-on-error: true
         id: tests
+        continue-on-error: true
+        run: npx playwright test
 
-      - name: XREPORT quality gate
+      - name: XREPORT gate
         if: always()
-        env:
-          # Prefer a real change ticket; PR title is a fallback for finance-pr demos
-          XREPORT_CHANGE_TICKET: ${{ github.event.pull_request.title || github.sha }}
-        run: |
-          set -euo pipefail
-          set +e
-          npx xreport gate ./xreport --preset=finance-pr --json | tee gate-result.json
-          code=${PIPESTATUS[0]}
-          set -e
-          {
-            echo "### XREPORT quality gate"
-            echo ""
-            echo "Exit: \`${code}\`"
-            echo ""
-            echo '```json'
-            cat gate-result.json
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-          exit "${code}"
-
-      - name: CTRF GitHub Summary
-        if: always()
-        uses: ctrf-io/github-test-reporter@v1
+        uses: ak3ilb/xqa-xreport@v0.7.0
         with:
-          report-path: xreport/ctrf-report.json
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Evidence pack
-        if: always()
-        run: npx xreport evidence ./xreport -o ./xreport-evidence.zip
-
-      - name: Upload report artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: xreport-${{ github.run_id }}
-          path: |
-            xreport/
-            gate-result.json
-            xreport-evidence.zip
-          retention-days: 14
-          if-no-files-found: warn
+          report-dir: ./xreport
+          preset: finance-pr
+          change-ticket: ${{ github.event.pull_request.title || github.sha }}
+          evidence: true
+          fail-on-gate: true
 
       - name: Fail job if tests failed
         if: steps.tests.outcome == 'failure'

@@ -9,6 +9,7 @@ XREPORT stays on your machine. Use [CTRF](https://ctrf.io) JSON (enabled by defa
 | [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) | `npm test` + enterprise E2E + sample `gate --json` + artifact upload |
 | [`.github/workflows/hourly-sample.yml`](../../.github/workflows/hourly-sample.yml) | Hourly practice smokes + gate JSON in the job summary |
 | [`.github/workflows/cleanup-sample-artifacts.yml`](../../.github/workflows/cleanup-sample-artifacts.yml) | Delete aged hourly artifacts |
+| [`action.yml`](../../action.yml) | **Official composite Action** — gate `--json`, Job Summary, optional evidence + CTRF + artifacts |
 
 Local equivalents:
 
@@ -20,7 +21,8 @@ npm run sample            # regenerate examples/sample-report
 npx xreport gate ./examples/sample-report --json --max-failed=999
 ```
 
-Copy-paste consumer template: [`github-actions.example.yml`](./github-actions.example.yml).
+- Action docs: [`action.md`](./action.md)
+- Copy-paste consumer workflow: [`github-actions.example.yml`](./github-actions.example.yml)
 
 ## Persist history across CI jobs
 

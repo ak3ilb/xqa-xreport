@@ -156,6 +156,7 @@ export async function generateReport(
     const forHtml = opts.inlineAssets ? inlineRunAssets(withAi, reportDir) : withAi;
     const html = renderHtml(forHtml, {
       traceViewer: !!result.traceViewerPath,
+      shareMode: !!opts.inlineAssets,
     });
     result.htmlPath = path.join(reportDir, htmlName);
     fs.writeFileSync(result.htmlPath, html, 'utf8');
@@ -196,7 +197,7 @@ export async function generateReport(
       if (opts.saveHtml && result.htmlPath) {
         const html = renderHtml(
           opts.inlineAssets ? inlineRunAssets(withAi, reportDir) : withAi,
-          { traceViewer: !!result.traceViewerPath },
+          { traceViewer: !!result.traceViewerPath, shareMode: !!opts.inlineAssets },
         );
         fs.writeFileSync(result.htmlPath, html, 'utf8');
         fs.writeFileSync(path.join(reportDir, 'index.html'), html, 'utf8');

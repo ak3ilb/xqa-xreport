@@ -1,0 +1,159 @@
+name: 'XREPORT Gate'
+description: 'Run xreport gate --json, write Job Summary, optionally build evidence and upload report artifacts'
+author: 'XQA'
+branding:
+  icon: 'check-circle'
+  color: 'blue'
+
+inputs:
+  report-dir:
+    description: 'Path to the XREPORT output folder (contains xreport.json)'
+    required: false
+    default: './xreport'
+  preset:
+    description: 'Quality gate preset: finance-pr | finance-release | nightly'
+    required: false
+    default: ''
+  max-failed:
+    description: 'Override max failed count'
+    required: false
+    default: ''
+  max-new:
+    description: 'Override max new failures'
+    required: false
+    default: ''
+  max-critical:
+    description: 'Override max critical failures'
+    required: false
+    default: ''
+  change-ticket:
+    description: 'Sets XREPORT_CHANGE_TICKET for finance presets'
+    required: false
+    default: ''
+  evidence:
+    description: 'Build evidence zip (true/false)'
+    required: false
+    default: 'false'
+  evidence-out:
+    description: 'Evidence zip path'
+    required: false
+    default: './xreport-evidence.zip'
+  upload-artifact:
+    description: 'Upload report (+ gate/evidence) as an Actions artifact'
+    required: false
+    default: 'true'
+  artifact-name:
+    description: 'Artifact name'
+    required: false
+    default: 'xreport'
+  fail-on-gate:
+    description: 'Fail the step when the quality gate exits non-zero'
+    required: false
+    default: 'true'
+  ctrf-summary:
+    description: 'Post CTRF via ctrf-io/github-test-reporter (requires GITHUB_TOKEN)'
+    required: false
+    default: 'true'
+
+outputs:
+  gate-ok:
+    description: 'Whether the gate passed (true/false)'
+    value: ${{ steps.gate.outputs.ok }}
+  gate-exit-code:
+    description: 'Gate process exit code'
+    value: ${{ steps.gate.outputs.exit_code }}
+  gate-result-path:
+    description: 'Path to gate-result.json'
+    value: ${{ steps.gate.outputs.result_path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Quality gate (--json)
+      id: gate
+      shell: bash
+      env:
+        XREPORT_CHANGE_TICKET: ${{ inputs.change-ticket }}
+        REPORT_DIR: ${{ inputs.report-dir }}
+        PRESET: ${{ inputs.preset }}
+        MAX_FAILED: ${{ inputs.max-failed }}
+        MAX_NEW: ${{ inputs.max-new }}
+        MAX_CRITICAL: ${{ inputs.max-critical }}
+        FAIL_ON_GATE: ${{ inputs.fail-on-gate }}
+      run: |
+        set -euo pipefail
+        REPORT_DIR="${REPORT_DIR:-./xreport}"
+        if [[ ! -f "${REPORT_DIR}/xreport.json" ]]; then
+          echo "No xreport.json in ${REPORT_DIR}" >&2
+          echo "ok=false" >> "$GITHUB_OUTPUT"
+          echo "exit_code=1" >> "$GITHUB_OUTPUT"
+          echo "result_path=" >> "$GITHUB_OUTPUT"
+          exit 1
+        fi
+
+        ARGS=(gate "${REPORT_DIR}" --json)
+        [[ -n "${PRESET}" ]] && ARGS+=(--preset="${PRESET}")
+        [[ -n "${MAX_FAILED}" ]] && ARGS+=(--max-failed="${MAX_FAILED}")
+        [[ -n "${MAX_NEW}" ]] && ARGS+=(--max-new="${MAX_NEW}")
+        [[ -n "${MAX_CRITICAL}" ]] && ARGS+=(--max-critical="${MAX_CRITICAL}")
+
+        set +e
+        npx --yes xreport "${ARGS[@]}" > gate-result.json
+        code=$?
+        set -e
+
+        # Persist beside the report when possible
+        cp -f gate-result.json "${REPORT_DIR}/gate-result.json" 2>/dev/null || true
+
+        ok=false
+        if [[ -s gate-result.json ]]; then
+          ok=$(node -e "const g=require('./gate-result.json'); process.stdout.write(g.ok===true?'true':'false')")
+        fi
+        echo "ok=${ok}" >> "$GITHUB_OUTPUT"
+        echo "exit_code=${code}" >> "$GITHUB_OUTPUT"
+        echo "result_path=gate-result.json" >> "$GITHUB_OUTPUT"
+
+        {
+          echo "### XREPORT quality gate"
+          echo ""
+          echo "- Exit: \`${code}\`"
+          echo "- OK: **${ok}**"
+          echo ""
+          if [[ -s gate-result.json ]]; then
+            echo '```json'
+            cat gate-result.json
+            echo '```'
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"
+
+        if [[ "${FAIL_ON_GATE}" == "true" && "${code}" -ne 0 ]]; then
+          exit "${code}"
+        fi
+
+    - name: Evidence pack
+      if: always() && inputs.evidence == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        npx --yes xreport evidence "${{ inputs.report-dir }}" -o "${{ inputs.evidence-out }}"
+
+    - name: CTRF GitHub Summary
+      if: always() && inputs.ctrf-summary == 'true'
+      uses: ctrf-io/github-test-reporter@v1
+      continue-on-error: true
+      with:
+        report-path: ${{ inputs.report-dir }}/ctrf-report.json
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Upload XREPORT artifacts
+      if: always() && inputs.upload-artifact == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}-${{ github.run_id }}
+        path: |
+          ${{ inputs.report-dir }}
+          gate-result.json
+          ${{ inputs.evidence-out }}
+        if-no-files-found: warn
+        retention-days: 14

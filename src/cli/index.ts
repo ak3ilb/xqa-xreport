@@ -29,7 +29,7 @@ function help(): void {
 XREPORT by XQA  ·  https://xqa.io
 
 Usage:
-  xreport generate <xreport.json> [-o <dir>]
+  xreport generate <xreport.json> [-o <dir>] [--inline|--share]
   xreport open [dir] [--port 4173]
   xreport merge <dir-or-files...> [-o <dir>]
   xreport view [port]
@@ -53,7 +53,7 @@ Usage:
   xreport history import <file>
 
 Commands:
-  generate   Build HTML/CSV/CTRF from an XReport JSON file
+  generate   Build HTML/CSV/CTRF from an XReport JSON file (--inline embeds media)
   open       Serve a report folder locally (needed for embedded trace viewer)
   merge      Merge multiple xreport.json partials (Playwright shards / WDIO workers)
   view       Open interactive JSON drag-drop viewer
@@ -248,6 +248,7 @@ async function cmdGenerate(args: string[]): Promise<void> {
   const outDir = outIdx >= 0 ? args[outIdx + 1] : path.dirname(path.resolve(file));
   const run = readJson<XReportRun>(path.resolve(file));
   const fromRun = run.options || {};
+  const share = args.includes('--inline') || args.includes('--share');
   await generateReport(run, {
     ...fromRun,
     reportDir: outDir,
@@ -255,6 +256,7 @@ async function cmdGenerate(args: string[]): Promise<void> {
     exportCSV: fromRun.exportCSV ?? true,
     exportCtrf: fromRun.exportCtrf ?? true,
     enableHistory: fromRun.enableHistory ?? true,
+    inlineAssets: share || fromRun.inlineAssets,
   });
 }
 

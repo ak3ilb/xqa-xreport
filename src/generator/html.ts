@@ -69,6 +69,8 @@ function prepareTests(tests: XReportTest[]) {
 
 export interface RenderHtmlOptions {
   traceViewer?: boolean;
+  /** Media embedded as data URIs — single-file share mode */
+  shareMode?: boolean;
 }
 
 /** Dashboard-style local workstation (v0.4) */
@@ -115,6 +117,7 @@ export function renderHtml(run: XReportRun, opts: RenderHtmlOptions = {}): strin
     evidenceSeal: run.evidenceSeal || null,
     gateResult: run.gateResult || null,
     mergeNote: run.mergeNote || null,
+    shareMode: !!opts.shareMode,
   };
 
   const dataJson = JSON.stringify(payload).replace(/</g, '\\u003c');
@@ -938,6 +941,7 @@ code.cmd{display:block;background:var(--soft);border:1px solid var(--line);borde
     var badges=[];
     if(gate)badges.push('<span class="tag" style="'+(gate.ok?'background:#DCFCE7;color:#166534':'background:#FEE2E2;color:#991B1B')+'">Gate '+(gate.ok?'OK':'FAIL')+'</span>');
     if(privacy)badges.push('<span class="tag">Privacy: '+esc(privacy)+'</span>');
+    if(DATA.shareMode)badges.push('<span class="tag" title="Screenshots/videos embedded — share this HTML file">Share file</span>');
     if(seal)badges.push('<span class="tag" title="'+esc(seal.contentHash||'')+'">Evidence sealed</span>');
     if(DATA.readiness)badges.push('<span class="tag">Readiness '+esc(DATA.readiness.status)+'</span>');
     document.getElementById('dashSections').innerHTML=

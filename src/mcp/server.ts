@@ -7,6 +7,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
 import { buildAiContextPack } from '../core/ai-context';
+import {
+  failurePatternsFromHistory,
+  flakeStatsFromHistory,
+  flakinessTrendForTest,
+  historyTrendFromRecords,
+  slowestFromHistory,
+} from '../core/analytics';
 import { loadHistory, resolveHistoryPath } from '../core/history';
 import type { XReportRun } from '../core/types';
 import { XREPORT_VERSION } from '../core/types';
@@ -113,6 +120,56 @@ const TOOLS = [
     description: 'Muted / known-issue matches from the latest report',
     inputSchema: { type: 'object', properties: { reportDir: { type: 'string' } } },
   },
+  {
+    name: 'xreport_flaky_stats',
+    description: 'Flaky / unstable tests ranked from local history (stability %)',
+    inputSchema: {
+      type: 'object',
+      properties: { limit: { type: 'number' }, dbPath: { type: 'string' } },
+    },
+  },
+  {
+    name: 'xreport_flakiness_trend',
+    description: 'Pass/fail trend for one historyId across recent history',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        historyId: { type: 'string' },
+        days: { type: 'number' },
+        dbPath: { type: 'string' },
+      },
+      required: ['historyId'],
+    },
+  },
+  {
+    name: 'xreport_slowest',
+    description: 'Slowest tests from current report analytics or history averages',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        reportDir: { type: 'string' },
+        fromHistory: { type: 'boolean' },
+        limit: { type: 'number' },
+        dbPath: { type: 'string' },
+      },
+    },
+  },
+  {
+    name: 'xreport_failure_patterns',
+    description: 'Failure rates by project · branch · ci/local from history',
+    inputSchema: {
+      type: 'object',
+      properties: { limit: { type: 'number' }, dbPath: { type: 'string' } },
+    },
+  },
+  {
+    name: 'xreport_history_trend',
+    description: 'Pass-rate trend points from local history',
+    inputSchema: {
+      type: 'object',
+      properties: { limit: { type: 'number' }, dbPath: { type: 'string' } },
+    },
+  },
 ];
 
 function handleTool(name: string, args: Json): ReturnType<typeof textContent> {
@@ -155,6 +212,58 @@ function handleTool(name: string, args: Json): ReturnType<typeof textContent> {
       if (points.length >= limit) break;
     }
     return textContent(JSON.stringify({ historyId, points }, null, 2));
+  }
+
+  if (name === 'xreport_flaky_stats') {
+    const dbPath = resolveHistoryPath(args.dbPath ? { dbPath: String(args.dbPath) } : undefined);
+    const limit = Math.min(50, Number(args.limit) || 20);
+    const hist = loadHistory(dbPath);
+    const rows = flakeStatsFromHistory(hist.records, Math.max(limit * 3, 40)).slice(0, limit);
+    return textContent(JSON.stringify({ dbPath, flakes: rows }, null, 2));
+  }
+
+  if (name === 'xreport_flakiness_trend') {
+    const historyId = String(args.historyId || '');
+    const days = Math.min(90, Number(args.days) || 30);
+    const dbPath = resolveHistoryPath(args.dbPath ? { dbPath: String(args.dbPath) } : undefined);
+    const hist = loadHistory(dbPath);
+    const points = flakinessTrendForTest(hist.records, historyId, days);
+    return textContent(JSON.stringify({ historyId, days, points }, null, 2));
+  }
+
+  if (name === 'xreport_failure_patterns') {
+    const dbPath = resolveHistoryPath(args.dbPath ? { dbPath: String(args.dbPath) } : undefined);
+    const limit = Math.min(50, Number(args.limit) || 20);
+    const hist = loadHistory(dbPath);
+    return textContent(
+      JSON.stringify(
+        { dbPath, patterns: failurePatternsFromHistory(hist.records, limit) },
+        null,
+        2,
+      ),
+    );
+  }
+
+  if (name === 'xreport_history_trend') {
+    const dbPath = resolveHistoryPath(args.dbPath ? { dbPath: String(args.dbPath) } : undefined);
+    const limit = Math.min(30, Number(args.limit) || 12);
+    const hist = loadHistory(dbPath);
+    return textContent(
+      JSON.stringify(
+        { dbPath, trend: historyTrendFromRecords(hist.records, limit) },
+        null,
+        2,
+      ),
+    );
+  }
+
+  if (name === 'xreport_slowest' && args.fromHistory) {
+    const limit = Math.min(50, Number(args.limit) || 15);
+    const dbPath = resolveHistoryPath(args.dbPath ? { dbPath: String(args.dbPath) } : undefined);
+    const hist = loadHistory(dbPath);
+    return textContent(
+      JSON.stringify({ source: 'history', slowest: slowestFromHistory(hist.records, limit) }, null, 2),
+    );
   }
 
   if (!run) {
@@ -263,6 +372,21 @@ function handleTool(name: string, args: Json): ReturnType<typeof textContent> {
         status: t.status,
       }));
     return textContent(JSON.stringify({ reportDir, matches }, null, 2));
+  }
+
+  if (name === 'xreport_slowest') {
+    const limit = Math.min(50, Number(args.limit) || 15);
+    return textContent(
+      JSON.stringify(
+        {
+          source: 'report',
+          reportDir,
+          slowest: (run.analytics?.slowest || []).slice(0, limit),
+        },
+        null,
+        2,
+      ),
+    );
   }
 
   return textContent(JSON.stringify({ error: `Unknown tool: ${name}` }));
